@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -23,22 +25,24 @@ export class ProjectController {
   @Post()
   create(
     @Req() req: any,
-    @Body()
-    body: CreateProjectDto,
+    @Body() body: CreateProjectDto,
   ) {
-    return this.projectService.createProject(
-      req.user.userId,
-      body,
-    );
+    return this.projectService.createProject(req.user.userId, body);
   }
 
   @UseGuards(JwtGuard)
   @Get()
-  getProjects(
+  getProjects(@Req() req: any) {
+    return this.projectService.getProjects(req.user.userId);
+  }
+
+  @UseGuards(JwtGuard)
+  @Patch(':id/webhook')
+  updateWebhook(
     @Req() req: any,
+    @Param('id') id: string,
+    @Body('webhookUrl') webhookUrl: string | null,
   ) {
-    return this.projectService.getProjects(
-      req.user.userId,
-    );
+    return this.projectService.updateWebhook(id, req.user.userId, webhookUrl ?? null);
   }
 }

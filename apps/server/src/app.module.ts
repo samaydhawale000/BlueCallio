@@ -10,6 +10,7 @@ import { SocketModule } from './socket/socket.module';
 import { ApiKeyModule } from './api-key/api-key.module';
 import { CallSessionModule } from './call-session/call-session.module';
 import { TurnModule } from './turn/turn.module';
+import { WebhookModule } from './webhook/webhook.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { TurnModule } from './turn/turn.module';
     ApiKeyModule,
     CallSessionModule,
     TurnModule,
+    WebhookModule,
   ],
   controllers: [TestController],
 })

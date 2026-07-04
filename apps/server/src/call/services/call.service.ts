@@ -8,6 +8,7 @@ import { CallStatus, CallType } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CallSessionService } from '../../call-session/services/call-session.service';
 import { CallGateway } from '../../socket/gateways/call.gateway';
+import { WebhookService } from '../../webhook/webhook.service';
 
 @Injectable()
 export class CallService {
@@ -15,6 +16,7 @@ export class CallService {
     private prisma: PrismaService,
     private callSessionService: CallSessionService,
     private callGateway: CallGateway,
+    private webhookService: WebhookService,
   ) {}
 
   async createCall(data: {
@@ -39,6 +41,8 @@ export class CallService {
 
     const session = await this.callSessionService.createSession(call.id);
 
+    this.webhookService.fireForCall(call.id, 'call.created');
+
     return {
       call,
       callerToken: session.callerToken,
@@ -59,9 +63,8 @@ export class CallService {
       data: { callId, event: 'CALL_ACCEPTED' },
     });
 
-    this.callGateway.emitToParticipant(callId, 'CALLER', 'call-accepted', {
-      callId,
-    });
+    this.callGateway.emitToParticipant(callId, 'CALLER', 'call-accepted', { callId });
+    this.webhookService.fireForCall(callId, 'call.accepted');
 
     return updated;
   }
@@ -76,9 +79,8 @@ export class CallService {
       data: { callId, event: 'CALL_REJECTED' },
     });
 
-    this.callGateway.emitToParticipant(callId, 'CALLER', 'call-rejected', {
-      callId,
-    });
+    this.callGateway.emitToParticipant(callId, 'CALLER', 'call-rejected', { callId });
+    this.webhookService.fireForCall(callId, 'call.rejected');
 
     return updated;
   }
@@ -92,6 +94,8 @@ export class CallService {
     await this.prisma.callEvent.create({
       data: { callId, event: 'CALL_ENDED' },
     });
+
+    this.webhookService.fireForCall(callId, 'call.ended');
 
     return updated;
   }

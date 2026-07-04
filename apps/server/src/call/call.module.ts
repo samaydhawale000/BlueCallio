@@ -5,11 +5,13 @@ import { CallService } from './services/call.service';
 import { CallSessionModule } from '../call-session/call-session.module';
 import { SocketModule } from '../socket/socket.module';
 import { CallSessionGuard } from '../common/guards/call-session.guard';
+import { WebhookModule } from '../webhook/webhook.module';
 
 @Module({
   imports: [
     CallSessionModule,
     SocketModule,
+    WebhookModule,
   ],
   controllers: [CallController],
   providers: [CallService, CallSessionGuard],
