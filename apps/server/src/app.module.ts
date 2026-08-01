@@ -11,6 +11,7 @@ import { ApiKeyModule } from './api-key/api-key.module';
 import { CallSessionModule } from './call-session/call-session.module';
 import { TurnModule } from './turn/turn.module';
 import { WebhookModule } from './webhook/webhook.module';
+import { PlaygroundModule } from './playground/playground.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { WebhookModule } from './webhook/webhook.module';
     CallSessionModule,
     TurnModule,
     WebhookModule,
+    PlaygroundModule
   ],
   controllers: [TestController],
 })

@@ -2,8 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuthStore } from '../store/auth.store';
 import { api } from '../lib/api';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Card } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
 
 interface ApiKey {
   id: string;
@@ -46,10 +51,7 @@ export default function DashboardPage() {
   const [webhookSaved, setWebhookSaved] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!token) {
-      router.push('/login');
-      return;
-    }
+    if (!token) { router.push('/login'); return; }
     fetchProjects();
   }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -61,8 +63,7 @@ export default function DashboardPage() {
       for (const p of res.data) inputs[p.id] = p.webhookUrl ?? '';
       setWebhookInputs(inputs);
     } catch {
-      logout();
-      router.push('/login');
+      logout(); router.push('/login');
     } finally {
       setLoading(false);
     }
@@ -74,13 +75,10 @@ export default function DashboardPage() {
     setProjectKeys((prev) => ({ ...prev, [projectId]: res.data }));
   }
 
-  async function toggleProject(projectId: string) {
-    if (expandedId === projectId) {
-      setExpandedId(null);
-      return;
-    }
-    setExpandedId(projectId);
-    await fetchKeys(projectId);
+  async function toggleProject(id: string) {
+    if (expandedId === id) { setExpandedId(null); return; }
+    setExpandedId(id);
+    await fetchKeys(id);
   }
 
   async function createProject() {
@@ -92,9 +90,7 @@ export default function DashboardPage() {
       setWebhookInputs((prev) => ({ ...prev, [res.data.id]: '' }));
       setNewProjectName('');
       setShowNewProject(false);
-    } finally {
-      setCreatingProject(false);
-    }
+    } finally { setCreatingProject(false); }
   }
 
   async function createKey(projectId: string) {
@@ -102,15 +98,10 @@ export default function DashboardPage() {
     setCreatingKey(true);
     try {
       const res = await api.post('/api-keys', { projectId, name: newKeyName.trim() });
-      setProjectKeys((prev) => ({
-        ...prev,
-        [projectId]: [res.data, ...(prev[projectId] ?? [])],
-      }));
+      setProjectKeys((prev) => ({ ...prev, [projectId]: [res.data, ...(prev[projectId] ?? [])] }));
       setNewKeyName('');
       setShowNewKey(null);
-    } finally {
-      setCreatingKey(false);
-    }
+    } finally { setCreatingKey(false); }
   }
 
   async function saveWebhook(projectId: string) {
@@ -119,175 +110,197 @@ export default function DashboardPage() {
       const url = webhookInputs[projectId]?.trim() || null;
       const res = await api.patch(`/projects/${projectId}/webhook`, { webhookUrl: url });
       setProjects((prev) =>
-        prev.map((p) =>
-          p.id === projectId
-            ? { ...p, webhookUrl: res.data.webhookUrl, webhookSecret: res.data.webhookSecret }
-            : p,
-        ),
+        prev.map((p) => p.id === projectId ? { ...p, webhookUrl: res.data.webhookUrl, webhookSecret: res.data.webhookSecret } : p)
       );
       setWebhookSaved(projectId);
       setTimeout(() => setWebhookSaved(null), 2500);
-    } finally {
-      setSavingWebhook(null);
-    }
+    } finally { setSavingWebhook(null); }
   }
 
-  async function copyKey(keyId: string, key: string) {
+  async function copyKey(id: string, key: string) {
     await navigator.clipboard.writeText(key);
-    setCopied(keyId);
+    setCopied(id);
     setTimeout(() => setCopied(null), 2000);
-  }
-
-  function handleLogout() {
-    logout();
-    router.push('/login');
   }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-400 text-sm">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#060B18' }}>
+        <div className="flex flex-col items-center gap-3">
+          <svg className="animate-spin h-6 w-6 text-indigo-500" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          <span className="text-sm text-slate-500">Loading dashboard…</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b px-6 py-4 flex items-center justify-between">
-        <span className="font-semibold text-lg tracking-tight">BlueCall</span>
-        <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-black">
-          Logout
-        </button>
+    <div className="min-h-screen" style={{ background: '#060B18' }}>
+
+      {/* Nav */}
+      <header style={{ background: 'rgba(6,11,24,0.9)', borderBottom: '1px solid #1A2642', backdropFilter: 'blur(12px)' }} className="sticky top-0 z-40">
+        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <Link href="/" className="font-mono font-bold text-white tracking-tight text-sm">
+              BlueJoinet
+            </Link>
+            <span style={{ background: '#1A2642', width: 1, height: 18 }} />
+            <span className="text-sm text-slate-400">Dashboard</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link href="/dashboard/playground">
+              <Button variant="secondary" size="sm">Playground</Button>
+            </Link>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => { logout(); router.push('/login'); }}
+            >
+              Logout
+            </Button>
+          </div>
+        </div>
       </header>
 
-      <main className="max-w-3xl mx-auto py-10 px-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-base font-semibold">Projects</h2>
-          <button
-            onClick={() => { setShowNewProject(true); setNewProjectName(''); }}
-            className="bg-black text-white text-sm px-4 py-2 hover:bg-gray-800"
-          >
+      <main className="max-w-5xl mx-auto px-6 py-10">
+
+        {/* Header row */}
+        <div className="flex items-start justify-between mb-8 gap-4">
+          <div>
+            <h1 className="text-xl font-bold text-white">Projects</h1>
+            <p className="text-sm text-slate-500 mt-1">Manage your API keys and webhook settings.</p>
+          </div>
+          <Button onClick={() => { setShowNewProject(true); setNewProjectName(''); }}>
             + New Project
-          </button>
+          </Button>
         </div>
 
+        {/* New project form */}
         {showNewProject && (
-          <div className="flex gap-2 mb-4 bg-white border p-3">
-            <input
-              autoFocus
-              value={newProjectName}
-              onChange={(e) => setNewProjectName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && createProject()}
-              placeholder="Project name"
-              className="border p-2 flex-1 text-sm"
-            />
-            <button
-              onClick={createProject}
-              disabled={creatingProject}
-              className="bg-black text-white text-sm px-4 py-2 disabled:opacity-50"
-            >
-              {creatingProject ? 'Creating...' : 'Create'}
-            </button>
-            <button
-              onClick={() => setShowNewProject(false)}
-              className="text-sm text-gray-500 hover:text-black px-2"
-            >
-              Cancel
-            </button>
-          </div>
+          <Card className="mb-6">
+            <div className="flex gap-3">
+              <Input
+                placeholder="Project name"
+                value={newProjectName}
+                onChange={(e) => setNewProjectName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && createProject()}
+                autoFocus
+                className="flex-1"
+              />
+              <Button onClick={createProject} loading={creatingProject}>Create</Button>
+              <Button variant="ghost" onClick={() => setShowNewProject(false)}>Cancel</Button>
+            </div>
+          </Card>
         )}
 
+        {/* Empty state */}
         {projects.length === 0 ? (
-          <div className="text-center py-16 text-gray-400">
-            <p className="text-sm">No projects yet.</p>
-            <p className="text-sm mt-1">Create one to get your first API key.</p>
-          </div>
+          <Card className="text-center py-16">
+            <div
+              className="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4"
+              style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)' }}
+            >
+              <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </div>
+            <p className="text-slate-400 text-sm font-medium mb-1">No projects yet</p>
+            <p className="text-slate-600 text-xs">Create a project to get your first API key.</p>
+          </Card>
         ) : (
-          <div className="space-y-3">
+          <div className="flex flex-col gap-3">
             {projects.map((project) => (
-              <div key={project.id} className="bg-white border">
+              <Card key={project.id} padding={false} glow={expandedId === project.id}>
+                {/* Project header */}
                 <button
-                  className="w-full flex items-center justify-between px-4 py-4 text-left hover:bg-gray-50"
+                  className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-white/[0.02] transition-colors"
                   onClick={() => toggleProject(project.id)}
                 >
-                  <div>
-                    <p className="font-medium text-sm">{project.name}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      {new Date(project.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric', month: 'short', day: 'numeric',
-                      })}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white shrink-0"
+                      style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}
+                    >
+                      {project.name[0].toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-white">{project.name}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {new Date(project.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                      </p>
+                    </div>
                   </div>
-                  <span className="text-gray-400 text-xs">
-                    {expandedId === project.id ? '▲' : '▼'}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {project.webhookUrl && <Badge variant="purple">webhook</Badge>}
+                    <svg
+                      className={`w-4 h-4 text-slate-500 transition-transform ${expandedId === project.id ? 'rotate-180' : ''}`}
+                      fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </button>
 
+                {/* Expanded panel */}
                 {expandedId === project.id && (
-                  <div className="border-t">
+                  <div style={{ borderTop: '1px solid #1A2642' }}>
+
                     {/* API Keys */}
-                    <div className="px-4 pt-3 pb-4 border-b">
-                      <div className="flex items-center justify-between mb-3">
-                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                          API Keys
-                        </p>
-                        <button
+                    <div className="px-5 py-5" style={{ borderBottom: '1px solid #1A2642' }}>
+                      <div className="flex items-center justify-between mb-4">
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">API Keys</p>
+                        <Button
+                          variant="secondary"
+                          size="sm"
                           onClick={() => { setShowNewKey(project.id); setNewKeyName(''); }}
-                          className="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5"
                         >
                           + New Key
-                        </button>
+                        </Button>
                       </div>
 
                       {showNewKey === project.id && (
-                        <div className="flex gap-2 mb-3">
-                          <input
-                            autoFocus
+                        <div className="flex gap-2 mb-4">
+                          <Input
+                            placeholder="Key name (e.g. production)"
                             value={newKeyName}
                             onChange={(e) => setNewKeyName(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && createKey(project.id)}
-                            placeholder="Key name (e.g. production)"
-                            className="border p-1.5 flex-1 text-sm"
+                            autoFocus
+                            className="flex-1"
                           />
-                          <button
-                            onClick={() => createKey(project.id)}
-                            disabled={creatingKey}
-                            className="bg-black text-white text-xs px-3 py-1.5 disabled:opacity-50"
-                          >
-                            {creatingKey ? 'Creating...' : 'Create'}
-                          </button>
-                          <button
-                            onClick={() => setShowNewKey(null)}
-                            className="text-xs text-gray-500 hover:text-black px-2"
-                          >
-                            Cancel
-                          </button>
+                          <Button onClick={() => createKey(project.id)} loading={creatingKey} size="sm">Create</Button>
+                          <Button variant="ghost" size="sm" onClick={() => setShowNewKey(null)}>Cancel</Button>
                         </div>
                       )}
 
                       {!projectKeys[project.id] ? (
-                        <p className="text-xs text-gray-400">Loading...</p>
+                        <p className="text-xs text-slate-600">Loading…</p>
                       ) : projectKeys[project.id].length === 0 ? (
-                        <p className="text-xs text-gray-400">No API keys yet.</p>
+                        <p className="text-xs text-slate-600">No API keys yet.</p>
                       ) : (
-                        <div className="space-y-2">
+                        <div className="flex flex-col gap-2">
                           {projectKeys[project.id].map((k) => (
                             <div
                               key={k.id}
-                              className="flex items-center justify-between bg-gray-50 px-3 py-2.5"
+                              className="flex items-center justify-between px-4 py-3 rounded-lg"
+                              style={{ background: '#060B18', border: '1px solid #1A2642' }}
                             >
                               <div>
-                                <p className="text-sm font-medium">{k.name}</p>
-                                <p className="text-xs text-gray-400 font-mono mt-0.5">
-                                  {k.key.slice(0, 20)}...{k.key.slice(-6)}
+                                <p className="text-sm font-medium text-white">{k.name}</p>
+                                <p className="font-mono text-xs text-slate-500 mt-0.5">
+                                  {k.key.slice(0, 18)}…{k.key.slice(-6)}
                                 </p>
                               </div>
-                              <button
+                              <Button
+                                variant="secondary"
+                                size="sm"
                                 onClick={() => copyKey(k.id, k.key)}
-                                className="text-xs text-gray-500 hover:text-black px-3 py-1 border hover:border-gray-400 transition-colors"
                               >
                                 {copied === k.id ? '✓ Copied' : 'Copy'}
-                              </button>
+                              </Button>
                             </div>
                           ))}
                         </div>
@@ -295,52 +308,45 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Webhook */}
-                    <div className="px-4 pt-3 pb-4">
-                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
-                        Webhook
-                      </p>
-                      <p className="text-xs text-gray-400 mb-2">
+                    <div className="px-5 py-5">
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">Webhook</p>
+                      <p className="text-xs text-slate-500 mb-4">
                         Receive HTTP POST events when calls are created, accepted, rejected, or ended.
                       </p>
-                      <div className="flex gap-2 mb-3">
-                        <input
-                          value={webhookInputs[project.id] ?? ''}
-                          onChange={(e) =>
-                            setWebhookInputs((prev) => ({ ...prev, [project.id]: e.target.value }))
-                          }
+                      <div className="flex gap-2 mb-4">
+                        <Input
                           placeholder="https://your-server.com/webhook"
-                          className="border p-1.5 flex-1 text-sm font-mono"
+                          value={webhookInputs[project.id] ?? ''}
+                          onChange={(e) => setWebhookInputs((prev) => ({ ...prev, [project.id]: e.target.value }))}
+                          className="flex-1 font-mono text-xs"
                         />
-                        <button
+                        <Button
+                          variant={webhookSaved === project.id ? 'secondary' : 'primary'}
+                          size="sm"
+                          loading={savingWebhook === project.id}
                           onClick={() => saveWebhook(project.id)}
-                          disabled={savingWebhook === project.id}
-                          className="bg-black text-white text-xs px-4 py-1.5 disabled:opacity-50"
                         >
-                          {savingWebhook === project.id
-                            ? 'Saving...'
-                            : webhookSaved === project.id
-                            ? '✓ Saved'
-                            : 'Save'}
-                        </button>
+                          {webhookSaved === project.id ? '✓ Saved' : 'Save'}
+                        </Button>
                       </div>
 
                       {project.webhookSecret && (
-                        <div className="bg-gray-50 border px-3 py-2.5">
-                          <p className="text-xs text-gray-500 mb-1">Signing Secret</p>
-                          <p className="text-xs font-mono text-gray-700 break-all">
-                            {project.webhookSecret}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-1">
-                            Verify requests using{' '}
-                            <code className="bg-gray-200 px-1">X-BlueCall-Signature</code> header
-                            (HMAC-SHA256).
+                        <div
+                          className="rounded-lg px-4 py-3"
+                          style={{ background: '#060B18', border: '1px solid #1A2642' }}
+                        >
+                          <p className="text-xs text-slate-500 mb-1">Signing Secret</p>
+                          <p className="font-mono text-xs text-slate-300 break-all">{project.webhookSecret}</p>
+                          <p className="text-xs text-slate-600 mt-2">
+                            Verify with <code className="text-violet-400">X-BlueJoinet-Signature</code> header (HMAC-SHA256).
                           </p>
                         </div>
                       )}
                     </div>
+
                   </div>
                 )}
-              </div>
+              </Card>
             ))}
           </div>
         )}

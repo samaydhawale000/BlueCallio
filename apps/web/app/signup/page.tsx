@@ -2,9 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { api } from '../lib/api';
+import { useAuthStore } from '../store/auth.store';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 
 export default function SignupPage() {
+  const { setTokens } = useAuthStore();
   const router = useRouter();
 
   const [email, setEmail] = useState('');
@@ -16,8 +21,9 @@ export default function SignupPage() {
     setError('');
     setLoading(true);
     try {
-      await api.post('/auth/signup', { email, password });
-      router.push('/login');
+      const res = await api.post('/auth/signup', { email, password });
+      setTokens(res.data.accessToken, res.data.refreshToken);
+      router.push('/dashboard');
     } catch {
       setError('Signup failed. Email may already be in use.');
     } finally {
@@ -26,43 +32,67 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="w-96 space-y-4">
-        <h1 className="text-2xl font-semibold">Create your account</h1>
+    <div
+      className="min-h-screen flex items-center justify-center px-4"
+      style={{ background: '#060B18' }}
+    >
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse 60% 50% at 50% 20%, rgba(139,92,246,0.07), transparent)' }}
+      />
 
-        {error && <p className="text-sm text-red-500">{error}</p>}
+      <div className="relative w-full max-w-sm">
+        <div className="text-center mb-8">
+          <Link href="/" className="font-mono font-bold text-white text-xl tracking-tight">
+            BlueJoinet
+          </Link>
+          <p className="text-slate-500 text-sm mt-2">Create your account</p>
+        </div>
 
-        <input
-          className="border p-2 w-full"
-          placeholder="Email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && signup()}
-        />
-
-        <input
-          className="border p-2 w-full"
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && signup()}
-        />
-
-        <button
-          className="bg-black text-white px-4 py-2 w-full disabled:opacity-50"
-          onClick={signup}
-          disabled={loading}
+        <div
+          className="rounded-2xl border border-[#1A2642] p-8"
+          style={{ background: '#0D1421' }}
         >
-          {loading ? 'Creating account...' : 'Sign Up'}
-        </button>
+          <div className="flex flex-col gap-5">
+            {error && (
+              <div
+                className="text-sm text-red-400 px-4 py-3 rounded-lg border border-red-500/20"
+                style={{ background: 'rgba(239,68,68,0.06)' }}
+              >
+                {error}
+              </div>
+            )}
 
-        <p className="text-sm text-gray-500 text-center">
+            <Input
+              label="Email"
+              type="email"
+              placeholder="you@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && signup()}
+              autoFocus
+            />
+
+            <Input
+              label="Password"
+              type="password"
+              placeholder="Min. 8 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && signup()}
+            />
+
+            <Button onClick={signup} loading={loading} size="lg" className="w-full mt-1">
+              Create account
+            </Button>
+          </div>
+        </div>
+
+        <p className="text-center text-sm text-slate-500 mt-6">
           Already have an account?{' '}
-          <a href="/login" className="underline text-black">
+          <Link href="/login" className="text-indigo-400 hover:text-indigo-300 transition-colors">
             Sign in
-          </a>
+          </Link>
         </p>
       </div>
     </div>

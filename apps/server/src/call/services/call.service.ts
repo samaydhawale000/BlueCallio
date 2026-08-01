@@ -19,12 +19,17 @@ export class CallService {
     private webhookService: WebhookService,
   ) {}
 
-  async createCall(data: {
+async createCall(
+  data: {
     projectId: string;
     callerId: string;
     receiverId: string;
     type: CallType;
-  }) {
+  },
+  options?: {
+    skipWebhook?: boolean;
+  },
+) {
     const call = await this.prisma.call.create({
       data: {
         projectId: data.projectId,
@@ -41,7 +46,9 @@ export class CallService {
 
     const session = await this.callSessionService.createSession(call.id);
 
-    this.webhookService.fireForCall(call.id, 'call.created');
+    if (!options?.skipWebhook) {
+  this.webhookService.fireForCall(call.id, 'call.created');
+}
 
     return {
       call,

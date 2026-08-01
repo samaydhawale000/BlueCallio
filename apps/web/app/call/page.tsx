@@ -93,7 +93,8 @@ function CallPageContent() {
 
   const fetchIceServers = useCallback(async (): Promise<RTCIceServer[]> => {
     try {
-      const res = await fetch('http://localhost:3005/turn/credentials', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005';
+      const res = await fetch(`${apiUrl}/turn/credentials`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error();
@@ -217,7 +218,8 @@ function CallPageContent() {
   }, [remoteStream]);
 
   async function sessionPost(path: string) {
-    return fetch(`http://localhost:3005${path}`, {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005';
+    return fetch(`${apiUrl}${path}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

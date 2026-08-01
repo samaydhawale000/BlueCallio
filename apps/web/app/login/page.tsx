@@ -2,11 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { api } from '../lib/api';
 import { useAuthStore } from '../store/auth.store';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 
 export default function LoginPage() {
-  const { setToken } = useAuthStore();
+  const { setTokens } = useAuthStore();
   const router = useRouter();
 
   const [email, setEmail] = useState('');
@@ -19,7 +22,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const response = await api.post('/auth/login', { email, password });
-      setToken(response.data.accessToken);
+      setTokens(response.data.accessToken, response.data.refreshToken);
       router.push('/dashboard');
     } catch {
       setError('Invalid email or password.');
@@ -29,43 +32,75 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="w-96 space-y-4">
-        <h1 className="text-2xl font-semibold">Sign in to BlueCall</h1>
+    <div
+      className="min-h-screen flex items-center justify-center px-4"
+      style={{ background: '#060B18' }}
+    >
+      {/* Background glow */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse 60% 50% at 50% 20%, rgba(99,102,241,0.08), transparent)' }}
+      />
 
-        {error && <p className="text-sm text-red-500">{error}</p>}
+      <div className="relative w-full max-w-sm">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <Link href="/" className="font-mono font-bold text-white text-xl tracking-tight">
+            BlueJoinet
+          </Link>
+          <p className="text-slate-500 text-sm mt-2">Sign in to your account</p>
+        </div>
 
-        <input
-          className="border p-2 w-full"
-          placeholder="Email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && login()}
-        />
-
-        <input
-          className="border p-2 w-full"
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && login()}
-        />
-
-        <button
-          className="bg-black text-white px-4 py-2 w-full disabled:opacity-50"
-          onClick={login}
-          disabled={loading}
+        {/* Card */}
+        <div
+          className="rounded-2xl border border-[#1A2642] p-8"
+          style={{ background: '#0D1421' }}
         >
-          {loading ? 'Signing in...' : 'Sign In'}
-        </button>
+          <div className="flex flex-col gap-5">
+            {error && (
+              <div
+                className="text-sm text-red-400 px-4 py-3 rounded-lg border border-red-500/20"
+                style={{ background: 'rgba(239,68,68,0.06)' }}
+              >
+                {error}
+              </div>
+            )}
 
-        <p className="text-sm text-gray-500 text-center">
+            <Input
+              label="Email"
+              type="email"
+              placeholder="you@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && login()}
+              autoFocus
+            />
+
+            <Input
+              label="Password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && login()}
+            />
+
+            <Button
+              onClick={login}
+              loading={loading}
+              size="lg"
+              className="w-full mt-1"
+            >
+              Sign in
+            </Button>
+          </div>
+        </div>
+
+        <p className="text-center text-sm text-slate-500 mt-6">
           Don&apos;t have an account?{' '}
-          <a href="/signup" className="underline text-black">
+          <Link href="/signup" className="text-indigo-400 hover:text-indigo-300 transition-colors">
             Sign up
-          </a>
+          </Link>
         </p>
       </div>
     </div>
