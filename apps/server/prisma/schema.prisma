@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -47,6 +48,9 @@ model Project {
   apiKeys ApiKey[]
 
   calls Call[]
+
+  webhookUrl    String?
+  webhookSecret String?
 
   createdAt DateTime @default(now())
 

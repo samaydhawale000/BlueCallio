@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { randomBytes } from 'crypto';
+import { randomUUID } from 'crypto';
 
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -33,6 +33,15 @@ export class ProjectService {
       orderBy: {
         createdAt: 'desc',
       },
+    });
+  }
+
+  async updateWebhook(projectId: string, ownerId: string, webhookUrl: string | null) {
+    const secret = webhookUrl ? randomUUID().replace(/-/g, '') + randomUUID().replace(/-/g, '') : null;
+    return this.prisma.project.update({
+      where: { id: projectId, ownerId },
+      data: { webhookUrl, webhookSecret: secret },
+      select: { id: true, webhookUrl: true, webhookSecret: true },
     });
   }
 }

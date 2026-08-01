@@ -8,6 +8,7 @@ import { CallStatus, CallType } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CallSessionService } from '../../call-session/services/call-session.service';
 import { CallGateway } from '../../socket/gateways/call.gateway';
+import { WebhookService } from '../../webhook/webhook.service';
 
 @Injectable()
 export class CallService {
@@ -15,14 +16,20 @@ export class CallService {
     private prisma: PrismaService,
     private callSessionService: CallSessionService,
     private callGateway: CallGateway,
+    private webhookService: WebhookService,
   ) {}
 
-  async createCall(data: {
+async createCall(
+  data: {
     projectId: string;
     callerId: string;
     receiverId: string;
     type: CallType;
-  }) {
+  },
+  options?: {
+    skipWebhook?: boolean;
+  },
+) {
     const call = await this.prisma.call.create({
       data: {
         projectId: data.projectId,
@@ -38,6 +45,10 @@ export class CallService {
     });
 
     const session = await this.callSessionService.createSession(call.id);
+
+    if (!options?.skipWebhook) {
+  this.webhookService.fireForCall(call.id, 'call.created');
+}
 
     return {
       call,
@@ -59,9 +70,8 @@ export class CallService {
       data: { callId, event: 'CALL_ACCEPTED' },
     });
 
-    this.callGateway.emitToParticipant(callId, 'CALLER', 'call-accepted', {
-      callId,
-    });
+    this.callGateway.emitToParticipant(callId, 'CALLER', 'call-accepted', { callId });
+    this.webhookService.fireForCall(callId, 'call.accepted');
 
     return updated;
   }
@@ -76,9 +86,8 @@ export class CallService {
       data: { callId, event: 'CALL_REJECTED' },
     });
 
-    this.callGateway.emitToParticipant(callId, 'CALLER', 'call-rejected', {
-      callId,
-    });
+    this.callGateway.emitToParticipant(callId, 'CALLER', 'call-rejected', { callId });
+    this.webhookService.fireForCall(callId, 'call.rejected');
 
     return updated;
   }
@@ -93,7 +102,15 @@ export class CallService {
       data: { callId, event: 'CALL_ENDED' },
     });
 
+    this.webhookService.fireForCall(callId, 'call.ended');
+
     return updated;
+  }
+
+  async getCall(callId: string) {
+    const call = await this.prisma.call.findUnique({ where: { id: callId } });
+    if (!call) throw new NotFoundException('Call not found');
+    return call;
   }
 
   async getCalls(projectId: string) {
