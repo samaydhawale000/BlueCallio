@@ -1,107 +1,210 @@
+"use client";
+
+import QRCode from "react-qr-code";
+import {
+  Copy,
+  Smartphone,
+  ExternalLink,
+  CheckCircle2,
+  Monitor,
+} from "lucide-react";
+
 export default function SessionCard({
   session,
-  copy,
-  joinCaller,
-  joinReceiver,
+  onCopy,
+  onOpenCaller,
+  onOpenReceiver,
 }) {
   return (
-    <div className="bg-white rounded-2xl border mt-10 p-8">
+    <div
+      className="mt-10 rounded-3xl border overflow-hidden"
+      style={{
+        background: "#0C1322",
+        borderColor: "#223250",
+      }}
+    >
+      {/* Header */}
 
-      <div className="flex justify-between items-center">
+      <div
+        className="px-8 py-6 border-b"
+        style={{
+          borderColor: "#223250",
+        }}
+      >
+        <h2 className="text-2xl font-semibold text-white">
+          Demo Session Ready
+        </h2>
 
-        <div>
+        <p className="text-slate-400 mt-2">
+          Scan the QR code using your phone or open the receiver in another
+          browser.
+        </p>
+      </div>
 
-          <h2 className="text-2xl font-semibold">
-            Test Session Created
-          </h2>
+      <div className="grid lg:grid-cols-[320px_1fr]">
 
-          <p className="text-gray-500 mt-1">
-            Ready for testing
+        {/* LEFT */}
+
+        <div
+          className="p-8 flex flex-col items-center"
+          style={{
+            borderRight: "1px solid #223250",
+          }}
+        >
+          <div className="bg-white rounded-xl p-4">
+
+            <QRCode
+              value={session.receiverUrl}
+              size={220}
+            />
+
+          </div>
+
+          <p className="text-slate-400 text-sm mt-6 text-center">
+            Scan to join as Receiver
           </p>
 
+          <button
+            onClick={onOpenReceiver}
+            className="mt-6 w-full rounded-xl py-3 text-white"
+            style={{
+              background:
+                "linear-gradient(135deg,#5B5DDB,#895DF6)",
+            }}
+          >
+            Open Receiver
+          </button>
         </div>
 
-        <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full">
-          Active
-        </span>
+        {/* RIGHT */}
 
-      </div>
+        <div className="p-8">
 
-      <div className="mt-8">
+          <div className="space-y-8">
 
-        <label className="font-semibold">
-          Call ID
-        </label>
+            {/* Caller */}
 
-        <div className="bg-gray-100 p-3 rounded-lg mt-2 break-all">
-          {session.callId}
-        </div>
+            <div>
 
-      </div>
+              <div className="flex items-center justify-between mb-3">
 
-      {/* Caller */}
+                <div className="flex items-center gap-2">
 
-      <div className="mt-8">
+                  <Monitor size={18} color="#8B5CF6" />
 
-        <label className="font-semibold">
-          Caller
-        </label>
+                  <h3 className="text-white font-medium">
+                    Caller
+                  </h3>
 
-        <div className="flex gap-3 mt-2">
+                </div>
 
-          <input
-            readOnly
-            value={session.callerUrl}
-            className="border rounded-lg flex-1 p-3"
-          />
+                <button
+                  onClick={onOpenCaller}
+                  className="text-indigo-400 flex items-center gap-2"
+                >
+                  Open
 
-          <button
-            onClick={() => copy(session.callerUrl)}
-            className="px-5 rounded-lg bg-gray-900 text-white"
-          >
-            Copy
-          </button>
+                  <ExternalLink size={15} />
 
-          <button
-            onClick={joinCaller}
-            className="px-5 rounded-lg bg-green-600 text-white"
-          >
-            Open
-          </button>
+                </button>
 
-        </div>
+              </div>
 
-      </div>
+              <div
+                className="rounded-xl p-4 flex items-center justify-between"
+                style={{
+                  background: "#111827",
+                }}
+              >
+                <span className="text-slate-400 truncate mr-4">
+                  {session.callerUrl}
+                </span>
 
-      {/* Receiver */}
+                <button
+                  onClick={() => onCopy(session.callerUrl)}
+                >
+                  <Copy
+                    size={18}
+                    color="#94A3B8"
+                  />
+                </button>
 
-      <div className="mt-8">
+              </div>
 
-        <label className="font-semibold">
-          Receiver
-        </label>
+            </div>
 
-        <div className="flex gap-3 mt-2">
+            {/* Receiver */}
 
-          <input
-            readOnly
-            value={session.receiverUrl}
-            className="border rounded-lg flex-1 p-3"
-          />
+            <div>
 
-          <button
-            onClick={() => copy(session.receiverUrl)}
-            className="px-5 rounded-lg bg-gray-900 text-white"
-          >
-            Copy
-          </button>
+              <div className="flex items-center gap-2 mb-3">
 
-          <button
-            onClick={joinReceiver}
-            className="px-5 rounded-lg bg-blue-600 text-white"
-          >
-            Open
-          </button>
+                <Smartphone
+                  size={18}
+                  color="#8B5CF6"
+                />
+
+                <h3 className="text-white font-medium">
+                  Receiver
+                </h3>
+
+              </div>
+
+              <div
+                className="rounded-xl p-4 flex items-center justify-between"
+                style={{
+                  background: "#111827",
+                }}
+              >
+                <span className="text-slate-400 truncate mr-4">
+                  {session.receiverUrl}
+                </span>
+
+                <button
+                  onClick={() => onCopy(session.receiverUrl)}
+                >
+                  <Copy
+                    size={18}
+                    color="#94A3B8"
+                  />
+                </button>
+
+              </div>
+
+            </div>
+
+            {/* Status */}
+
+            <div
+              className="rounded-xl p-5"
+              style={{
+                background: "#111827",
+              }}
+            >
+              <div className="flex items-center gap-3">
+
+                <CheckCircle2
+                  color="#10B981"
+                  size={20}
+                />
+
+                <div>
+
+                  <p className="text-white">
+                    Session Created Successfully
+                  </p>
+
+                  <p className="text-slate-400 text-sm">
+                    Waiting for participants to join...
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
 
         </div>
 

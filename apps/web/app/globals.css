@@ -37,6 +37,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 3px; }
+
+/* ── Shared utilities ─────────────────────────────────────── */
 .gradient-text {
   background: var(--gradient);
   -webkit-background-clip: text;
@@ -44,6 +49,218 @@ body {
   background-clip: text;
 }
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--surface); }
-::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 3px; }
+.gradient-text-hero {
+  background: linear-gradient(135deg, #818CF8, #A78BFA);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Landing page layout ──────────────────────────────────── */
+.lp-root {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.lp-nav {
+  background: rgba(6, 11, 24, 0.85);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+}
+
+.lp-footer {
+  background: #040810;
+  border-top: 1px solid var(--border);
+}
+
+/* ── Section backgrounds ──────────────────────────────────── */
+.section-base { background: var(--bg); }
+.section-alt  { background: #080E1C; }
+
+/* ── Typography ───────────────────────────────────────────── */
+.section-label {
+  color: #818CF8;
+}
+
+.lp-h1 {
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.lp-h2 {
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.lp-h2-cta {
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.text-balance { text-wrap: balance; }
+
+.price-text { font-size: 2rem; }
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.btn-primary {
+  background: var(--gradient);
+}
+
+.btn-secondary {
+  background: var(--surface);
+}
+
+/* ── Hero ─────────────────────────────────────────────────── */
+.hero-badge {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: #A5B4FC;
+}
+
+.hero-badge-dot {
+  background: var(--indigo);
+}
+
+.hero-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── Code block ───────────────────────────────────────────── */
+.lp-code-block { background: #0A1020; }
+.lp-pre        { line-height: 1.8; }
+
+.tok-comment  { color: #64748B; }
+.tok-keyword  { color: #7DD3FC; }
+.tok-base     { color: #F1F5F9; }
+.tok-async    { color: #C4B5FD; }
+.tok-fn       { color: #86EFAC; }
+
+/* ── Cards ────────────────────────────────────────────────── */
+.card-surface {
+  background: var(--surface);
+}
+
+.card-gradient {
+  background: linear-gradient(135deg, var(--surface) 0%, #111827 100%);
+}
+
+.card-problem {
+  background: linear-gradient(135deg, #1a0a0a 0%, var(--surface) 100%);
+}
+
+.card-featured {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.05));
+  box-shadow: 0 0 40px rgba(99, 102, 241, 0.08);
+}
+
+/* ── Features grid ────────────────────────────────────────── */
+.features-grid { background: var(--border); }
+.feature-cell  { background: var(--bg); }
+
+.feature-bar {
+  background: linear-gradient(180deg, var(--indigo), var(--violet));
+}
+
+/* ── Step number ──────────────────────────────────────────── */
+.step-num {
+  background: var(--gradient);
+}
+
+/* ── Playground step indicators ──────────────────────────── */
+.step-done    { background: var(--gradient); color: white; }
+.step-pending { background: var(--border); color: var(--dim); }
+
+/* ── Pricing badge ────────────────────────────────────────── */
+.badge-gradient { background: var(--gradient); }
+
+.check-indigo { color: var(--indigo); }
+.check-violet { color: #818CF8; }
+
+/* ── CTA section ──────────────────────────────────────────── */
+.cta-bg {
+  background: linear-gradient(135deg, #1e1b4b 0%, #2e1065 50%, #1e1b4b 100%);
+}
+
+.cta-grid {
+  background-image:
+    linear-gradient(rgba(139, 92, 246, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 92, 246, 0.08) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* Hero gradient mesh animation */
+.hero-mesh-wrapper {
+  position: absolute;
+  inset: -20%;
+  filter: blur(90px);
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.hero-blob {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.hero-blob-1 {
+  top: 5%;
+  left: 15%;
+  width: 55vw;
+  height: 55vw;
+  max-width: 680px;
+  max-height: 680px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.35) 0%, rgba(99, 102, 241, 0) 65%);
+  animation: heroFlow1 7s ease-in-out infinite alternate;
+}
+
+.hero-blob-2 {
+  top: 20%;
+  right: 10%;
+  width: 48vw;
+  height: 48vw;
+  max-width: 600px;
+  max-height: 600px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.35) 0%, rgba(139, 92, 246, 0) 45%);
+  animation: heroFlow2 11s ease-in-out infinite alternate;
+}
+
+.hero-blob-3 {
+  top: 0%;
+  left: 0%;
+  width: 40vw;
+  height: 40vw;
+  max-width: 500px;
+  max-height: 500px;
+  background: radial-gradient(circle, rgba(67, 56, 202, 0.4) 0%, rgba(67, 56, 202, 0) 25%);
+  animation: heroFlow3 18s ease-in-out infinite alternate;
+}
+
+@keyframes heroFlow1 {
+  0%   { transform: translate(0, 0)       scale(1)    rotate(0deg); }
+  33%  { transform: translate(10%, -8%)   scale(1.15) rotate(30deg); }
+  66%  { transform: translate(-8%, 10%)   scale(0.9)  rotate(-20deg); }
+  100% { transform: translate(6%, -4%)    scale(1.05) rotate(10deg); }
+}
+
+@keyframes heroFlow2 {
+  0%   { transform: translate(0, 0)       scale(1)    rotate(0deg); }
+  33%  { transform: translate(-15%, 12%)  scale(0.85) rotate(-40deg); }
+  66%  { transform: translate(8%, -12%)   scale(1.2)  rotate(20deg); }
+  100% { transform: translate(-10%, 6%)   scale(0.95) rotate(-10deg); }
+}
+
+@keyframes heroFlow3 {
+  0%   { transform: translate(0, 0)       scale(1); }
+  50%  { transform: translate(-12%, 18%)  scale(1.2); }
+  100% { transform: translate(12%, -10%)  scale(0.85); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-blob-1, .hero-blob-2, .hero-blob-3 { animation: none; }
+}
