@@ -12,24 +12,17 @@ import logo from "../../assets/images/logo.png";
 const footerLinks = {
   Product: [
     { name: "Features", href: "/#features" },
+    { name: "Products", href: "/#products" },
     { name: "Pricing", href: "/#pricing" },
     { name: "Documentation", href: "/docs" },
-    { name: "API Reference", href: "/docs/api" },
-    { name: "Playground", href: "/playground" },
-  ],
-
-  Company: [
-    { name: "About", href: "/about" },
-    { name: "Blog", href: "/blog" },
-    { name: "Contact", href: "/contact" },
-    { name: "Careers", href: "/careers" },
+    { name: "Playground", href: "/dashboard/playground" },
   ],
 
   Resources: [
-    { name: "Status", href: "/status" },
-    { name: "Support", href: "/support" },
-    { name: "Changelog", href: "/changelog" },
-    { name: "Roadmap", href: "/roadmap" },
+    { name: "FAQ", href: "/faq" },
+    { name: "Support", href: "mailto:hello@bluejoinet.com" },
+    { name: "Docs", href: "/docs" },
+    { name: "Roadmap", href: "/docs#faq" },
   ],
 
   Legal: [

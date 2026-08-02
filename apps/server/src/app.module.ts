@@ -12,6 +12,7 @@ import { CallSessionModule } from './call-session/call-session.module';
 import { TurnModule } from './turn/turn.module';
 import { WebhookModule } from './webhook/webhook.module';
 import { PlaygroundModule } from './playground/playground.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { PlaygroundModule } from './playground/playground.module';
     CallSessionModule,
     TurnModule,
     WebhookModule,
-    PlaygroundModule
+    PlaygroundModule,
+    DashboardModule
   ],
   controllers: [TestController],
 })

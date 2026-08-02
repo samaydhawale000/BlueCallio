@@ -2,15 +2,25 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { Menu } from "lucide-react";
 import logo from "../../assets/images/logo.png";
 import NavLinks from "./NavLinks";
 import MobileMenu from "./MobileMenu";
+import { useAuthStore } from "../../store/auth.store";
 
 export default function Header() {
+  const { token, logout } = useAuthStore();
+  const pathname = usePathname();
+  const router = useRouter();
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  const isLoggedIn = !!token;
+  // /call is a full-screen meeting page — hide the marketing nav there.
+  const isCallPage = pathname?.startsWith("/call") ?? false;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -43,6 +53,10 @@ export default function Header() {
 
     return () => window.removeEventListener("keydown", handleEsc);
   }, []);
+
+  if (isCallPage) {
+    return null;
+  }
 
   return (
     <>
@@ -88,19 +102,42 @@ export default function Header() {
           {/* Desktop Actions */}
 
           <div className="hidden items-center gap-3 lg:flex">
-            <Link
-              href="/login"
-              className="text-sm text-slate-400 transition hover:text-white"
-            >
-              Log In
-            </Link>
+            {isLoggedIn ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="text-sm text-slate-400 transition hover:text-white"
+                >
+                  Dashboard
+                </Link>
 
-            <Link
-              href="/signup"
-              className="btn-primary rounded-lg px-5 py-2 text-sm font-medium text-white transition hover:opacity-90"
-            >
-              Get Started
-            </Link>
+                <button
+                  onClick={() => {
+                    logout();
+                    router.push("/");
+                  }}
+                  className="rounded-lg border border-[#1A2642] px-4 py-2 text-sm text-slate-300 transition hover:border-slate-500 hover:text-white"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="text-sm text-slate-400 transition hover:text-white"
+                >
+                  Log In
+                </Link>
+
+                <Link
+                  href="/signup"
+                  className="btn-primary rounded-lg px-5 py-2 text-sm font-medium text-white transition hover:opacity-90"
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Hamburger */}

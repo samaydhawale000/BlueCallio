@@ -52,15 +52,35 @@ const FEATURES = [
    },
    {
       title: "Hosted Call UI",
-      body: "A ready-made call page at a URL you control. No frontend SDK, no React dependency.",
+      body: "A ready-made branded call page at a URL you control. No frontend SDK, no React dependency.",
    },
    {
       title: "REST API",
-      body: "Create, accept, reject, and end calls with plain HTTP. Any language, any framework.",
+      body: "Create, accept, reject, end, join, and leave calls with plain HTTP. Any language, any framework.",
    },
    {
       title: "WebSocket Signaling",
-      body: "Real-time call events — incoming call, offer, answer, ICE — handled server-side.",
+      body: "Standardized real-time events — call.started, participant.joined, media state — handled server-side.",
+   },
+   {
+      title: "React Components",
+      body: "Reusable MeetingProvider, ParticipantGrid, ControlBar components. Custom UI, zero WebRTC code.",
+   },
+   {
+      title: "Headless SDK",
+      body: "meeting.join(), camera.enable(), screenShare.start() — complete control with the @bluejoinet/sdk engine.",
+   },
+   {
+      title: "Waiting Room",
+      body: "Built-in waiting room for scheduled meetings. Guests wait until the host lets them in.",
+   },
+   {
+      title: "Device Selection",
+      body: "Let users pick their camera, microphone, and speaker before and during a call.",
+   },
+   {
+      title: "Hosted UI Branding",
+      body: "Your logo, your company name, your colors. The hosted page matches your product on every call.",
    },
    {
       title: "Webhook Events",
@@ -75,8 +95,66 @@ const FEATURES = [
       body: "Built-in TURN server for calls behind strict firewalls. Time-limited HMAC credentials.",
    },
    {
+      title: "Developer Dashboard",
+      body: "Manage projects, API keys, calls history, and usage minutes from one dashboard.",
+   },
+   {
       title: "Node.js SDK",
-      body: "Optional npm package that wraps the REST API. Type-safe, zero config, one import.",
+      body: "npm package that wraps the REST API and the communication engine. Type-safe, zero config.",
+   },
+];
+
+const PRODUCTS = [
+   {
+      icon: "🖥",
+      tag: "5-minute integration",
+      name: "Hosted UI",
+      tagline: "The fastest way to integrate BlueJoinet.",
+      body: "Create a call from your backend and redirect users to a BlueJoinet-hosted meeting page. No frontend implementation required.",
+      features: [
+         "Ready-made meeting interface",
+         "Video, audio & screen sharing",
+         "Device selection",
+         "Waiting room",
+         "Branding support",
+         "Fully responsive",
+      ],
+      code: "POST /calls → hostedUrl + participant tokens",
+      cta: "Create a call, redirect your users, done.",
+   },
+   {
+      icon: "⚛️",
+      tag: "Custom UI, zero WebRTC",
+      name: "React Components",
+      tagline: "A custom interface without building a meeting app.",
+      body: "Reusable React components for developers who want a branded experience without touching WebRTC, signaling, or media handling.",
+      features: [
+         "MeetingProvider & MeetingRoom",
+         "ParticipantGrid / ParticipantTile",
+         "Control bar buttons",
+         "DeviceSelector panel",
+         "WaitingRoom panel",
+         "Connection & speaking indicators",
+      ],
+      code: "<MeetingProvider token={token}><ParticipantGrid /><ControlBar /></MeetingProvider>",
+      cta: "Build a fully branded meeting experience.",
+   },
+   {
+      icon: "🧩",
+      tag: "Full control",
+      name: "Headless SDK",
+      tagline: "Complete control over the meeting experience.",
+      body: "Just the communication engine — no UI included. You build the interface, BlueJoinet handles signaling, auth, and media infrastructure.",
+      features: [
+         "join() / leave()",
+         "camera & microphone controls",
+         "screenShare.start() / stop()",
+         "participants() & connectionState()",
+         "Full event system",
+         "Type-safe TypeScript",
+      ],
+      code: "const meeting = new BlueJoinet({ token }); await meeting.join();",
+      cta: "Build your own UI on a proven engine.",
    },
 ];
 
@@ -106,7 +184,9 @@ const PLANS = [
          "Unlimited projects",
          "Unlimited developers",
          "REST API + WebSocket",
-         "Hosted call UI",
+         "Hosted UI — with branding",
+         "React UI components",
+         "Headless SDK",
          "Playground",
          "TURN relay",
          "Community support",
@@ -126,7 +206,9 @@ const PLANS = [
          "Everything in Starter",
          "Voice & Video",
          "Webhooks",
-         "Analytics",
+         "Waiting room",
+         "Device selection",
+         "Usage analytics",
          "Email support",
       ],
       cta: "Start Launch",
@@ -144,7 +226,8 @@ const PLANS = [
          "Everything in Launch",
          "Priority support",
          "Higher API limits",
-         "Better analytics",
+         "Advanced analytics",
+         "Call history & details",
          "Team management",
       ],
       cta: "Start Growth",
@@ -162,6 +245,7 @@ const PLANS = [
          "Dedicated TURN server",
          "SLA guarantee",
          "Technical account manager",
+         "Custom branding & domains",
          "Custom integrations",
          "Dedicated infrastructure",
          "Volume discounts",
@@ -273,7 +357,7 @@ export default function LandingPage() {
                      <span className="tok-comment">{`// 1. Create a call from your backend\n`}</span>
                      <span className="tok-keyword">{"const "}</span>
                      <span className="tok-base">
-                        {"{ callerUrl, receiverUrl } = "}
+                        {"{ callId, hostedUrl, participants } = "}
                      </span>
                      <span className="tok-async">{"await "}</span>
                      <span className="tok-base">{"BlueJoinet."}</span>
@@ -283,9 +367,9 @@ export default function LandingPage() {
                      </span>
                      <span className="tok-comment">{`// 2. Redirect each user — you're done\n`}</span>
                      <span className="tok-async">{"redirect"}</span>
-                     <span className="tok-base">{`(caller, callerUrl)\n`}</span>
+                     <span className="tok-base">{`(alice, participants[0].hostedUrl)\n`}</span>
                      <span className="tok-async">{"redirect"}</span>
-                     <span className="tok-base">{`(receiver, receiverUrl)`}</span>
+                     <span className="tok-base">{`(bob, participants[1].hostedUrl)`}</span>
                   </pre>
                </div>
             </div>
@@ -385,30 +469,84 @@ export default function LandingPage() {
             </div>
          </section>
 
-         {/* ── How it works ── */}
-         <section className="section-alt py-24 px-6">
+         {/* ── Products ── */}
+         <section id="products" className="section-base py-24 px-6">
             <div className="max-w-6xl mx-auto">
                <p className="section-label font-mono text-xs tracking-widest uppercase mb-4">
-                  How it works
+                  Products
                </p>
-               <h2 className="lp-h2 font-bold text-white mb-16">
-                  Three steps, then it&apos;s running
+               <h2 className="lp-h2 font-bold text-white mb-4">
+                   Three ways to integrate.
                </h2>
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {STEPS.map((item, i) => (
+               <p className="text-slate-400 mb-14 max-w-2xl">
+                  Choose the integration style that fits your product. All three
+                  are powered by the same REST + WebSocket backend — so you can
+                  move between them without changing your server-side code.
+               </p>
+
+               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {PRODUCTS.map((product) => (
                      <div
-                        key={item.step}
-                        className="card-surface rounded-xl border border-[#1A2642] p-6"
+                        key={product.name}
+                        className="card-surface rounded-xl border border-[#1A2642] p-7 flex flex-col transition-all hover:border-[#2A3D64]"
                      >
-                        <div className="step-num inline-flex items-center justify-center w-8 h-8 rounded-lg font-mono font-bold text-sm mb-5 text-white">
-                           {i + 1}
+                        <div className="flex items-center justify-between mb-5">
+                           <div
+                              className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                              style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.15))', border: '1px solid rgba(99,102,241,0.25)' }}
+                           >
+                              {product.icon}
+                           </div>
+                           <span
+                              className="text-[10px] font-mono px-2.5 py-1 rounded-full uppercase tracking-widest"
+                              style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.3)', color: '#A5B4FC' }}
+                           >
+                              {product.tag}
+                           </span>
                         </div>
-                        <p className="font-semibold text-white mb-2">
-                           {item.step}
+
+                        <h3 className="font-bold text-white text-lg mb-1">
+                           {product.name}
+                        </h3>
+                        <p className="text-sm font-medium text-slate-300 mb-3">
+                           {product.tagline}
                         </p>
-                        <p className="text-sm text-slate-400 leading-relaxed">
-                           {item.body}
+                        <p className="text-sm text-slate-400 leading-relaxed mb-6">
+                           {product.body}
                         </p>
+
+                        <div className="space-y-2 mb-6">
+                           {product.features.map((f) => (
+                              <div key={f} className="flex items-start gap-2">
+                                 <span className="check-indigo text-xs mt-0.5">✓</span>
+                                 <p className="text-sm text-slate-400">{f}</p>
+                              </div>
+                           ))}
+                        </div>
+
+                        <div
+                           className="rounded-lg px-3 py-2.5 mb-6 font-mono text-[11px] text-slate-500"
+                           style={{ background: '#060B18', border: '1px solid #1A2642', overflowX: 'auto', whiteSpace: 'nowrap' }}
+                        >
+                           {product.code}
+                        </div>
+
+                        <p className="text-xs text-slate-500 mb-5 flex-1">
+                           {product.cta}
+                        </p>
+
+                        <Link
+                           href="/docs"
+                           className="block text-center text-sm font-medium text-white px-4 py-2.5 rounded-lg transition-all hover:opacity-90"
+                           style={{
+                              background: product.name === 'React Components'
+                                 ? 'linear-gradient(135deg, #6366F1, #8B5CF6)'
+                                 : 'rgba(255,255,255,0.04)',
+                              border: product.name === 'React Components' ? 'none' : '1px solid #1A2642',
+                           }}
+                        >
+                           Learn more in docs →
+                        </Link>
                      </div>
                   ))}
                </div>

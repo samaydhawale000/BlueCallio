@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useAuthStore } from '../store/auth.store';
 import { api } from '../lib/api';
 import { Button } from '../components/ui/Button';
@@ -27,6 +26,25 @@ interface Project {
   createdAt: string;
 }
 
+interface Call {
+  id: string;
+  projectId: string;
+  callerId: string;
+  receiverId: string;
+  type: 'AUDIO' | 'VIDEO';
+  status: string;
+  startedAt: string | null;
+  endedAt: string | null;
+  createdAt: string;
+  project?: { id: string; name: string };
+}
+
+interface Usage {
+  totalCalls: number;
+  activeCalls: number;
+  minutesUsed: number;
+}
+
 export default function DashboardPage() {
   const { token, logout } = useAuthStore();
   const router = useRouter();
@@ -46,6 +64,10 @@ export default function DashboardPage() {
 
   const [copied, setCopied] = useState<string | null>(null);
 
+  const [calls, setCalls] = useState<Call[]>([]);
+  const [usage, setUsage] = useState<Usage | null>(null);
+  const [selectedCall, setSelectedCall] = useState<Call | null>(null);
+
   const [webhookInputs, setWebhookInputs] = useState<Record<string, string>>({});
   const [savingWebhook, setSavingWebhook] = useState<string | null>(null);
   const [webhookSaved, setWebhookSaved] = useState<string | null>(null);
@@ -53,6 +75,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!token) { router.push('/login'); return; }
     fetchProjects();
+    fetchDashboardData();
   }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function fetchProjects() {
@@ -66,6 +89,19 @@ export default function DashboardPage() {
       logout(); router.push('/login');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function fetchDashboardData() {
+    try {
+      const [callsRes, usageRes] = await Promise.all([
+        api.get('/dashboard/calls'),
+        api.get('/dashboard/usage'),
+      ]);
+      setCalls(callsRes.data);
+      setUsage(usageRes.data);
+    } catch {
+      // Non-fatal — dashboard still renders projects.
     }
   }
 
@@ -139,33 +175,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#060B18' }}>
-
-      {/* Nav */}
-      <header style={{ background: 'rgba(6,11,24,0.9)', borderBottom: '1px solid #1A2642', backdropFilter: 'blur(12px)' }} className="sticky top-0 z-40">
-        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="font-mono font-bold text-white tracking-tight text-sm">
-              BlueJoinet
-            </Link>
-            <span style={{ background: '#1A2642', width: 1, height: 18 }} />
-            <span className="text-sm text-slate-400">Dashboard</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard/playground">
-              <Button variant="secondary" size="sm">Playground</Button>
-            </Link>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => { logout(); router.push('/login'); }}
-            >
-              Logout
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-5xl mx-auto px-6 py-10">
+      <main className="max-w-5xl mx-auto px-6 pt-24 pb-10">
 
         {/* Header row */}
         <div className="flex items-start justify-between mb-8 gap-4">
@@ -177,6 +187,26 @@ export default function DashboardPage() {
             + New Project
           </Button>
         </div>
+
+        {/* Usage stats */}
+        {usage && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            {[
+              { label: 'Total Calls', value: usage.totalCalls, color: '#6366F1' },
+              { label: 'Active Calls', value: usage.activeCalls, color: '#10B981' },
+              { label: 'Minutes Used', value: usage.minutesUsed, color: '#F59E0B' },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="rounded-xl border border-[#1A2642] p-5"
+                style={{ background: '#0D1421' }}
+              >
+                <p className="text-xs text-slate-500 mb-1">{stat.label}</p>
+                <p className="text-2xl font-bold" style={{ color: stat.color }}>{stat.value}</p>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* New project form */}
         {showNewProject && (
@@ -350,7 +380,150 @@ export default function DashboardPage() {
             ))}
           </div>
         )}
+
+        {/* ── Calls ── */}
+        <div className="mt-10">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-bold text-white">Calls</h2>
+              <p className="text-sm text-slate-500 mt-0.5">
+                Active and past calls across all projects.
+              </p>
+            </div>
+            <Button variant="secondary" size="sm" onClick={() => fetchDashboardData()}>
+              Refresh
+            </Button>
+          </div>
+
+          {calls.length === 0 ? (
+            <Card className="text-center py-12">
+              <p className="text-slate-400 text-sm font-medium mb-1">No calls yet</p>
+              <p className="text-slate-600 text-xs">
+                Create a call from the playground or the API to see it here.
+              </p>
+            </Card>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {calls.slice(0, 50).map((call) => (
+                <button
+                  key={call.id}
+                  onClick={() => setSelectedCall(call)}
+                  className="flex items-center justify-between px-4 py-3 rounded-xl border border-[#1A2642] hover:border-[#2A3D64] transition-colors text-left"
+                  style={{ background: '#0D1421' }}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <StatusDot status={call.status} />
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-white truncate">
+                        {call.callerId} → {call.receiverId}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {new Date(call.createdAt).toLocaleString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                        {call.project?.name && ` · ${call.project.name}`}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Badge variant={call.type === 'VIDEO' ? 'purple' : 'default'}>
+                      {call.type}
+                    </Badge>
+                    <Badge variant={statusBadge(call.status)}>{call.status}</Badge>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </main>
+
+      {/* Call details modal */}
+      {selectedCall && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-6"
+          style={{ background: 'rgba(0,0,0,0.7)' }}
+          onClick={() => setSelectedCall(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-xl p-6"
+            style={{ background: '#0D1421', border: '1px solid #2A3D64' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-5">
+              <p className="font-bold text-white">Call Details</p>
+              <button
+                onClick={() => setSelectedCall(null)}
+                className="text-slate-500 hover:text-white transition-colors text-sm"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3 text-sm">
+              <Row label="Call ID" value={selectedCall.id} mono />
+              <Row label="Caller" value={selectedCall.callerId} />
+              <Row label="Receiver" value={selectedCall.receiverId} />
+              <Row label="Type" value={selectedCall.type} />
+              <Row label="Status" value={selectedCall.status} />
+              <Row label="Created" value={new Date(selectedCall.createdAt).toLocaleString('en-US')} />
+              <Row
+                label="Started"
+                value={selectedCall.startedAt ? new Date(selectedCall.startedAt).toLocaleString('en-US') : '—'}
+              />
+              <Row
+                label="Ended"
+                value={selectedCall.endedAt ? new Date(selectedCall.endedAt).toLocaleString('en-US') : '—'}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
+}
+
+function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="flex items-start justify-between gap-4">
+      <span className="text-slate-500 shrink-0">{label}</span>
+      <span
+        className={`text-slate-300 text-right break-all ${mono ? 'font-mono text-xs' : ''}`}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function StatusDot({ status }: { status: string }) {
+  const color =
+    status === 'ACCEPTED' ? '#10B981'
+      : status === 'RINGING' ? '#F59E0B'
+        : status === 'ENDED' ? '#64748B'
+          : status === 'REJECTED' ? '#EF4444'
+            : '#6366F1';
+  return (
+    <span
+      className="w-2 h-2 rounded-full shrink-0"
+      style={{ background: color, boxShadow: `0 0 8px ${color}66` }}
+    />
+  );
+}
+
+function statusBadge(status: string): 'default' | 'purple' | 'success' | 'error' | 'warning' {
+  switch (status) {
+    case 'ACCEPTED': return 'success';
+    case 'RINGING':
+    case 'INITIATED': return 'warning';
+    case 'REJECTED':
+    case 'MISSED': return 'error';
+    case 'ENDED': return 'default';
+    default: return 'default';
+  }
 }

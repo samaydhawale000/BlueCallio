@@ -1,93 +1,112 @@
 import type {
-  BlueCallConfig,
+  BlueJoinetConfig,
   Call,
+  CallDetails,
   CreateCallParams,
   CreateCallResult,
+  JoinCallResult,
 } from './types';
 
-export class BlueCall {
+/**
+ * Low-level REST client for the BlueJoinet API.
+ * Server-side only — never expose an API key to the browser.
+ */
+export class BlueJoinetClient {
   private readonly apiKey: string;
   private readonly baseUrl: string;
-  private readonly callBaseUrl: string;
 
-  constructor(config: BlueCallConfig) {
-    if (!config.apiKey) throw new Error('BlueCall: apiKey is required');
+  constructor(config: BlueJoinetConfig) {
+    if (!config.apiKey) throw new Error('BlueJoinet: apiKey is required');
     this.apiKey = config.apiKey;
-    this.baseUrl = config.baseUrl ?? 'https://api.bluecall.com';
-    this.callBaseUrl = config.callBaseUrl ?? 'https://call.bluecall.com';
+    this.baseUrl = config.baseUrl ?? 'https://api.bluejoinet.com';
   }
 
   private async request<T>(
     method: string,
     path: string,
     body?: unknown,
+    headers?: Record<string, string>,
   ): Promise<T> {
     const res = await fetch(`${this.baseUrl}${path}`, {
       method,
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': this.apiKey,
+        ...headers,
       },
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({})) as { message?: string };
-      throw new Error(err.message ?? `BlueCall error ${res.status}: ${path}`);
+      const err = (await res.json().catch(() => ({}))) as { message?: string };
+      throw new Error(err.message ?? `BlueJoinet error ${res.status}: ${path}`);
     }
 
     return res.json() as Promise<T>;
   }
 
-  private callUrl(callId: string, token: string): string {
-    const params = new URLSearchParams({ callId, token });
-    return `${this.callBaseUrl}/call?${params}`;
-  }
-
   /**
-   * Create a new call.
-   * Returns the call object plus ready-to-redirect URLs for both participants.
-   *
-   * @example
-   * const { callerUrl, receiverUrl } = await bluecall.createCall({
-   *   callerId: 'user_123',
-   *   receiverId: 'user_456',
-   *   type: 'VIDEO',
-   * });
-   * // redirect caller  → callerUrl
-   * // notify receiver  → receiverUrl (via your own push/SMS/email)
+   * Create a new call. Returns the spec response:
+   * `{ callId, hostedUrl, participants: [{ participantId, token, hostedUrl, expiresAt }] }`
    */
   async createCall(params: CreateCallParams): Promise<CreateCallResult> {
-    const data = await this.request<{
-      call: Call;
-      callerToken: string;
-      receiverToken: string;
-    }>('POST', '/calls', {
+    const data = await this.request<CreateCallResult>('POST', '/calls', {
       callerId: params.callerId,
       receiverId: params.receiverId,
       type: params.type ?? 'VIDEO',
     });
 
-    return {
-      ...data,
-      callerUrl: this.callUrl(data.call.id, data.callerToken),
-      receiverUrl: this.callUrl(data.call.id, data.receiverToken),
-    };
+    return data;
+  }
+
+  /** Record a participant joining a call (session-token guarded). */
+  async joinCall(callId: string, token: string): Promise<JoinCallResult> {
+    return this.request<JoinCallResult>(
+      'POST',
+      `/calls/${callId}/join`,
+      undefined,
+      { Authorization: `Bearer ${token}` },
+    );
+  }
+
+  /** Record a participant leaving a call. */
+  async leaveCall(callId: string, token: string): Promise<{ callId: string; left: boolean }> {
+    return this.request<{ callId: string; left: boolean }>(
+      'POST',
+      `/calls/${callId}/leave`,
+      undefined,
+      { Authorization: `Bearer ${token}` },
+    );
   }
 
   /** Accept a pending call (typically called by your server on receiver's behalf). */
-  async acceptCall(callId: string): Promise<Call> {
-    return this.request<Call>('POST', `/calls/${callId}/accept`);
+  async acceptCall(callId: string, token?: string): Promise<Call> {
+    return this.request<Call>(
+      'POST',
+      `/calls/${callId}/accept`,
+      undefined,
+      token ? { Authorization: `Bearer ${token}` } : undefined,
+    );
   }
 
   /** Reject a pending call. */
-  async rejectCall(callId: string): Promise<Call> {
-    return this.request<Call>('POST', `/calls/${callId}/reject`);
+  async rejectCall(callId: string, token?: string): Promise<Call> {
+    return this.request<Call>(
+      'POST',
+      `/calls/${callId}/reject`,
+      undefined,
+      token ? { Authorization: `Bearer ${token}` } : undefined,
+    );
   }
 
   /** End an active call. */
-  async endCall(callId: string): Promise<Call> {
-    return this.request<Call>('POST', `/calls/${callId}/end`);
+  async endCall(callId: string, token?: string): Promise<Call> {
+    return this.request<Call>(
+      'POST',
+      `/calls/${callId}/end`,
+      undefined,
+      token ? { Authorization: `Bearer ${token}` } : undefined,
+    );
   }
 
   /** Fetch details for a specific call. */
@@ -95,8 +114,16 @@ export class BlueCall {
     return this.request<Call>('GET', `/calls/${callId}`);
   }
 
+  /** Fetch call details incl. branding + participant token (session-token guarded). */
+  async getCallDetails(callId: string, token: string): Promise<CallDetails> {
+    return this.request<CallDetails>('GET', `/calls/${callId}`, undefined, {
+      Authorization: `Bearer ${token}`,
+    });
+  }
+
   /** List all calls for this project. */
   async getCalls(): Promise<Call[]> {
     return this.request<Call[]>('GET', '/calls');
   }
 }
+

@@ -34,6 +34,11 @@ model User {
   projects     Project[]
 }
 
+enum ProjectTheme {
+  LIGHT
+  DARK
+}
+
 model Project {
   id          String   @id @default(uuid())
 
@@ -51,6 +56,13 @@ model Project {
 
   webhookUrl    String?
   webhookSecret String?
+
+  // ── Hosted UI branding ──────────────────────────────
+  companyName String?
+  logoUrl     String?
+  primaryColor String @default("#2563EB")
+  theme        ProjectTheme @default(DARK)
+  waitingRoom  Boolean @default(false)
 
   createdAt DateTime @default(now())
 

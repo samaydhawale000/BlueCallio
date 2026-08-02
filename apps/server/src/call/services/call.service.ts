@@ -50,10 +50,36 @@ async createCall(
   this.webhookService.fireForCall(call.id, 'call.created');
 }
 
+    const frontend = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+    const callerToken = session.callerToken;
+    const receiverToken = session.receiverToken;
+
+    const hostedUrl = `${frontend}/call?token=${callerToken}&callId=${call.id}`;
+
     return {
+      callId: call.id,
       call,
-      callerToken: session.callerToken,
-      receiverToken: session.receiverToken,
+      hostedUrl,
+      participants: [
+        {
+          participantId: data.callerId,
+          token: callerToken,
+          hostedUrl,
+          expiresAt: session.expiresAt,
+        },
+        {
+          participantId: data.receiverId,
+          token: receiverToken,
+          hostedUrl: `${frontend}/call?token=${receiverToken}&callId=${call.id}`,
+          expiresAt: session.expiresAt,
+        },
+      ],
+      // Backwards-compatible fields (still used by the playground)
+      callerToken,
+      receiverToken,
+      callerUrl: hostedUrl,
+      receiverUrl: `${frontend}/call?token=${receiverToken}&callId=${call.id}`,
     };
   }
 
@@ -111,6 +137,79 @@ async createCall(
     const call = await this.prisma.call.findUnique({ where: { id: callId } });
     if (!call) throw new NotFoundException('Call not found');
     return call;
+  }
+
+  /**
+   * Full call details including project branding and the
+   * participant token (resolved from the caller's session token).
+   * Used by the hosted UI to theme the room.
+   */
+  async getCallDetails(callId: string, session: any) {
+    const call = await this.prisma.call.findUnique({
+      where: { id: callId },
+      include: { project: true },
+    });
+    if (!call) throw new NotFoundException('Call not found');
+
+    const frontend = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const isCaller = session?.callerToken;
+    const token = isCaller ? session.callerToken : session.receiverToken;
+
+    return {
+      callId: call.id,
+      type: call.type,
+      status: call.status,
+      callerId: call.callerId,
+      receiverId: call.receiverId,
+      participantId: isCaller ? call.callerId : call.receiverId,
+      token,
+      hostedUrl: `${frontend}/call?token=${token}&callId=${call.id}`,
+      expiresAt: session?.expiresAt ?? null,
+      branding: {
+        companyName: call.project.companyName ?? call.project.name,
+        logoUrl: call.project.logoUrl,
+        primaryColor: call.project.primaryColor,
+        theme: call.project.theme,
+        waitingRoom: call.project.waitingRoom,
+      },
+    };
+  }
+
+  /**
+   * Record a participant joining an active call.
+   */
+  async joinCall(callId: string, session: any) {
+    const call = await this.prisma.call.findUnique({ where: { id: callId } });
+    if (!call) throw new NotFoundException('Call not found');
+
+    await this.prisma.callEvent.create({
+      data: { callId, event: 'PARTICIPANT_JOINED' },
+    });
+
+    return {
+      callId,
+      status: call.status,
+      joined: true,
+      participantId: session?.callerToken ? call.callerId : call.receiverId,
+    };
+  }
+
+  /**
+   * Record a participant leaving an active call.
+   */
+  async leaveCall(callId: string, session: any) {
+    const call = await this.prisma.call.findUnique({ where: { id: callId } });
+    if (!call) throw new NotFoundException('Call not found');
+
+    await this.prisma.callEvent.create({
+      data: { callId, event: 'PARTICIPANT_LEFT' },
+    });
+
+    return {
+      callId,
+      left: true,
+      participantId: session?.callerToken ? call.callerId : call.receiverId,
+    };
   }
 
   async getCalls(projectId: string) {

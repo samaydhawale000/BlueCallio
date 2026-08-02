@@ -25,7 +25,7 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {}
 
   @WebSocketServer()
-  server: Server;
+  server!: Server;
 
   private authenticatedSockets = new Map<
     string,
@@ -34,6 +34,7 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
       callId: string;
       role: 'CALLER' | 'RECEIVER';
       token: string;
+      participantId: string;
     }
   >();
 
@@ -83,9 +84,22 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
     for (const roomId of [...this.server.sockets.adapter.rooms.keys()]) {
       this.roomService.leaveRoom(roomId, client.id);
     }
+
     for (const [token, session] of this.authenticatedSockets.entries()) {
       if (session.socketId === client.id) {
         this.authenticatedSockets.delete(token);
+
+        // Notify the other participant that this one left.
+        const other = this.getOtherParticipant(client.id);
+        this.roomService.removeParticipant(client.id);
+        if (other) {
+          this.server.to(other.socketId).emit('participant.left', {
+            participantId: session.participantId,
+            callId: session.callId,
+          });
+          const count = this.roomService.getParticipantCount(session.callId);
+          this.server.to(session.callId).emit('participant-left', { participants: count });
+        }
       }
     }
     console.log('Socket Disconnected:', client.id);
@@ -109,6 +123,13 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
         callId: caller.call.id,
         role: 'CALLER',
         token: body.token,
+        participantId: caller.call.callerId,
+      });
+
+      client.emit('connected', {
+        callId: caller.call.id,
+        participantId: caller.call.callerId,
+        role: 'CALLER',
       });
 
       return { success: true, role: 'CALLER' };
@@ -124,6 +145,13 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
         callId: receiver.call.id,
         role: 'RECEIVER',
         token: body.token,
+        participantId: receiver.call.receiverId,
+      });
+
+      client.emit('connected', {
+        callId: receiver.call.id,
+        participantId: receiver.call.receiverId,
+        role: 'RECEIVER',
       });
 
       client.emit('incoming-call', {
@@ -217,8 +245,21 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     client.join(body.callId);
     this.roomService.joinRoom(body.callId, client.id);
+    this.roomService.addParticipant(body.callId, {
+      socketId: client.id,
+      participantId: participant.participantId,
+      role: participant.role,
+      media: { camera: false, microphone: false, screenShare: false },
+    });
 
     const count = this.roomService.getParticipantCount(body.callId);
+
+    // Standardized event + backward-compatible alias.
+    this.server.to(body.callId).emit('participant.joined', {
+      callId: body.callId,
+      participantId: participant.participantId,
+      participants: count,
+    });
     this.server.to(body.callId).emit('participant-joined', { participants: count });
 
     return { success: true, participants: count };
@@ -234,10 +275,156 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
       callId: string;
     },
   ) {
+    const participant = this.roomService.getParticipant(client.id);
+
     client.leave(body.callId);
     this.roomService.leaveRoom(body.callId, client.id);
+    this.roomService.removeParticipant(client.id);
 
     const count = this.roomService.getParticipantCount(body.callId);
+
+    if (participant) {
+      this.server.to(body.callId).emit('participant.left', {
+        callId: body.callId,
+        participantId: participant.participantId,
+        participants: count,
+      });
+    }
     this.server.to(body.callId).emit('participant-left', { participants: count });
+  }
+
+  @SubscribeMessage('call.started')
+  async callStarted(
+    @ConnectedSocket()
+    client: Socket,
+
+    @MessageBody()
+    body: {
+      callId: string;
+    },
+  ) {
+    const participant = this.getParticipantBySocketId(client.id);
+    if (!participant) return { success: false, error: 'Not authenticated' };
+    this.server.to(body.callId).emit('call.started', { callId: body.callId });
+    return { success: true };
+  }
+
+  @SubscribeMessage('call.ended')
+  async callEndedSignal(
+    @ConnectedSocket()
+    client: Socket,
+
+    @MessageBody()
+    body: {
+      callId: string;
+    },
+  ) {
+    const participant = this.getParticipantBySocketId(client.id);
+    if (!participant) return { success: false, error: 'Not authenticated' };
+    this.server.to(body.callId).emit('call.ended', { callId: body.callId });
+    return { success: true };
+  }
+
+  @SubscribeMessage('camera.enabled')
+  async cameraEnabled(
+    @ConnectedSocket()
+    client: Socket,
+
+    @MessageBody()
+    body: {
+      callId: string;
+    },
+  ) {
+    return this.handleMediaChange(client, body.callId, { camera: true }, 'camera.enabled');
+  }
+
+  @SubscribeMessage('camera.disabled')
+  async cameraDisabled(
+    @ConnectedSocket()
+    client: Socket,
+
+    @MessageBody()
+    body: {
+      callId: string;
+    },
+  ) {
+    return this.handleMediaChange(client, body.callId, { camera: false }, 'camera.disabled');
+  }
+
+  @SubscribeMessage('microphone.enabled')
+  async microphoneEnabled(
+    @ConnectedSocket()
+    client: Socket,
+
+    @MessageBody()
+    body: {
+      callId: string;
+    },
+  ) {
+    return this.handleMediaChange(client, body.callId, { microphone: true }, 'microphone.enabled');
+  }
+
+  @SubscribeMessage('microphone.disabled')
+  async microphoneDisabled(
+    @ConnectedSocket()
+    client: Socket,
+
+    @MessageBody()
+    body: {
+      callId: string;
+    },
+  ) {
+    return this.handleMediaChange(client, body.callId, { microphone: false }, 'microphone.disabled');
+  }
+
+  @SubscribeMessage('screenShare.started')
+  async screenShareStarted(
+    @ConnectedSocket()
+    client: Socket,
+
+    @MessageBody()
+    body: {
+      callId: string;
+    },
+  ) {
+    return this.handleMediaChange(client, body.callId, { screenShare: true }, 'screenShare.started');
+  }
+
+  @SubscribeMessage('screenShare.stopped')
+  async screenShareStopped(
+    @ConnectedSocket()
+    client: Socket,
+
+    @MessageBody()
+    body: {
+      callId: string;
+    },
+  ) {
+    return this.handleMediaChange(client, body.callId, { screenShare: false }, 'screenShare.stopped');
+  }
+
+  private async handleMediaChange(
+    client: Socket,
+    callId: string,
+    patch: { camera?: boolean; microphone?: boolean; screenShare?: boolean },
+    event: string,
+  ) {
+    const participant = this.getParticipantBySocketId(client.id);
+    if (!participant) return { success: false, error: 'Not authenticated' };
+
+    const updated = this.roomService.updateMedia(client.id, patch);
+    if (!updated) return { success: false, error: 'Not in call room' };
+
+    this.server.to(callId).emit(event, {
+      callId,
+      participantId: participant.participantId,
+      media: updated.media,
+    });
+    this.server.to(callId).emit('participant.updated', {
+      callId,
+      participantId: participant.participantId,
+      media: updated.media,
+    });
+    return { success: true };
   }
 }

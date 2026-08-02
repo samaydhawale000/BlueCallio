@@ -4,11 +4,18 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import NavLinks from "./NavLinks";
+import { useAuthStore } from "../../store/auth.store";
 
 export default function MobileMenu({
   open,
   onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
 }) {
+  const { token, logout } = useAuthStore();
+  const isLoggedIn = !!token;
+
   return (
     <AnimatePresence>
       {open && (
@@ -59,21 +66,44 @@ export default function MobileMenu({
             {/* Footer Actions */}
             <div className="border-t border-[#1A2642] p-6">
               <div className="flex flex-col gap-3">
-                <Link
-                  href="/login"
-                  onClick={onClose}
-                  className="rounded-lg border border-[#1A2642] py-3 text-center text-sm text-slate-300 transition hover:border-slate-500 hover:text-white"
-                >
-                  Log In
-                </Link>
+                {isLoggedIn ? (
+                  <Link
+                    href="/dashboard"
+                    onClick={onClose}
+                    className="btn-primary rounded-lg py-3 text-center text-sm font-medium text-white transition hover:opacity-90"
+                  >
+                    Dashboard
+                  </Link>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={onClose}
+                    className="rounded-lg border border-[#1A2642] py-3 text-center text-sm text-slate-300 transition hover:border-slate-500 hover:text-white"
+                  >
+                    Log In
+                  </Link>
+                )}
 
-                <Link
-                  href="/signup"
-                  onClick={onClose}
-                  className="btn-primary rounded-lg py-3 text-center text-sm font-medium text-white transition hover:opacity-90"
-                >
-                  Get Started Free
-                </Link>
+                {isLoggedIn ? (
+                  <button
+                    onClick={() => {
+                      onClose();
+                      logout();
+                      window.location.href = "/";
+                    }}
+                    className="rounded-lg border border-[#1A2642] py-3 text-center text-sm text-slate-300 transition hover:border-slate-500 hover:text-white"
+                  >
+                    Logout
+                  </button>
+                ) : (
+                  <Link
+                    href="/signup"
+                    onClick={onClose}
+                    className="btn-primary rounded-lg py-3 text-center text-sm font-medium text-white transition hover:opacity-90"
+                  >
+                    Get Started Free
+                  </Link>
+                )}
               </div>
             </div>
           </motion.aside>

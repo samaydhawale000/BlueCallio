@@ -8,6 +8,10 @@ const links = [
     href: "/#features",
   },
   {
+    label: "Products",
+    href: "/#products",
+  },
+  {
     label: "Pricing",
     href: "/#pricing",
   },
@@ -15,11 +19,22 @@ const links = [
     label: "Docs",
     href: "/docs",
   },
+  {
+    label: "Playground",
+    href: "/dashboard/playground",
+  },
+  {
+    label: "FAQ",
+    href: "/faq",
+  },
 ];
 
 export default function NavLinks({
   mobile = false,
   onClick,
+}: {
+  mobile?: boolean;
+  onClick?: () => void;
 }) {
   return (
     <>

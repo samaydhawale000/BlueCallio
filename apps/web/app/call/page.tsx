@@ -4,6 +4,8 @@ import { Suspense, useEffect, useRef, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { socket } from '../lib/socket';
 
+// ── Types ─────────────────────────────────────────────────
+
 type CallState =
   | 'connecting'
   | 'waiting'
@@ -19,7 +21,31 @@ interface IncomingCallData {
   type: 'AUDIO' | 'VIDEO';
 }
 
-function Avatar({ id, size = 64 }: { id: string; size?: number }) {
+interface Branding {
+  companyName: string;
+  logoUrl: string | null;
+  primaryColor: string;
+  theme: 'LIGHT' | 'DARK';
+  waitingRoom: boolean;
+}
+
+interface DeviceInfo {
+  deviceId: string;
+  kind: MediaDeviceKind;
+  label: string;
+}
+
+const DEFAULT_BRANDING: Branding = {
+  companyName: 'BlueJoinet',
+  logoUrl: null,
+  primaryColor: '#2563EB',
+  theme: 'DARK',
+  waitingRoom: false,
+};
+
+// ── Helpers ───────────────────────────────────────────────
+
+function Avatar({ id, size = 64, color }: { id: string; size?: number; color?: string }) {
   const initials = id.slice(0, 2).toUpperCase();
   return (
     <div
@@ -28,7 +54,7 @@ function Avatar({ id, size = 64 }: { id: string; size?: number }) {
         height: size,
         borderRadius: '50%',
         background: '#1E2D50',
-        border: '2px solid #2563EB',
+        border: `2px solid ${color ?? '#2563EB'}`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -64,6 +90,36 @@ function useDurationTimer(active: boolean) {
   return `${mm}:${ss}`;
 }
 
+function useDeviceEnumerate() {
+  const [devices, setDevices] = useState<DeviceInfo[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const refresh = useCallback(async () => {
+    try {
+      const list = await navigator.mediaDevices.enumerateDevices();
+      setDevices(
+        list.map((d) => ({ deviceId: d.deviceId, kind: d.kind, label: d.label })),
+      );
+    } catch {
+      setDevices([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  const audioInputs = devices.filter((d) => d.kind === 'audioinput');
+  const audioOutputs = devices.filter((d) => d.kind === 'audiooutput');
+  const videoInputs = devices.filter((d) => d.kind === 'videoinput');
+
+  return { devices, audioInputs, audioOutputs, videoInputs, loading, refresh };
+}
+
+// ── Main ──────────────────────────────────────────────────
+
 function CallPageContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -77,6 +133,12 @@ function CallPageContent() {
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [hasRemoteVideo, setHasRemoteVideo] = useState(false);
+  const [branding, setBranding] = useState<Branding>(DEFAULT_BRANDING);
+  const [showDevices, setShowDevices] = useState(false);
+  const [selectedDevice, setSelectedDevice] = useState({ audio: '', video: '' });
+  const [selfName, setSelfName] = useState('You');
+
+  const deviceState = useDeviceEnumerate();
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -86,14 +148,43 @@ function CallPageContent() {
   const stateRef = useRef<CallState>('connecting');
 
   const duration = useDurationTimer(state === 'in-call');
+  const isDark = branding.theme === 'DARK';
+  const primary = branding.primaryColor;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005';
 
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
 
+  // Fetch branding + participant identity.
+  useEffect(() => {
+    if (!token || !urlCallId) return;
+    (async () => {
+      try {
+        const res = await fetch(`${apiUrl}/calls/${urlCallId}/details`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.branding) {
+            setBranding({
+              companyName: data.branding.companyName ?? 'BlueJoinet',
+              logoUrl: data.branding.logoUrl ?? null,
+              primaryColor: data.branding.primaryColor ?? '#2563EB',
+              theme: data.branding.theme ?? 'DARK',
+              waitingRoom: data.branding.waitingRoom ?? false,
+            });
+          }
+          setSelfName(data.participantId ?? 'You');
+        }
+      } catch {
+        // Fall back to defaults.
+      }
+    })();
+  }, [token, urlCallId, apiUrl]);
+
   const fetchIceServers = useCallback(async (): Promise<RTCIceServer[]> => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005';
       const res = await fetch(`${apiUrl}/turn/credentials`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -103,11 +194,18 @@ function CallPageContent() {
     } catch {
       return [{ urls: 'stun:stun.l.google.com:19302' }];
     }
-  }, [token]);
+  }, [token, apiUrl]);
 
   const initMedia = useCallback(async (video = true) => {
+    const constraints: MediaStreamConstraints = { audio: true };
+    if (video) {
+      constraints.video = selectedDevice.video
+        ? { deviceId: { exact: selectedDevice.video } }
+        : true;
+    }
+
     const [stream, iceServers] = await Promise.all([
-      navigator.mediaDevices.getUserMedia({ audio: true, video }),
+      navigator.mediaDevices.getUserMedia(constraints),
       fetchIceServers(),
     ]);
     localStreamRef.current = stream;
@@ -128,7 +226,7 @@ function CallPageContent() {
     };
 
     pcRef.current = pc;
-  }, []);
+  }, [selectedDevice.video, fetchIceServers]);
 
   const createOffer = useCallback(async () => {
     if (!pcRef.current) return;
@@ -162,6 +260,7 @@ function CallPageContent() {
       await initMedia(callType === 'VIDEO');
       setState('in-call');
       await createOffer();
+      socket.emit('call.started', { callId: urlCallId });
     });
 
     socket.on('call-rejected', () => setState('rejected'));
@@ -190,6 +289,10 @@ function CallPageContent() {
       setState('ended');
     });
 
+    socket.on('connected', () => {
+      socket.emit('authenticate', { token });
+    });
+
     socket.on('connect', () => {
       socket.emit(
         'authenticate',
@@ -204,7 +307,7 @@ function CallPageContent() {
     socket.connect();
 
     return () => {
-      ['incoming-call', 'call-accepted', 'call-rejected', 'offer', 'answer', 'ice-candidate', 'call-ended', 'connect']
+      ['incoming-call', 'call-accepted', 'call-rejected', 'offer', 'answer', 'ice-candidate', 'call-ended', 'connected', 'connect']
         .forEach((e) => socket.off(e));
       socket.disconnect();
       cleanup();
@@ -217,8 +320,13 @@ function CallPageContent() {
     }
   }, [remoteStream]);
 
+  // Apply theme background.
+  useEffect(() => {
+    document.documentElement.style.background = isDark ? '#060A17' : '#F1F5F9';
+    return () => { document.documentElement.style.background = ''; };
+  }, [isDark]);
+
   async function sessionPost(path: string) {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005';
     return fetch(`${apiUrl}${path}`, {
       method: 'POST',
       headers: {
@@ -233,7 +341,9 @@ function CallPageContent() {
     await initMedia(incomingData.type === 'VIDEO');
     setCallType(incomingData.type);
     await sessionPost(`/calls/${incomingData.callId}/accept`);
+    await sessionPost(`/calls/${incomingData.callId}/join`);
     setState('in-call');
+    socket.emit('call.started', { callId: incomingData.callId });
   }
 
   async function rejectCall() {
@@ -244,7 +354,9 @@ function CallPageContent() {
 
   async function endCall() {
     if (!urlCallId) return;
+    socket.emit('call.ended', { callId: urlCallId });
     socket.emit('call-ended');
+    await sessionPost(`/calls/${urlCallId}/leave`).catch(() => {});
     await sessionPost(`/calls/${urlCallId}/end`).catch(() => {});
     cleanup();
     setState('ended');
@@ -255,6 +367,9 @@ function CallPageContent() {
     if (!track) return;
     track.enabled = !track.enabled;
     setIsMuted(!track.enabled);
+    socket.emit(track.enabled ? 'microphone.enabled' : 'microphone.disabled', {
+      callId: urlCallId,
+    });
   }
 
   function toggleVideo() {
@@ -262,6 +377,9 @@ function CallPageContent() {
     if (!track) return;
     track.enabled = !track.enabled;
     setIsVideoOff(!track.enabled);
+    socket.emit(track.enabled ? 'camera.enabled' : 'camera.disabled', {
+      callId: urlCallId,
+    });
   }
 
   async function startScreenShare() {
@@ -270,19 +388,16 @@ function CallPageContent() {
       const screenTrack = screenStream.getVideoTracks()[0];
       screenStreamRef.current = screenStream;
 
-      // Replace video sender track with screen track
       const sender = pcRef.current?.getSenders().find((s) => s.track?.kind === 'video');
       if (sender) await sender.replaceTrack(screenTrack);
 
-      // Show screen in local PiP
       if (localVideoRef.current) localVideoRef.current.srcObject = screenStream;
-
-      // When user stops via browser's native "Stop sharing" button
       screenTrack.onended = () => stopScreenShare();
 
       setIsScreenSharing(true);
+      socket.emit('screenShare.started', { callId: urlCallId });
     } catch {
-      // User cancelled the picker — do nothing
+      // User cancelled the picker.
     }
   }
 
@@ -290,26 +405,70 @@ function CallPageContent() {
     screenStreamRef.current?.getTracks().forEach((t) => t.stop());
     screenStreamRef.current = null;
 
-    // Switch sender back to camera track
     const cameraTrack = localStreamRef.current?.getVideoTracks()[0];
     const sender = pcRef.current?.getSenders().find((s) => s.track?.kind === 'video');
     if (sender && cameraTrack) await sender.replaceTrack(cameraTrack);
 
-    // Restore camera in local PiP
     if (localVideoRef.current && localStreamRef.current) {
       localVideoRef.current.srcObject = localStreamRef.current;
     }
 
     setIsScreenSharing(false);
+    socket.emit('screenShare.stopped', { callId: urlCallId });
   }
 
-  // ── State screens ──────────────────────────────────────────
+  function selectDevice(kind: 'audio' | 'video', deviceId: string) {
+    setSelectedDevice((prev) => ({ ...prev, [kind]: deviceId }));
+  }
+
+  // ── Shared screen shell ─────────────────────────────────
+
+  const shellBg = isDark ? '#060A17' : '#F1F5F9';
+  const surfaceBg = isDark ? '#0D1425' : '#FFFFFF';
+  const borderColor = isDark ? '#1A2240' : '#E2E8F0';
+  const textPrimary = isDark ? '#FFFFFF' : '#0F172A';
+  const textSecondary = isDark ? '#94A3B8' : '#64748B';
+
+  function Screen({ children }: { children: React.ReactNode }) {
+    return (
+      <div
+        className="min-h-screen flex flex-col items-center justify-center px-6"
+        style={{ background: shellBg }}
+      >
+        <div className="flex flex-col items-center text-center">
+          {children}
+        </div>
+        <div className="absolute bottom-6 flex items-center gap-2">
+          {branding.logoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={branding.logoUrl} alt={branding.companyName} style={{ height: 18 }} />
+          )}
+          <span className="font-mono text-xs" style={{ color: isDark ? '#334155' : '#94A3B8' }}>
+            {branding.companyName}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  function Spinner() {
+    return (
+      <div
+        className="w-10 h-10 rounded-full border-2 border-t-transparent animate-spin"
+        style={{ borderColor: primary, borderTopColor: 'transparent' }}
+      />
+    );
+  }
+
+  // ── State screens ────────────────────────────────────────
 
   if (!token || !urlCallId || state === 'error') {
     return (
       <Screen>
-        <p className="text-slate-400 text-sm">Invalid or expired call link.</p>
-        <p className="text-slate-600 text-xs mt-2">
+        <p className="text-sm" style={{ color: textSecondary }}>
+          Invalid or expired call link.
+        </p>
+        <p className="text-xs mt-2" style={{ color: isDark ? '#334155' : '#94A3B8' }}>
           Contact the sender for a new link.
         </p>
       </Screen>
@@ -320,7 +479,7 @@ function CallPageContent() {
     return (
       <Screen>
         <Spinner />
-        <p className="text-slate-400 text-sm mt-5">Connecting…</p>
+        <p className="text-sm mt-5" style={{ color: textSecondary }}>Connecting…</p>
       </Screen>
     );
   }
@@ -330,19 +489,59 @@ function CallPageContent() {
       <Screen>
         <div className="relative mb-6">
           <div
-            className="w-20 h-20 rounded-full border-2 border-blue-600 animate-pulse"
-            style={{ background: '#1E2D50' }}
+            className="w-20 h-20 rounded-full animate-pulse"
+            style={{ background: surfaceBg, border: `2px solid ${primary}` }}
           />
           <span
-            className="absolute inset-0 flex items-center justify-center font-mono text-blue-400 text-xs"
+            className="absolute inset-0 flex items-center justify-center font-mono text-xs"
+            style={{ color: primary }}
           >
             …
           </span>
         </div>
-        <p className="text-white font-medium mb-1">Waiting for answer</p>
-        <p className="text-slate-500 text-sm">
+        <p className="font-medium mb-1" style={{ color: textPrimary }}>Waiting for answer</p>
+        <p className="text-sm" style={{ color: textSecondary }}>
           The other participant will join shortly
         </p>
+        {branding.waitingRoom && (
+          <div className="mt-8 w-full max-w-xs" style={{ background: surfaceBg, border: `1px solid ${borderColor}`, borderRadius: 12, padding: 16 }}>
+            <p className="text-xs font-semibold mb-3" style={{ color: textSecondary }}>Device setup</p>
+            <div className="flex flex-col gap-3">
+              <label className="text-xs" style={{ color: textSecondary }}>
+                Microphone
+                <select
+                  value={selectedDevice.audio}
+                  onChange={(e) => selectDevice('audio', e.target.value)}
+                  className="w-full mt-1 px-2 py-1.5 rounded-lg text-sm"
+                  style={{ background: shellBg, color: textPrimary, border: `1px solid ${borderColor}` }}
+                >
+                  <option value="">Default</option>
+                  {deviceState.audioInputs.map((d) => (
+                    <option key={d.deviceId} value={d.deviceId}>
+                      {d.label || `Microphone ${d.deviceId.slice(0, 4)}`}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-xs" style={{ color: textSecondary }}>
+                Camera
+                <select
+                  value={selectedDevice.video}
+                  onChange={(e) => selectDevice('video', e.target.value)}
+                  className="w-full mt-1 px-2 py-1.5 rounded-lg text-sm"
+                  style={{ background: shellBg, color: textPrimary, border: `1px solid ${borderColor}` }}
+                >
+                  <option value="">Default</option>
+                  {deviceState.videoInputs.map((d) => (
+                    <option key={d.deviceId} value={d.deviceId}>
+                      {d.label || `Camera ${d.deviceId.slice(0, 4)}`}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          </div>
+        )}
       </Screen>
     );
   }
@@ -351,12 +550,12 @@ function CallPageContent() {
     return (
       <Screen>
         <div className="mb-6">
-          <Avatar id={incomingData?.callerId ?? '??'} size={80} />
+          <Avatar id={incomingData?.callerId ?? '??'} size={80} color={primary} />
         </div>
-        <p className="text-slate-400 text-xs uppercase tracking-widest mb-1">
+        <p className="text-xs uppercase tracking-widest mb-1" style={{ color: textSecondary }}>
           Incoming {incomingData?.type === 'VIDEO' ? 'video' : 'audio'} call
         </p>
-        <p className="text-white text-2xl font-semibold mb-10">
+        <p className="text-2xl font-semibold mb-10" style={{ color: textPrimary }}>
           {incomingData?.callerId}
         </p>
         <div className="flex gap-8">
@@ -384,7 +583,7 @@ function CallPageContent() {
   if (state === 'rejected') {
     return (
       <Screen>
-        <p className="text-slate-400">Call declined.</p>
+        <p style={{ color: textSecondary }}>Call declined.</p>
       </Screen>
     );
   }
@@ -392,49 +591,52 @@ function CallPageContent() {
   if (state === 'ended') {
     return (
       <Screen>
-        <p className="text-white font-medium mb-1">Call ended</p>
-        <p className="text-slate-500 text-sm">{duration}</p>
+        <p className="font-medium mb-1" style={{ color: textPrimary }}>Call ended</p>
+        <p className="text-sm" style={{ color: textSecondary }}>{duration}</p>
       </Screen>
     );
   }
 
-  // ── In-call ────────────────────────────────────────────────
+  // ── In-call ──────────────────────────────────────────────
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{ background: '#060A17' }}
+      style={{ background: shellBg }}
     >
       {/* Header strip */}
       <div
         className="flex items-center justify-between px-5 py-3"
-        style={{ borderBottom: '1px solid #1A2240' }}
+        style={{ borderBottom: `1px solid ${borderColor}` }}
       >
-        <span className="font-mono text-slate-500 text-xs tracking-wider">
-          BlueCall
+        <span className="flex items-center gap-2 font-mono text-xs tracking-wider" style={{ color: isDark ? '#64748B' : '#94A3B8' }}>
+          {branding.logoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={branding.logoUrl} alt={branding.companyName} style={{ height: 16 }} />
+          )}
+          {branding.companyName}
         </span>
-        <span className="font-mono text-slate-400 text-sm tabular-nums">
+        <span className="font-mono text-sm tabular-nums" style={{ color: isDark ? '#94A3B8' : '#64748B' }}>
           {duration}
         </span>
       </div>
 
       {/* Video area */}
       <div className="flex-1 relative overflow-hidden" style={{ minHeight: 0 }}>
-        {/* Remote */}
         {callType === 'VIDEO' && hasRemoteVideo ? (
           <video
             ref={remoteVideoRef}
             autoPlay
             playsInline
             className="w-full h-full object-cover"
-            style={{ background: '#0D1425' }}
+            style={{ background: surfaceBg }}
           />
         ) : (
           <div
             className="w-full h-full flex flex-col items-center justify-center gap-4"
-            style={{ background: '#0D1425' }}
+            style={{ background: surfaceBg }}
           >
-            <Avatar id={incomingData?.callerId ?? 'user'} size={96} />
-            <p className="text-slate-500 text-sm">
+            <Avatar id={incomingData?.callerId ?? 'user'} size={96} color={primary} />
+            <p className="text-sm" style={{ color: textSecondary }}>
               {callType === 'AUDIO' ? 'Audio call' : 'Camera off'}
             </p>
           </div>
@@ -447,13 +649,14 @@ function CallPageContent() {
             style={{
               width: 160,
               height: 112,
-              border: '1px solid #1A2240',
-              background: '#0D1425',
+              border: `1px solid ${borderColor}`,
+              background: surfaceBg,
+              borderRadius: 8,
             }}
           >
             {isVideoOff ? (
               <div className="w-full h-full flex items-center justify-center">
-                <Avatar id="me" size={40} />
+                <Avatar id="me" size={40} color={primary} />
               </div>
             ) : (
               <video
@@ -466,18 +669,85 @@ function CallPageContent() {
             )}
           </div>
         )}
+
+        {/* Device selector overlay */}
+        {showDevices && (
+          <div
+            className="absolute top-4 right-4 rounded-xl p-4"
+            style={{
+              background: surfaceBg,
+              border: `1px solid ${borderColor}`,
+              boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
+              zIndex: 20,
+              width: 240,
+            }}
+          >
+            <p className="text-xs font-semibold mb-3" style={{ color: textPrimary }}>
+              Devices
+            </p>
+            <div className="flex flex-col gap-3">
+              <label className="text-xs" style={{ color: textSecondary }}>
+                Microphone
+                <select
+                  value={selectedDevice.audio}
+                  onChange={(e) => selectDevice('audio', e.target.value)}
+                  className="w-full mt-1 px-2 py-1.5 rounded-lg text-sm"
+                  style={{ background: shellBg, color: textPrimary, border: `1px solid ${borderColor}` }}
+                >
+                  <option value="">Default</option>
+                  {deviceState.audioInputs.map((d) => (
+                    <option key={d.deviceId} value={d.deviceId}>
+                      {d.label || `Microphone ${d.deviceId.slice(0, 4)}`}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-xs" style={{ color: textSecondary }}>
+                Speaker
+                <select
+                  className="w-full mt-1 px-2 py-1.5 rounded-lg text-sm"
+                  style={{ background: shellBg, color: textPrimary, border: `1px solid ${borderColor}` }}
+                >
+                  {deviceState.audioOutputs.map((d) => (
+                    <option key={d.deviceId} value={d.deviceId}>
+                      {d.label || `Speaker ${d.deviceId.slice(0, 4)}`}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-xs" style={{ color: textSecondary }}>
+                Camera
+                <select
+                  value={selectedDevice.video}
+                  onChange={(e) => selectDevice('video', e.target.value)}
+                  className="w-full mt-1 px-2 py-1.5 rounded-lg text-sm"
+                  style={{ background: shellBg, color: textPrimary, border: `1px solid ${borderColor}` }}
+                >
+                  <option value="">Default</option>
+                  {deviceState.videoInputs.map((d) => (
+                    <option key={d.deviceId} value={d.deviceId}>
+                      {d.label || `Camera ${d.deviceId.slice(0, 4)}`}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Controls */}
       <div
-        className="flex justify-center items-center gap-4 px-6 py-5"
-        style={{ borderTop: '1px solid #1A2240' }}
+        className="flex justify-center items-center gap-3 sm:gap-4 px-4 sm:px-6 py-5 flex-wrap"
+        style={{ borderTop: `1px solid ${borderColor}` }}
       >
         <ControlButton
           active={isMuted}
           activeColor="#3F1515"
           onClick={toggleMute}
           label={isMuted ? 'Unmute' : 'Mute'}
+          dark={isDark}
+          borderColor={borderColor}
         >
           {isMuted ? <MicOffIcon /> : <MicIcon />}
         </ControlButton>
@@ -488,6 +758,8 @@ function CallPageContent() {
             activeColor="#3F1515"
             onClick={toggleVideo}
             label={isVideoOff ? 'Camera on' : 'Camera off'}
+            dark={isDark}
+            borderColor={borderColor}
           >
             {isVideoOff ? <VideoOffIcon /> : <VideoIcon />}
           </ControlButton>
@@ -499,17 +771,32 @@ function CallPageContent() {
             activeColor="#1E3A5F"
             onClick={isScreenSharing ? stopScreenShare : startScreenShare}
             label={isScreenSharing ? 'Stop share' : 'Share screen'}
+            dark={isDark}
+            borderColor={borderColor}
           >
             <ScreenShareIcon active={isScreenSharing} />
           </ControlButton>
         )}
 
         <ControlButton
-          active={true}
+          active={showDevices}
+          activeColor="#1E3A5F"
+          onClick={() => setShowDevices((s) => !s)}
+          label="Devices"
+          dark={isDark}
+          borderColor={borderColor}
+        >
+          <SettingsIcon />
+        </ControlButton>
+
+        <ControlButton
+          active
           activeColor="#7F1D1D"
           onClick={endCall}
           label="End call"
           size={56}
+          dark={isDark}
+          borderColor={borderColor}
         >
           <PhoneDownIcon />
         </ControlButton>
@@ -518,31 +805,7 @@ function CallPageContent() {
   );
 }
 
-// ── Sub-components ──────────────────────────────────────────
-
-function Screen({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center"
-      style={{ background: '#060A17' }}
-    >
-      <div className="flex flex-col items-center text-center px-6">
-        {children}
-      </div>
-      <div className="absolute bottom-6">
-        <span className="font-mono text-slate-700 text-xs">BlueCall</span>
-      </div>
-    </div>
-  );
-}
-
-function Spinner() {
-  return (
-    <div
-      className="w-10 h-10 rounded-full border-2 border-blue-600 border-t-transparent animate-spin"
-    />
-  );
-}
+// ── Sub-components ────────────────────────────────────────
 
 function ControlButton({
   children,
@@ -551,6 +814,8 @@ function ControlButton({
   onClick,
   label,
   size = 48,
+  dark = true,
+  borderColor = '#1A2240',
 }: {
   children: React.ReactNode;
   active: boolean;
@@ -558,7 +823,10 @@ function ControlButton({
   onClick: () => void;
   label: string;
   size?: number;
+  dark?: boolean;
+  borderColor?: string;
 }) {
+  const idleBg = dark ? '#1A2240' : '#E2E8F0';
   return (
     <div className="flex flex-col items-center gap-1.5">
       <button
@@ -568,9 +836,9 @@ function ControlButton({
           width: size,
           height: size,
           borderRadius: '50%',
-          background: active ? activeColor : '#1A2240',
+          background: active ? activeColor : idleBg,
           border: '1px solid',
-          borderColor: active ? 'transparent' : '#2D3F6B',
+          borderColor: active ? 'transparent' : borderColor,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -580,12 +848,12 @@ function ControlButton({
       >
         {children}
       </button>
-      <span className="text-slate-600 text-xs">{label}</span>
+      <span className="text-xs" style={{ color: dark ? '#64748B' : '#94A3B8' }}>{label}</span>
     </div>
   );
 }
 
-// ── Icons (inline SVG, no external deps) ───────────────────
+// ── Icons (inline SVG, no external deps) ─────────────────
 
 function MicIcon() {
   return (
@@ -657,6 +925,15 @@ function ScreenShareIcon({ active }: { active: boolean }) {
   );
 }
 
+function SettingsIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  );
+}
+
 // ── Page shell ─────────────────────────────────────────────
 
 export default function CallPage() {
@@ -675,3 +952,4 @@ export default function CallPage() {
     </Suspense>
   );
 }
+

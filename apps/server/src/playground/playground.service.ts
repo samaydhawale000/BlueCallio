@@ -47,17 +47,21 @@ export class PlaygroundService {
     return {
       success: true,
 
-      callId: result.call.id,
+      callId: result.callId,
 
       callerToken: result.callerToken,
 
       receiverToken: result.receiverToken,
 
       callerUrl:
-        `${frontend}/call?token=${result.callerToken}&callId=${result.call.id}`,
+        `${frontend}/call?token=${result.callerToken}&callId=${result.callId}`,
 
       receiverUrl:
-        `${frontend}/call?token=${result.receiverToken}&callId=${result.call.id}`,
+        `${frontend}/call?token=${result.receiverToken}&callId=${result.callId}`,
+
+      hostedUrl: result.hostedUrl,
+
+      participants: result.participants,
     };
   }
 }

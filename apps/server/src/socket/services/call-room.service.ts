@@ -1,10 +1,27 @@
 import { Injectable } from '@nestjs/common';
 
+export interface RoomParticipant {
+  socketId: string;
+  participantId: string;
+  role: 'CALLER' | 'RECEIVER';
+  media: {
+    camera: boolean;
+    microphone: boolean;
+    screenShare: boolean;
+  };
+  joinedAt: number;
+}
+
 @Injectable()
 export class CallRoomService {
   private rooms = new Map<
     string,
     Set<string>
+  >();
+
+  private participants = new Map<
+    string,
+    RoomParticipant
   >();
 
   joinRoom(
@@ -52,5 +69,47 @@ export class CallRoomService {
 
   hasRoom(callId: string) {
     return this.rooms.has(callId);
+  }
+
+  /**
+   * Track rich metadata for a socket inside a call.
+   */
+  addParticipant(
+    callId: string,
+    participant: Omit<RoomParticipant, 'joinedAt'>,
+  ) {
+    this.participants.set(participant.socketId, {
+      ...participant,
+      callId,
+      joinedAt: Date.now(),
+    } as RoomParticipant & { callId: string });
+  }
+
+  removeParticipant(socketId: string) {
+    this.participants.delete(socketId);
+  }
+
+  getParticipant(socketId: string) {
+    return this.participants.get(socketId);
+  }
+
+  getParticipants(callId: string): Array<RoomParticipant & { callId: string }> {
+    const result: Array<RoomParticipant & { callId: string }> = [];
+    for (const p of this.participants.values()) {
+      if ((p as RoomParticipant & { callId: string }).callId === callId) {
+        result.push(p as RoomParticipant & { callId: string });
+      }
+    }
+    return result;
+  }
+
+  updateMedia(
+    socketId: string,
+    patch: Partial<RoomParticipant['media']>,
+  ) {
+    const p = this.participants.get(socketId);
+    if (!p) return null;
+    p.media = { ...p.media, ...patch };
+    return p;
   }
 }

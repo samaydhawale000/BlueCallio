@@ -6,10 +6,10 @@ import { useState, useEffect } from 'react';
 // ── Sidebar nav ───────────────────────────────────────────────────────────────
 const NAV = [
   { group: 'Start here', items: [{ id: 'quickstart', label: '⚡ Quick Start' }, { id: 'how-it-works', label: '🔄 How it works' }, { id: 'authentication', label: '🔑 Authentication' }] },
-  { group: 'REST API', items: [{ id: 'api-create', label: 'POST /calls' }, { id: 'api-accept', label: 'PATCH /calls/:id/accept' }, { id: 'api-reject', label: 'PATCH /calls/:id/reject' }, { id: 'api-end', label: 'PATCH /calls/:id/end' }, { id: 'api-get', label: 'GET /calls/:id' }] },
+  { group: 'Products', items: [{ id: 'hosted-ui', label: '🖥 Hosted UI' }, { id: 'react-components', label: '⚛️ React Components' }, { id: 'headless-sdk', label: '🧩 Headless SDK' }] },
+  { group: 'REST API', items: [{ id: 'api-create', label: 'POST /calls' }, { id: 'api-join', label: 'POST /calls/:id/join' }, { id: 'api-leave', label: 'POST /calls/:id/leave' }, { id: 'api-accept', label: 'POST /calls/:id/accept' }, { id: 'api-reject', label: 'POST /calls/:id/reject' }, { id: 'api-end', label: 'POST /calls/:id/end' }, { id: 'api-get', label: 'GET /calls/:id' }] },
   { group: 'Real-time', items: [{ id: 'websocket', label: '🔌 WebSocket Events' }, { id: 'webhooks', label: '🪝 Webhooks' }] },
-  { group: 'SDK', items: [{ id: 'sdk', label: '📦 Node.js SDK' }] },
-  { group: 'Reference', items: [{ id: 'errors', label: '🚨 Errors' }, { id: 'debugging', label: '🔍 Debugging' }] },
+  { group: 'Reference', items: [{ id: 'examples', label: '💡 Examples' }, { id: 'errors', label: '🚨 Errors' }, { id: 'faq', label: '❓ FAQ' }] },
 ];
 
 // ── Tiny primitives ───────────────────────────────────────────────────────────
@@ -120,23 +120,10 @@ export default function DocsPage() {
   return (
     <div style={{ background: '#060B18', color: '#F1F5F9', minHeight: '100vh' }}>
 
-      {/* nav */}
-      <header className="sticky top-0 z-50" style={{ background: 'rgba(6,11,24,0.92)', borderBottom: '1px solid #1A2642', backdropFilter: 'blur(12px)' }}>
-        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center gap-4">
-          <Link href="/" className="font-mono font-bold text-white text-sm">BlueJoinet</Link>
-          <span className="text-slate-700">/</span>
-          <span className="text-sm text-slate-500">Docs</span>
-          <div className="ml-auto flex items-center gap-4">
-            <Link href="/dashboard/playground" className="text-xs text-slate-400 hover:text-white transition-colors">Playground →</Link>
-            <Link href="/signup" className="text-xs text-white px-3 py-1.5 rounded-lg" style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}>Get API key</Link>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto flex">
+      <div className="max-w-7xl mx-auto flex pt-20">
 
         {/* sidebar */}
-        <aside className="hidden lg:flex flex-col w-56 shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto py-8 px-4 border-r border-[#1A2642]">
+        <aside className="hidden lg:flex flex-col w-56 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto py-8 px-4 border-r border-[#1A2642]" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
           {NAV.map((g) => (
             <div key={g.group} className="mb-5">
               <p className="font-mono text-xs text-slate-700 uppercase tracking-widest mb-2 px-3">{g.group}</p>
@@ -291,6 +278,197 @@ receiver_url = data['receiverUrl']`,
             </Tip>
           </Section>
 
+          {/* ── Hosted UI ────────────────────────────── */}
+          <Section id="hosted-ui">
+            <Heading>🖥 Hosted UI — zero frontend work</Heading>
+            <p className="text-slate-400 text-sm mb-5">
+              The fastest way to integrate. Create a call from your backend, then
+              redirect your users to a BlueJoinet-hosted meeting page. No frontend
+              implementation required.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+              {[
+                'Ready-made meeting UI',
+                'Video & audio calling',
+                'Screen sharing',
+                'Device selection',
+                'Waiting room',
+                'Responsive design',
+                'Branding support',
+                'WebRTC + TURN handled',
+              ].map((f) => (
+                <div key={f} className="rounded-lg border border-[#1A2642] px-3 py-2 text-xs text-slate-300" style={{ background: '#0A1525' }}>
+                  ✓ {f}
+                </div>
+              ))}
+            </div>
+
+            <p className="text-sm font-semibold text-white mb-3">Integration flow</p>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center rounded-xl border border-[#1A2642] p-6 mb-6" style={{ background: '#0D1421' }}>
+              {[
+                { icon: '🖥', label: 'Your backend', sub: 'POST /calls' },
+                null,
+                { icon: '⚡', label: 'BlueJoinet', sub: 'Returns hostedUrl + tokens' },
+                null,
+                { icon: '👤', label: 'Redirect users', sub: 'Meeting starts' },
+              ].map((item, i) =>
+                item === null ? (
+                  <div key={i} className="text-slate-700 text-lg hidden sm:block">→</div>
+                ) : (
+                  <div key={item.label} className="flex flex-col items-center gap-1">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl border border-[#2A3D64]" style={{ background: '#060B18' }}>{item.icon}</div>
+                    <p className="text-xs font-semibold text-white">{item.label}</p>
+                    <p className="font-mono text-xs text-slate-600">{item.sub}</p>
+                  </div>
+                )
+              )}
+            </div>
+
+            <p className="text-sm font-semibold text-white mb-3">Branding</p>
+            <p className="text-slate-400 text-sm mb-3">
+              Configure branding on your project and the hosted page will apply it automatically.
+            </p>
+            <Code code={`{
+  "branding": {
+    "companyName": "Acme",
+    "logoUrl": "https://cdn.acme.com/logo.png",
+    "primaryColor": "#2563EB"
+  },
+  "theme": "dark",
+  "waitingRoom": true
+}`} label="Project settings (dashboard)" />
+
+            <Tip type="tip">
+              Integration time: <strong>5 minutes</strong>. Create a call, redirect your users, done.
+            </Tip>
+          </Section>
+
+          {/* ── React Components ─────────────────────── */}
+          <Section id="react-components">
+            <Heading>⚛️ React UI Components</Heading>
+            <p className="text-slate-400 text-sm mb-5">
+              Build a custom interface with reusable React components — no need to
+              implement WebRTC, signaling, or media handling yourself.
+            </p>
+
+            <Code code="npm install @bluejoinet/react" label="install" />
+
+            <p className="text-sm font-semibold text-white mb-3">Quick example</p>
+            <Code code={`import { MeetingProvider, MeetingRoom, ParticipantGrid, ControlBar } from '@bluejoinet/react';
+
+export function Call({ token, callId, signalUrl }) {
+  return (
+    <MeetingProvider token={token} callId={callId} signalUrl={signalUrl}>
+      <MeetingRoom>
+        <ParticipantGrid />
+      </MeetingRoom>
+      <ControlBar />
+    </MeetingProvider>
+  );
+}`} />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 my-5">
+              {[
+                { c: 'MeetingProvider', d: 'Context provider — wires the engine, media, and signaling' },
+                { c: 'MeetingRoom', d: 'Meeting layout shell with waiting room support' },
+                { c: 'ParticipantGrid / ParticipantTile', d: 'Grid of participant video tiles' },
+                { c: 'ActiveSpeakerView', d: 'Large speaker view + local PiP' },
+                { c: 'CameraButton / MicrophoneButton', d: 'Toggle camera / microphone' },
+                { c: 'ScreenShareButton / LeaveButton', d: 'Screen share + end call controls' },
+                { c: 'DeviceSelector', d: 'Camera / microphone / speaker picker' },
+                { c: 'WaitingRoom', d: 'Waiting room panel' },
+                { c: 'ConnectionStatus', d: 'Live connection state indicator' },
+                { c: 'SpeakingIndicator', d: 'Active speaker indicator' },
+              ].map((x) => (
+                <div key={x.c} className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
+                  <code className="font-mono text-xs block mb-1" style={{ color: '#A5B4FC' }}>{x.c}</code>
+                  <p className="text-xs text-slate-500">{x.d}</p>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-sm font-semibold text-white mb-3">Hooks</p>
+            <Code code={`import { useMeeting, useParticipants, useParticipant, useDevices, useConnection } from '@bluejoinet/react';
+
+function Status() {
+  const { connectionState } = useConnection();
+  const participants = useParticipants();
+  const { toggleCamera, toggleMicrophone } = useMeeting();
+  const devices = useDevices();
+  return null;
+}`} />
+
+            <Tip type="info">
+              <code className="font-mono text-xs bg-black/30 px-1 rounded">@bluejoinet/react</code> is built on top of{' '}
+              <code className="font-mono text-xs bg-black/30 px-1 rounded">@bluejoinet/sdk</code> — the same session tokens and signaling work across both.
+            </Tip>
+          </Section>
+
+          {/* ── Headless SDK ─────────────────────────── */}
+          <Section id="headless-sdk">
+            <Heading>🧩 Headless SDK</Heading>
+            <p className="text-slate-400 text-sm mb-5">
+              For developers who want complete control. BlueJoinet provides only the
+              communication engine — no UI included.
+            </p>
+
+            <Code code="npm install @bluejoinet/sdk" label="install" />
+
+            <p className="text-sm font-semibold text-white mb-3">Quick example</p>
+            <Code code={`import { BlueJoinetEngine } from '@bluejoinet/sdk';
+
+const meeting = new BlueJoinetEngine({
+  token,            // bj_session_... for this participant
+  callId,
+  signalUrl: 'wss://api.yourdomain.com',
+});
+
+await meeting.join();
+
+meeting.camera.enable();
+meeting.microphone.disable();
+await meeting.screenShare.start();
+
+meeting.on('participant.joined', (p) => console.log('joined', p));
+meeting.on('remote.stream', (stream) => attachToVideo(stream));
+
+await meeting.leave();`} />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 my-5">
+              {[
+                { m: 'meeting.join()', r: 'Connects socket, authenticates, joins room' },
+                { m: 'meeting.leave()', r: 'Ends the meeting, cleans up media' },
+                { m: 'meeting.camera.enable() / disable()', r: 'Toggle camera track' },
+                { m: 'meeting.microphone.enable() / disable()', r: 'Toggle microphone track' },
+                { m: 'meeting.screenShare.start() / stop()', r: 'Start / stop screen share' },
+                { m: 'meeting.participants()', r: 'Live list of participants' },
+                { m: 'meeting.connectionState()', r: "Current connection state" },
+                { m: 'meeting.on(event, cb)', r: 'Subscribe to meeting events' },
+              ].map((m) => (
+                <div key={m.m} className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
+                  <code className="font-mono text-xs block mb-1" style={{ color: '#A5B4FC' }}>{m.m}</code>
+                  <p className="text-xs text-slate-500">→ {m.r}</p>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-sm font-semibold text-white mb-3">Events</p>
+            <Code code={`meeting.on('connected', (p) => {});
+meeting.on('disconnected', () => {});
+meeting.on('reconnected', () => {});
+meeting.on('call.started', (d) => {});
+meeting.on('call.ended', (d) => {});
+meeting.on('participant.joined', (p) => {});
+meeting.on('participant.left', (p) => {});
+meeting.on('participant.updated', (p) => {});
+meeting.on('camera.enabled' | 'camera.disabled', () => {});
+meeting.on('microphone.enabled' | 'microphone.disabled', () => {});
+meeting.on('screenShare.started' | 'screenShare.stopped', () => {});
+meeting.on('remote.stream', (stream) => {});
+meeting.on('remote.stream.ended', () => {});`} />
+          </Section>
+
           {/* ── REST API ─────────────────────────────── */}
           <Section id="api-create">
             <Heading>REST API</Heading>
@@ -334,33 +512,74 @@ receiver_url = data['receiverUrl']`,
               <p className="text-xs font-semibold text-slate-300 mb-2 mt-4">Response — 201</p>
               <Code code={`{
   "callId": "clx8f2z...",
-  "status": "PENDING",
-  "callerUrl": "https://yourdomain.com/call?token=bj_session_...&callId=clx8f...",
-  "receiverUrl": "https://yourdomain.com/call?token=bj_session_...&callId=clx8f..."
+  "hostedUrl": "https://call.yourdomain.com/call?callId=clx8f...&token=bj_session_...",
+  "participants": [
+    {
+      "participantId": "user_alice",
+      "token": "bj_session_...",
+      "hostedUrl": "https://call.yourdomain.com/call?callId=clx8f...&token=bj_session_...",
+      "expiresAt": "2026-08-02T10:00:00.000Z"
+    },
+    {
+      "participantId": "user_bob",
+      "token": "bj_session_...",
+      "hostedUrl": "https://call.yourdomain.com/call?callId=clx8f...&token=bj_session_...",
+      "expiresAt": "2026-08-02T10:00:00.000Z"
+    }
+  ]
 }`} />
             </Endpoint>
 
-            {/* PATCH accept */}
-            <Endpoint method="PATCH" path="/calls/:callId/accept" summary="Accept a call" id="api-accept">
-              <p className="text-slate-400 text-sm mb-4 mt-3">Marks a call as accepted. The hosted UI does this automatically when the receiver taps Accept.</p>
-              <LangTabs tabs={{ sdk: `await bj.acceptCall('clx8f2z...');`, curl: `curl -X PATCH https://api.yourdomain.com/calls/CALL_ID/accept \\
-  -H "Authorization: Bearer bj_live_key"` }} />
-              <Code code={`{ "callId": "clx8f2z...", "status": "ACTIVE" }`} />
+            {/* POST join */}
+            <Endpoint method="POST" path="/calls/:callId/join" summary="Join a call" id="api-join">
+              <p className="text-slate-400 text-sm mb-4 mt-3">
+                Marks this participant as joined. The hosted UI calls this automatically
+                when the receiver accepts. Guarded by a session token (<code className="font-mono text-xs bg-black/30 px-1 rounded">Authorization: Bearer bj_session_...</code>).
+              </p>
+              <LangTabs tabs={{
+                sdk: `// SDK: engine.join() does this for you
+const meeting = new BlueJoinetEngine({ token, callId, signalUrl });
+await meeting.join();`,
+                curl: `curl -X POST https://api.yourdomain.com/calls/CALL_ID/join \\
+  -H "Authorization: Bearer bj_session_..."`,
+              }} />
+              <Code code={`{ "callId": "clx8f2z...", "participantId": "user_bob", "joined": true }`} />
             </Endpoint>
 
-            {/* PATCH reject */}
-            <Endpoint method="PATCH" path="/calls/:callId/reject" summary="Reject a call" id="api-reject">
+            {/* POST leave */}
+            <Endpoint method="POST" path="/calls/:callId/leave" summary="Leave a call" id="api-leave">
+              <p className="text-slate-400 text-sm mb-4 mt-3">
+                Marks this participant as left. Guarded by a session token.
+              </p>
+              <LangTabs tabs={{
+                sdk: `await meeting.leave();`,
+                curl: `curl -X POST https://api.yourdomain.com/calls/CALL_ID/leave \\
+  -H "Authorization: Bearer bj_session_..."`,
+              }} />
+              <Code code={`{ "callId": "clx8f2z...", "participantId": "user_bob", "left": true }`} />
+            </Endpoint>
+
+            {/* POST accept */}
+            <Endpoint method="POST" path="/calls/:callId/accept" summary="Accept a call" id="api-accept">
+              <p className="text-slate-400 text-sm mb-4 mt-3">Marks a call as accepted. The hosted UI does this automatically when the receiver taps Accept.</p>
+              <LangTabs tabs={{ sdk: `await bj.acceptCall('clx8f2z...');`, curl: `curl -X POST https://api.yourdomain.com/calls/CALL_ID/accept \\
+  -H "Authorization: Bearer bj_session_"` }} />
+              <Code code={`{ "callId": "clx8f2z...", "status": "ACCEPTED" }`} />
+            </Endpoint>
+
+            {/* POST reject */}
+            <Endpoint method="POST" path="/calls/:callId/reject" summary="Reject a call" id="api-reject">
               <p className="text-slate-400 text-sm mb-4 mt-3">Receiver declines. The caller's UI is notified via WebSocket.</p>
-              <LangTabs tabs={{ sdk: `await bj.rejectCall('clx8f2z...');`, curl: `curl -X PATCH https://api.yourdomain.com/calls/CALL_ID/reject \\
-  -H "Authorization: Bearer bj_live_key"` }} />
+              <LangTabs tabs={{ sdk: `await bj.rejectCall('clx8f2z...');`, curl: `curl -X POST https://api.yourdomain.com/calls/CALL_ID/reject \\
+  -H "Authorization: Bearer bj_session_"` }} />
               <Code code={`{ "callId": "clx8f2z...", "status": "REJECTED" }`} />
             </Endpoint>
 
-            {/* PATCH end */}
-            <Endpoint method="PATCH" path="/calls/:callId/end" summary="End a call" id="api-end">
-              <p className="text-slate-400 text-sm mb-4 mt-3">Ends an active call. Both participants receive a WebSocket <code className="font-mono text-xs bg-black/30 px-1 rounded">call-ended</code> event.</p>
-              <LangTabs tabs={{ sdk: `await bj.endCall('clx8f2z...');`, curl: `curl -X PATCH https://api.yourdomain.com/calls/CALL_ID/end \\
-  -H "Authorization: Bearer bj_live_key"` }} />
+            {/* POST end */}
+            <Endpoint method="POST" path="/calls/:callId/end" summary="End a call" id="api-end">
+              <p className="text-slate-400 text-sm mb-4 mt-3">Ends an active call. Both participants receive a WebSocket <code className="font-mono text-xs bg-black/30 px-1 rounded">call.ended</code> event.</p>
+              <LangTabs tabs={{ sdk: `await bj.endCall('clx8f2z...');`, curl: `curl -X POST https://api.yourdomain.com/calls/CALL_ID/end \\
+  -H "Authorization: Bearer bj_session_"` }} />
               <Code code={`{ "callId": "clx8f2z...", "status": "ENDED" }`} />
             </Endpoint>
 
@@ -371,16 +590,16 @@ receiver_url = data['receiverUrl']`,
   -H "Authorization: Bearer bj_live_key"` }} />
               <Code code={`{
   "callId": "clx8f2z...",
-  "status": "ACTIVE",
+  "status": "ACCEPTED",
   "type": "VIDEO",
   "callerId": "user_alice",
   "receiverId": "user_bob",
-  "createdAt": "2026-08-01T10:00:00.000Z",
-  "acceptedAt": "2026-08-01T10:00:15.000Z",
-  "endedAt": null
+  "startedAt": "2026-08-01T10:00:15.000Z",
+  "endedAt": null,
+  "createdAt": "2026-08-01T10:00:00.000Z"
 }`} />
               <div className="flex flex-wrap gap-2 mt-3">
-                {[{ s: 'PENDING', c: '#F59E0B' }, { s: 'ACTIVE', c: '#10B981' }, { s: 'ENDED', c: '#64748B' }, { s: 'REJECTED', c: '#EF4444' }].map(({ s, c }) => (
+                {[{ s: 'RINGING', c: '#F59E0B' }, { s: 'ACCEPTED', c: '#10B981' }, { s: 'ENDED', c: '#64748B' }, { s: 'REJECTED', c: '#EF4444' }, { s: 'MISSED', c: '#EF4444' }].map(({ s, c }) => (
                   <span key={s} className="font-mono text-xs px-2 py-0.5 rounded" style={{ background: `${c}22`, color: c, border: `1px solid ${c}44` }}>{s}</span>
                 ))}
               </div>
@@ -403,13 +622,66 @@ socket.on('connect', () => {
   socket.emit('authenticate', { token: 'bj_session_...' });
 });`} />
 
-            {/* Event cards */}
-            <div className="space-y-3 mt-5">
+            <p className="text-sm font-semibold text-white mb-3 mt-6">Connection</p>
+            <div className="space-y-3 mb-5">
               {[
-                { event: 'incoming-call', dir: '→ receiver', color: '#6366F1', desc: 'Fired when the caller is ready. Show incoming call UI.', payload: `{ callId: 'clx8f2z...', callerId: 'user_alice', type: 'VIDEO' }` },
-                { event: 'call-accepted', dir: '→ caller', color: '#10B981', desc: 'Receiver accepted. Start WebRTC offer/answer.', payload: `{ callId: 'clx8f2z...' }` },
-                { event: 'call-rejected', dir: '→ caller', color: '#EF4444', desc: 'Receiver declined.', payload: `{ callId: 'clx8f2z...' }` },
-                { event: 'call-ended', dir: '→ both', color: '#F59E0B', desc: 'Either side ended the call.', payload: `{ callId: 'clx8f2z...' }` },
+                { event: 'connected', dir: '→ client', color: '#10B981', desc: 'Authenticated and joined the meeting. Carries your participant id.', payload: `{ participantId: 'user_alice' }` },
+                { event: 'disconnected', dir: '→ client', color: '#EF4444', desc: 'Socket dropped.', payload: `{}` },
+                { event: 'reconnected', dir: '→ client', color: '#F59E0B', desc: 'Socket re-established.', payload: `{}` },
+              ].map((ev) => (
+                <div key={ev.event} className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
+                  <div className="flex items-center gap-3 mb-2">
+                    <code className="font-mono text-xs font-bold" style={{ color: ev.color }}>{ev.event}</code>
+                    <span className="text-xs text-slate-600 font-mono">{ev.dir}</span>
+                  </div>
+                  <p className="text-xs text-slate-400 mb-2">{ev.desc}</p>
+                  <code className="font-mono text-xs text-slate-600">{ev.payload}</code>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-sm font-semibold text-white mb-3">Call + participant events</p>
+            <div className="space-y-3 mb-5">
+              {[
+                { event: 'call.started', dir: '→ both', color: '#10B981', desc: 'Call became active.', payload: `{ callId: 'clx8f2z...' }` },
+                { event: 'call.ended', dir: '→ both', color: '#EF4444', desc: 'Call ended by either side.', payload: `{ callId: 'clx8f2z...' }` },
+                { event: 'participant.joined', dir: '→ others', color: '#6366F1', desc: 'A participant joined the room.', payload: `{ participantId: 'user_bob' }` },
+                { event: 'participant.left', dir: '→ others', color: '#F59E0B', desc: 'A participant left the room.', payload: `{ participantId: 'user_bob' }` },
+                { event: 'participant.updated', dir: '→ others', color: '#8B5CF6', desc: 'Participant media state changed.', payload: `{ participantId: 'user_bob', camera: false, microphone: true }` },
+                { event: 'incoming-call', dir: '→ receiver', color: '#6366F1', desc: 'Legacy alias — caller is waiting.', payload: `{ callId, callerId, type: 'VIDEO' }` },
+              ].map((ev) => (
+                <div key={ev.event} className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
+                  <div className="flex items-center gap-3 mb-2">
+                    <code className="font-mono text-xs font-bold" style={{ color: ev.color }}>{ev.event}</code>
+                    <span className="text-xs text-slate-600 font-mono">{ev.dir}</span>
+                  </div>
+                  <p className="text-xs text-slate-400 mb-2">{ev.desc}</p>
+                  <code className="font-mono text-xs text-slate-600">{ev.payload}</code>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-sm font-semibold text-white mb-3">Media events</p>
+            <div className="space-y-3 mb-5">
+              {[
+                { event: 'camera.enabled / camera.disabled', dir: '→ others', color: '#8B5CF6', desc: 'Camera toggled.', payload: `{ callId }` },
+                { event: 'microphone.enabled / microphone.disabled', dir: '→ others', color: '#8B5CF6', desc: 'Microphone toggled.', payload: `{ callId }` },
+                { event: 'screenShare.started / screenShare.stopped', dir: '→ others', color: '#8B5CF6', desc: 'Screen share toggled.', payload: `{ callId }` },
+              ].map((ev) => (
+                <div key={ev.event} className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
+                  <div className="flex items-center gap-3 mb-2">
+                    <code className="font-mono text-xs font-bold" style={{ color: ev.color }}>{ev.event}</code>
+                    <span className="text-xs text-slate-600 font-mono">{ev.dir}</span>
+                  </div>
+                  <p className="text-xs text-slate-400 mb-2">{ev.desc}</p>
+                  <code className="font-mono text-xs text-slate-600">{ev.payload}</code>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-sm font-semibold text-white mb-3">WebRTC signaling</p>
+            <div className="space-y-3">
+              {[
                 { event: 'offer / answer / ice-candidate', dir: '↔ both', color: '#8B5CF6', desc: 'WebRTC signaling events relayed by the server.', payload: `{ callId, offer? / answer? / candidate? }` },
               ].map((ev) => (
                 <div key={ev.event} className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
@@ -497,37 +769,62 @@ async def webhook(request: Request):
             }} />
           </Section>
 
-          {/* ── SDK ───────────────────────────────────── */}
-          <Section id="sdk">
-            <Heading>Node.js SDK</Heading>
-            <Code code="npm install @bluejoinet/sdk" label="install" />
+          {/* ── Examples ─────────────────────────────── */}
+          <Section id="examples">
+            <Heading>💡 Examples</Heading>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 my-5">
-              {[
-                { method: 'bj.createCall({ callerId, receiverId, type? })', returns: '{ callId, callerUrl, receiverUrl }' },
-                { method: 'bj.acceptCall(callId)', returns: '{ callId, status }' },
-                { method: 'bj.rejectCall(callId)', returns: '{ callId, status }' },
-                { method: 'bj.endCall(callId)', returns: '{ callId, status }' },
-                { method: 'bj.getCall(callId)', returns: 'Full call object' },
-              ].map((m) => (
-                <div key={m.method} className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
-                  <code className="font-mono text-xs block mb-2" style={{ color: '#A5B4FC' }}>{m.method}</code>
-                  <p className="text-xs text-slate-500">→ {m.returns}</p>
-                </div>
-              ))}
-            </div>
-
-            <Code label="usage" code={`import BlueJoinet from '@bluejoinet/sdk';
+            <p className="text-sm font-semibold text-white mb-3">Hosted UI — create & redirect (Node.js)</p>
+            <Code code={`import BlueJoinet from '@bluejoinet/sdk';
 
 const bj = new BlueJoinet({
   apiKey: process.env.BLUEJOINET_API_KEY,
-  baseUrl: 'https://api.yourdomain.com',  // optional
+  baseUrl: 'https://api.yourdomain.com',
 });
 
-const { callId, callerUrl, receiverUrl } = await bj.createCall({
+// 1. Create a call from your backend
+const { callId, hostedUrl, participants } = await bj.createCall({
   callerId: 'user_alice',
   receiverId: 'user_bob',
-});`} />
+  type: 'VIDEO',
+});
+
+// 2. Redirect each participant to their hosted page
+//    participants[0].hostedUrl  → Alice
+//    participants[1].hostedUrl  → Bob
+res.redirect(participants[0].hostedUrl);`} label="your-server.js" />
+
+            <p className="text-sm font-semibold text-white mb-3 mt-6">React Components</p>
+            <Code code={`import { MeetingProvider, MeetingRoom, ParticipantGrid, CameraButton, MicrophoneButton, ScreenShareButton, LeaveButton, DeviceSelector } from '@bluejoinet/react';
+
+export function CustomCall({ token, callId, signalUrl }) {
+  return (
+    <MeetingProvider token={token} callId={callId} signalUrl={signalUrl}>
+      <MeetingRoom>
+        <ParticipantGrid />
+      </MeetingRoom>
+      <div style={{ display: 'flex', gap: 12, justifyContent: 'center', padding: 16 }}>
+        <CameraButton />
+        <MicrophoneButton />
+        <ScreenShareButton />
+        <DeviceSelector />
+        <LeaveButton />
+      </div>
+    </MeetingProvider>
+  );
+}`} />
+
+            <p className="text-sm font-semibold text-white mb-3 mt-6">Headless SDK</p>
+            <Code code={`import { BlueJoinetEngine } from '@bluejoinet/sdk';
+
+const meeting = new BlueJoinetEngine({ token, callId, signalUrl });
+
+meeting.on('remote.stream', (stream) => {
+  document.getElementById('remote-video').srcObject = stream;
+});
+
+await meeting.join();
+meeting.camera.enable();
+meeting.microphone.enable();`} />
           </Section>
 
           {/* ── Errors ───────────────────────────────── */}
@@ -560,31 +857,22 @@ const { callId, callerUrl, receiverUrl } = await bj.createCall({
             </div>
           </Section>
 
-          {/* ── Debugging ─────────────────────────────── */}
-          <Section id="debugging">
-            <Heading>Debugging</Heading>
-            <p className="text-slate-400 text-sm mb-5">The most common call failures and exactly how to fix them.</p>
+          {/* ── FAQ ───────────────────────────────────── */}
+          <Section id="faq">
+            <Heading>❓ FAQ</Heading>
             <div className="space-y-3">
               {[
-                { err: 'ICE_FAILED', cause: 'Both peers behind strict NATs, STUN failed.', fix: 'TURN should handle this automatically. Check that /turn-credentials returns iceServers with turn: URLs.' },
-                { err: 'WebSocket drops right after authenticate', cause: 'Session token is invalid, expired, or used by the wrong participant.', fix: 'callerUrl token is for Alice only. receiverUrl token is for Bob only. Do not swap.' },
-                { err: 'offer sent, no answer', cause: "Receiver's socket disconnected mid-negotiation.", fix: 'Add socket reconnect logic. Ensure receiver page stays loaded during negotiation.' },
-                { err: 'call-accepted fires, no video', cause: 'Camera / microphone permission denied.', fix: 'Call getUserMedia() before the call starts. Catch NotAllowedError and prompt the user.' },
-                { err: '401 on first request', cause: 'Zustand / localStorage not rehydrated yet.', fix: 'Read token from localStorage as a sync fallback in your Axios interceptor.' },
+                { q: 'Which integration should I pick?', a: 'Hosted UI for the fastest path (5 minutes). React Components for a branded custom interface without building WebRTC. Headless SDK if you need complete control over the UI.' },
+                { q: 'Can I switch between the three products later?', a: 'Yes. All three use the same backend, the same POST /calls response, and the same session tokens. Change the frontend, keep your server-side integration.' },
+                { q: 'Where do I put the API key?', a: 'Server-side only (bj_live_...). Never send it to the browser. The hosted page uses per-participant session tokens (bj_session_...), not API keys.' },
+                { q: 'What about calls behind strict firewalls?', a: 'BlueJoinet provides TURN relay with time-limited credentials. The hosted UI and SDK fetch ICE servers automatically — no configuration needed.' },
+                { q: 'Are session tokens single-use?', a: 'Yes. Each token is tied to one participant and one call. Create a new call if you need to re-invite someone.' },
+                { q: 'Do you support group calls?', a: 'Currently 1:1 calls. Group calls are on the roadmap.' },
+                { q: 'How do I debug a failed call?', a: 'Check the WebSocket connection state, verify the session token matches the correct participant, ensure camera/microphone permissions are granted, and confirm TURN credentials are returned from /turn/credentials.' },
               ].map((item) => (
-                <div key={item.err} className="rounded-xl border border-[#1A2642] p-5 grid grid-cols-1 sm:grid-cols-3 gap-3" style={{ background: '#0D1421' }}>
-                  <div>
-                    <p className="font-mono text-xs mb-1" style={{ color: '#FCD34D' }}>Error</p>
-                    <p className="text-xs text-white font-semibold">{item.err}</p>
-                  </div>
-                  <div>
-                    <p className="font-mono text-xs mb-1 text-slate-600">Cause</p>
-                    <p className="text-xs text-slate-400">{item.cause}</p>
-                  </div>
-                  <div>
-                    <p className="font-mono text-xs mb-1" style={{ color: '#6EE7B7' }}>Fix</p>
-                    <p className="text-xs text-slate-400">{item.fix}</p>
-                  </div>
+                <div key={item.q} className="rounded-xl border border-[#1A2642] p-5" style={{ background: '#0D1421' }}>
+                  <p className="text-sm font-semibold text-white mb-1">{item.q}</p>
+                  <p className="text-sm text-slate-400 leading-relaxed">{item.a}</p>
                 </div>
               ))}
             </div>
