@@ -50,7 +50,7 @@ async createCall(
   this.webhookService.fireForCall(call.id, 'call.created');
 }
 
-    const frontend = process.env.FRONTEND_URL || 'http://localhost:3000';
+const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
 
     const callerToken = session.callerToken;
     const receiverToken = session.receiverToken;
@@ -151,7 +151,7 @@ async createCall(
     });
     if (!call) throw new NotFoundException('Call not found');
 
-    const frontend = process.env.FRONTEND_URL || 'http://localhost:3000';
+const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
     const isCaller = session?.callerToken;
     const token = isCaller ? session.callerToken : session.receiverToken;
 

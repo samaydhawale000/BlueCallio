@@ -40,9 +40,9 @@ export class PlaygroundService {
       },
     );
 
-    const frontend =
+const frontend =
       process.env.FRONTEND_URL ||
-      'http://localhost:3000';
+      'http://localhost:5173';
 
     return {
       success: true,
