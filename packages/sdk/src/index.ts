@@ -1,6 +1,5 @@
 export { BlueJoinetClient } from './client';
-export { BlueJoinetEngine } from './engine';
-export type { EngineEventMap, EngineEvents } from './engine';
+export { BlueJoinetMeeting } from './meeting/meeting';
 
 // Default export = REST client for server-side convenience.
 import { BlueJoinetClient } from './client';
@@ -20,6 +19,7 @@ export type {
   JoinCallResult,
   MeetingSnapshot,
   Participant,
+  ParticipantMedia,
   ParticipantRole,
+  ParticipantToken,
 } from './types';
-

@@ -175,7 +175,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen" style={{ background: '#060B18' }}>
-      <main className="max-w-5xl mx-auto px-6 pt-24 pb-10">
+      <main className="max-w-7xl mx-auto px-6 pt-24 pb-10">
 
         {/* Header row */}
         <div className="flex items-start justify-between mb-8 gap-4">

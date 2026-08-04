@@ -120,6 +120,30 @@ body {
   color: #A5B4FC;
 }
 
+/* Stripe WebGL gradient canvas */
+.stripe-gradient-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  background: #060B18;
+  /* Base color (color-1) + 2 wave layers (color-2, color-3) = 3 brand colors */
+--gradient-color-1: #060B18;
+  --gradient-color-2: #8B5CF6;
+  --gradient-color-3: #6366F1;
+  opacity: 0.18;
+  transition: opacity 1.2s ease;
+}
+
+.stripe-gradient-canvas.isLoaded {
+  opacity: 0.18;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stripe-gradient-canvas { display: none; }
+}
+
 .hero-badge-dot {
   background: var(--indigo);
 }
@@ -194,73 +218,4 @@ body {
   background-size: 60px 60px;
 }
 
-/* Hero gradient mesh animation */
-.hero-mesh-wrapper {
-  position: absolute;
-  inset: -20%;
-  filter: blur(90px);
-  transform: translateZ(0);
-  will-change: transform;
-}
 
-.hero-blob {
-  position: absolute;
-  border-radius: 50%;
-}
-
-.hero-blob-1 {
-  top: 5%;
-  left: 15%;
-  width: 55vw;
-  height: 55vw;
-  max-width: 680px;
-  max-height: 680px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.35) 0%, rgba(99, 102, 241, 0) 65%);
-  animation: heroFlow1 7s ease-in-out infinite alternate;
-}
-
-.hero-blob-2 {
-  top: 20%;
-  right: 10%;
-  width: 48vw;
-  height: 48vw;
-  max-width: 600px;
-  max-height: 600px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.35) 0%, rgba(139, 92, 246, 0) 45%);
-  animation: heroFlow2 11s ease-in-out infinite alternate;
-}
-
-.hero-blob-3 {
-  top: 0%;
-  left: 0%;
-  width: 40vw;
-  height: 40vw;
-  max-width: 500px;
-  max-height: 500px;
-  background: radial-gradient(circle, rgba(67, 56, 202, 0.4) 0%, rgba(67, 56, 202, 0) 25%);
-  animation: heroFlow3 18s ease-in-out infinite alternate;
-}
-
-@keyframes heroFlow1 {
-  0%   { transform: translate(0, 0)       scale(1)    rotate(0deg); }
-  33%  { transform: translate(10%, -8%)   scale(1.15) rotate(30deg); }
-  66%  { transform: translate(-8%, 10%)   scale(0.9)  rotate(-20deg); }
-  100% { transform: translate(6%, -4%)    scale(1.05) rotate(10deg); }
-}
-
-@keyframes heroFlow2 {
-  0%   { transform: translate(0, 0)       scale(1)    rotate(0deg); }
-  33%  { transform: translate(-15%, 12%)  scale(0.85) rotate(-40deg); }
-  66%  { transform: translate(8%, -12%)   scale(1.2)  rotate(20deg); }
-  100% { transform: translate(-10%, 6%)   scale(0.95) rotate(-10deg); }
-}
-
-@keyframes heroFlow3 {
-  0%   { transform: translate(0, 0)       scale(1); }
-  50%  { transform: translate(-12%, 18%)  scale(1.2); }
-  100% { transform: translate(12%, -10%)  scale(0.85); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-blob-1, .hero-blob-2, .hero-blob-3 { animation: none; }
-}

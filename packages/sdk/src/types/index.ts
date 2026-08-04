@@ -9,27 +9,45 @@ export type CallStatus =
   | 'MISSED'
   | 'ENDED';
 
+/**
+ * Connection state machine for the meeting engine.
+ *
+ * idle → connecting → authenticating → authenticated → joining → joined
+ *   ↕             ↕                ↕                 ↕
+ * reconnecting / leaving → disconnected → closed
+ * Any state can transition to `error`.
+ */
 export type ConnectionState =
   | 'idle'
   | 'connecting'
+  | 'authenticating'
+  | 'authenticated'
+  | 'joining'
+  | 'joined'
   | 'connected'
   | 'reconnecting'
-  | 'disconnected';
+  | 'leaving'
+  | 'disconnected'
+  | 'closed'
+  | 'error';
 
 export type ParticipantRole = 'CALLER' | 'RECEIVER';
 
+export interface ParticipantMedia {
+  camera: boolean;
+  microphone: boolean;
+  screenShare: boolean;
+}
+
+/**
+ * A live participant in the meeting.
+ * Identity + media state only — never holds authentication tokens.
+ */
 export interface Participant {
   participantId: string;
   role: ParticipantRole;
-  token: string;
-  hostedUrl: string;
-  expiresAt: string;
   /** Live media state (available after join). */
-  media?: {
-    camera: boolean;
-    microphone: boolean;
-    screenShare: boolean;
-  };
+  media?: ParticipantMedia;
 }
 
 export interface Call {
@@ -59,10 +77,18 @@ export interface CreateCallParams {
   type?: CallType;
 }
 
+/** A participant token returned by the server. Never exposed via snapshot(). */
+export interface ParticipantToken {
+  participantId: string;
+  token: string;
+  hostedUrl: string;
+  expiresAt: string;
+}
+
 export interface CreateCallResult {
   callId: string;
   hostedUrl: string;
-  participants: Participant[];
+  participants: ParticipantToken[];
   /** Backwards-compatible fields. */
   call: Call;
   callerToken: string;
@@ -91,6 +117,14 @@ export interface JoinCallResult {
   participantId: string;
 }
 
+export interface ExchangeResult {
+  callId: string;
+  participantId: string;
+  token: string;
+  expiresAt: string | null;
+  branding: Branding;
+}
+
 export interface BlueJoinetConfig {
   apiKey: string;
   /** BlueJoinet API base URL. Default: https://api.bluejoinet.com */
@@ -108,7 +142,14 @@ export interface EngineConfig {
   video?: boolean;
   /** Default: audio on. */
   audio?: boolean;
+  /**
+   * Custom ICE servers. If provided, they are used (merged with any
+   * backend-provided servers, de-duplicated). Custom TURN credentials
+   * are preserved unless the developer explicitly overrides them.
+   */
   iceServers?: RTCIceServer[];
+  /** Override the backend by setting this to true — only custom servers are used. */
+  overrideIceServers?: boolean;
 }
 
 export interface MeetingSnapshot {
@@ -116,33 +157,6 @@ export interface MeetingSnapshot {
   participantId: string;
   participants: Participant[];
   connectionState: ConnectionState;
-  media: {
-    camera: boolean;
-    microphone: boolean;
-    screenShare: boolean;
-  };
+  media: ParticipantMedia;
   remoteStream: MediaStream | null;
 }
-
-export interface EngineEvents {
-  connected: (payload: { callId: string; participantId: string; role: ParticipantRole }) => void;
-  reconnected: (payload: { callId: string }) => void;
-  disconnected: (payload: { reason?: string }) => void;
-  'participant.joined': (payload: { callId: string; participantId: string; participants: number }) => void;
-  'participant.left': (payload: { callId: string; participantId: string; participants: number }) => void;
-  'participant.updated': (payload: { callId: string; participantId: string; media: Participant['media'] }) => void;
-  'camera.enabled': (payload: { callId: string; participantId: string }) => void;
-  'camera.disabled': (payload: { callId: string; participantId: string }) => void;
-  'microphone.enabled': (payload: { callId: string; participantId: string }) => void;
-  'microphone.disabled': (payload: { callId: string; participantId: string }) => void;
-  'screenShare.started': (payload: { callId: string; participantId: string }) => void;
-  'screenShare.stopped': (payload: { callId: string; participantId: string }) => void;
-  'call.started': (payload: { callId: string }) => void;
-  'call.ended': (payload: { callId: string }) => void;
-  'remote.stream': (stream: MediaStream) => void;
-  'remote.stream.ended': () => void;
-  offer: (payload: { offer: RTCSessionDescriptionInit }) => void;
-  answer: (payload: { answer: RTCSessionDescriptionInit }) => void;
-  'ice-candidate': (payload: { candidate: RTCIceCandidateInit }) => void;
-}
-

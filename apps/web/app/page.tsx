@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import logo from "./assets/images/logo.png";
+import StripeGradient from "./components/gradient/StripeGradient";
 
 const USE_CASES = [
    {
@@ -291,14 +292,10 @@ export default function LandingPage() {
    return (
       <div className="lp-root">
 
-         {/* ── Hero ── */}
+{/* ── Hero ── */}
          <section className="section-base relative pt-24 pb-32 px-6 overflow-hidden">
-            <div className="absolute inset-0 pointer-events-none">
-               <div className="hero-mesh-wrapper">
-                  <div className="hero-blob hero-blob-1" />
-                  <div className="hero-blob hero-blob-2" />
-                  <div className="hero-blob hero-blob-3" />
-               </div>
+<div className="absolute inset-0 pointer-events-none">
+               <StripeGradient />
                <div className="hero-grain" />
             </div>
 

@@ -416,9 +416,9 @@ function Status() {
             <Code code="npm install @bluejoinet/sdk" label="install" />
 
             <p className="text-sm font-semibold text-white mb-3">Quick example</p>
-            <Code code={`import { BlueJoinetEngine } from '@bluejoinet/sdk';
+<Code code={`import { BlueJoinetMeeting } from '@bluejoinet/sdk';
 
-const meeting = new BlueJoinetEngine({
+const meeting = new BlueJoinetMeeting({
   token,            // bj_session_... for this participant
   callId,
   signalUrl: 'wss://api.yourdomain.com',
@@ -537,8 +537,8 @@ meeting.on('remote.stream.ended', () => {});`} />
                 when the receiver accepts. Guarded by a session token (<code className="font-mono text-xs bg-black/30 px-1 rounded">Authorization: Bearer bj_session_...</code>).
               </p>
               <LangTabs tabs={{
-                sdk: `// SDK: engine.join() does this for you
-const meeting = new BlueJoinetEngine({ token, callId, signalUrl });
+sdk: `// SDK: engine.join() does this for you
+const meeting = new BlueJoinetMeeting({ token, callId, signalUrl });
 await meeting.join();`,
                 curl: `curl -X POST https://api.yourdomain.com/calls/CALL_ID/join \\
   -H "Authorization: Bearer bj_session_..."`,
@@ -814,9 +814,9 @@ export function CustomCall({ token, callId, signalUrl }) {
 }`} />
 
             <p className="text-sm font-semibold text-white mb-3 mt-6">Headless SDK</p>
-            <Code code={`import { BlueJoinetEngine } from '@bluejoinet/sdk';
+            <Code code={`import { BlueJoinetMeeting } from '@bluejoinet/sdk';
 
-const meeting = new BlueJoinetEngine({ token, callId, signalUrl });
+const meeting = new BlueJoinetMeeting({ token, callId, signalUrl });
 
 meeting.on('remote.stream', (stream) => {
   document.getElementById('remote-video').srcObject = stream;
