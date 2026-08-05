@@ -4,12 +4,14 @@ import { useState } from "react";
 import { Video, Phone, Monitor } from "lucide-react";
 
 import { api } from "../../lib/api";
+import { useRequireAuth } from "../../hooks/useRequireAuth";
 
 import Hero from "../../components/playground/Hero";
 import DemoCard from "../../components/playground/DemoCard";
 import PlaygroundDialog from "../../components/playground/PlaygroundDialog";
 
 export default function PlaygroundPage() {
+  useRequireAuth();
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);

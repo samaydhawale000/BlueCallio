@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../store/auth.store';
+import { useRequireAuth } from '../hooks/useRequireAuth';
 import { api } from '../lib/api';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -48,6 +49,7 @@ interface Usage {
 export default function DashboardPage() {
   const { token, logout } = useAuthStore();
   const router = useRouter();
+  const { isReady } = useRequireAuth();
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [projectKeys, setProjectKeys] = useState<Record<string, ApiKey[]>>({});
@@ -72,11 +74,12 @@ export default function DashboardPage() {
   const [savingWebhook, setSavingWebhook] = useState<string | null>(null);
   const [webhookSaved, setWebhookSaved] = useState<string | null>(null);
 
-  useEffect(() => {
+useEffect(() => {
+    if (!isReady) return;
     if (!token) { router.push('/login'); return; }
     fetchProjects();
     fetchDashboardData();
-  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isReady, token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function fetchProjects() {
     try {

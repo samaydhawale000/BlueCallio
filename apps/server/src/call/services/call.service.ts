@@ -1,6 +1,8 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 
 import { CallStatus, CallType } from '@prisma/client';
@@ -11,13 +13,34 @@ import { CallGateway } from '../../socket/gateways/call.gateway';
 import { WebhookService } from '../../webhook/webhook.service';
 
 @Injectable()
-export class CallService {
+export class CallService implements OnModuleInit {
+  /**
+   * How long an unanswered (RINGING) call stays alive before it is
+   * automatically marked as MISSED. Configurable via CALL_RING_TIMEOUT_MS.
+   */
+  private readonly ringTimeoutMs: number;
+
   constructor(
     private prisma: PrismaService,
     private callSessionService: CallSessionService,
     private callGateway: CallGateway,
     private webhookService: WebhookService,
-  ) {}
+  ) {
+    const parsed = Number(process.env.CALL_RING_TIMEOUT_MS);
+    this.ringTimeoutMs =
+      Number.isFinite(parsed) && parsed > 0 ? parsed : 15_000;
+  }
+
+  onModuleInit() {
+    // Clean up any calls that were already stuck (e.g. server restarted
+    // while a call was ringing) on boot.
+    this.missExpiredCalls();
+
+    // Periodically expire unanswered calls.
+    setInterval(() => {
+      this.missExpiredCalls();
+    }, 10_000).unref();
+  }
 
 async createCall(
   data: {
@@ -83,9 +106,82 @@ const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
     };
   }
 
+/**
+   * Find all calls that are still RINGING and older than the ring timeout,
+   * and transition them to MISSED. This is the "auto-disconnect" for calls
+   * that nobody answers.
+   */
+  async missExpiredCalls() {
+    const cutoff = new Date(Date.now() - this.ringTimeoutMs);
+
+    const expired = await this.prisma.call.findMany({
+      where: {
+        status: CallStatus.RINGING,
+        createdAt: { lte: cutoff },
+      },
+    });
+
+const results: Awaited<ReturnType<CallService['missCall']>>[] = [];
+    for (const call of expired) {
+      try {
+        const updated = await this.missCall(call.id);
+        results.push(updated);
+      } catch (err) {
+        // A call may have progressed (accepted/rejected) between the query
+        // and the update — that's fine, skip it.
+        console.error('Failed to miss call', call.id, err);
+      }
+    }
+    return results;
+  }
+
+  /**
+   * Mark a ringing call as MISSED (nobody answered within the timeout).
+   */
+  async missCall(callId: string) {
+    const call = await this.prisma.call.findUnique({ where: { id: callId } });
+    if (!call) throw new NotFoundException('Call not found');
+
+    // Only RINGING (or INITIATED) calls can be missed.
+    if (
+      call.status !== CallStatus.RINGING &&
+      call.status !== CallStatus.INITIATED
+    ) {
+      throw new BadRequestException(
+        `Call is already ${call.status.toLowerCase()}`,
+      );
+    }
+
+    const updated = await this.prisma.call.update({
+      where: { id: callId },
+      data: { status: CallStatus.MISSED, endedAt: new Date() },
+    });
+
+    await this.prisma.callEvent.create({
+      data: { callId, event: 'CALL_MISSED' },
+    });
+
+this.callGateway.emitToParticipant(callId, 'CALLER', 'call-missed', { callId });
+    this.callGateway.emitToParticipant(callId, 'RECEIVER', 'call-missed', { callId });
+    this.webhookService.fireForCall(callId, 'call.missed');
+
+    return updated;
+  }
+
   async acceptCall(callId: string) {
     const call = await this.prisma.call.findUnique({ where: { id: callId } });
     if (!call) throw new NotFoundException('Call not found');
+
+    // Guard against accepting a call that has already been missed/ended.
+    if (
+      call.status === CallStatus.MISSED ||
+      call.status === CallStatus.ENDED ||
+      call.status === CallStatus.REJECTED
+    ) {
+      throw new BadRequestException(
+        `Cannot accept a call that is already ${call.status.toLowerCase()}`,
+      );
+    }
 
     const updated = await this.prisma.call.update({
       where: { id: callId },

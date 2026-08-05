@@ -12,6 +12,7 @@ type CallState =
   | 'incoming'
   | 'in-call'
   | 'rejected'
+  | 'missed'
   | 'ended'
   | 'error';
 
@@ -263,7 +264,13 @@ function CallPageContent() {
       socket.emit('call.started', { callId: urlCallId });
     });
 
-    socket.on('call-rejected', () => setState('rejected'));
+socket.on('call-rejected', () => setState('rejected'));
+
+    socket.on('call-missed', () => {
+      if (stateRef.current === 'ended' || stateRef.current === 'missed') return;
+      cleanup();
+      setState('missed');
+    });
 
     socket.on('offer', async ({ offer }: { offer: RTCSessionDescriptionInit }) => {
       if (!pcRef.current) return;
@@ -307,7 +314,7 @@ function CallPageContent() {
     socket.connect();
 
     return () => {
-      ['incoming-call', 'call-accepted', 'call-rejected', 'offer', 'answer', 'ice-candidate', 'call-ended', 'connected', 'connect']
+['incoming-call', 'call-accepted', 'call-rejected', 'call-missed', 'offer', 'answer', 'ice-candidate', 'call-ended', 'connected', 'connect']
         .forEach((e) => socket.off(e));
       socket.disconnect();
       cleanup();
@@ -580,10 +587,21 @@ function CallPageContent() {
     );
   }
 
-  if (state === 'rejected') {
+if (state === 'rejected') {
     return (
       <Screen>
         <p style={{ color: textSecondary }}>Call declined.</p>
+      </Screen>
+    );
+  }
+
+  if (state === 'missed') {
+    return (
+      <Screen>
+        <p className="font-medium mb-1" style={{ color: textPrimary }}>No answer</p>
+        <p className="text-sm" style={{ color: textSecondary }}>
+          The other participant didn't answer.
+        </p>
       </Screen>
     );
   }

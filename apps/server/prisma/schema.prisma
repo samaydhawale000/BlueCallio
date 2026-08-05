@@ -25,7 +25,10 @@ enum CallStatus {
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
-  passwordHash String
+  googleId     String?  @unique
+  name         String?
+  avatarUrl    String?
+  passwordHash String?
   refreshTokenHash String?
 
   createdAt    DateTime @default(now())

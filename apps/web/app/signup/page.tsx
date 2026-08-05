@@ -1,36 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { api } from '../lib/api';
-import { useAuthStore } from '../store/auth.store';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
+import { GoogleSignInButton } from '../components/ui/GoogleSignInButton';
 
 export default function SignupPage() {
-  const { setTokens } = useAuthStore();
-  const router = useRouter();
-
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  async function signup() {
-    setError('');
-    setLoading(true);
-    try {
-      const res = await api.post('/auth/signup', { email, password });
-      setTokens(res.data.accessToken, res.data.refreshToken);
-      router.push('/dashboard');
-    } catch {
-      setError('Signup failed. Email may already be in use.');
-    } finally {
-      setLoading(false);
-    }
-  }
-
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4"
@@ -50,50 +23,23 @@ export default function SignupPage() {
         </div>
 
         <div
-          className="rounded-2xl border border-[#1A2642] p-8"
+          className="rounded-2xl border border-[#1A2642] p-8 flex flex-col gap-6 items-center"
           style={{ background: '#0D1421' }}
         >
-          <div className="flex flex-col gap-5">
-            {error && (
-              <div
-                className="text-sm text-red-400 px-4 py-3 rounded-lg border border-red-500/20"
-                style={{ background: 'rgba(239,68,68,0.06)' }}
-              >
-                {error}
-              </div>
-            )}
-
-            <Input
-              label="Email"
-              type="email"
-              placeholder="you@company.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && signup()}
-              autoFocus
-            />
-
-            <Input
-              label="Password"
-              type="password"
-              placeholder="Min. 8 characters"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && signup()}
-            />
-
-            <Button onClick={signup} loading={loading} size="lg" className="w-full mt-1">
-              Create account
-            </Button>
+          <div className="flex flex-col items-center gap-2 text-center">
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-2"
+              style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.15), rgba(99,102,241,0.15))', border: '1px solid rgba(139,92,246,0.25)' }}
+            >
+              🚀
+            </div>
+            <p className="text-sm text-slate-400">
+              Sign up with Google — no passwords, no setup.
+            </p>
           </div>
-        </div>
 
-        <p className="text-center text-sm text-slate-500 mt-6">
-          Already have an account?{' '}
-          <Link href="/login" className="text-indigo-400 hover:text-indigo-300 transition-colors">
-            Sign in
-          </Link>
-        </p>
+          <GoogleSignInButton />
+        </div>
       </div>
     </div>
   );

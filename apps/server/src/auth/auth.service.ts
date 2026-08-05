@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -10,78 +9,85 @@ import * as bcrypt from 'bcrypt';
 
 import { JwtService } from '@nestjs/jwt';
 
+import { OAuth2Client } from 'google-auth-library';
+
 @Injectable()
 export class AuthService {
+  private googleClient: OAuth2Client;
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-  ) {}
-
-  async signup(
-    email: string,
-    password: string,
   ) {
-    const existingUser =
-      await this.prisma.user.findUnique({
-        where: { email },
-      });
+    this.googleClient = new OAuth2Client(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+    );
+  }
 
-    if (existingUser) {
-      throw new BadRequestException(
-        'Email already exists',
+  async loginWithGoogle(idToken: string) {
+    // Verify the Google ID token.
+    let payload;
+    try {
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      payload = ticket.getPayload();
+    } catch {
+      throw new UnauthorizedException(
+        'Invalid Google token',
       );
     }
 
-    const passwordHash =
-      await bcrypt.hash(password, 10);
+    if (!payload || !payload.email) {
+      throw new UnauthorizedException(
+        'Invalid Google token payload',
+      );
+    }
 
-    const user =
-      await this.prisma.user.create({
-        data: {
-          email,
-          passwordHash,
-        },
-      });
+    const email = payload.email;
+    const googleId = payload.sub;
+    const name =
+      payload.name ?? null;
+    const avatarUrl =
+      payload.picture ?? null;
 
-    const tokens =
-      await this.generateTokens(user.id);
-
-    await this.saveRefreshToken(
-      user.id,
-      tokens.refreshToken,
-    );
-
-    return {
-      user,
-      ...tokens,
-    };
-  }
-
-  async login(
-    email: string,
-    password: string,
-  ) {
-    const user =
+    // Find an existing user by googleId, then by email.
+    let user =
       await this.prisma.user.findUnique({
-        where: { email },
+        where: { googleId },
       });
 
     if (!user) {
-      throw new UnauthorizedException(
-        'Invalid credentials',
-      );
-    }
+      user =
+        await this.prisma.user.findUnique({
+          where: { email },
+        });
 
-    const isValid =
-      await bcrypt.compare(
-        password,
-        user.passwordHash,
-      );
-
-    if (!isValid) {
-      throw new UnauthorizedException(
-        'Invalid credentials',
-      );
+      // New user — create one.
+      if (!user) {
+        user =
+          await this.prisma.user.create({
+            data: {
+              email,
+              googleId,
+              name,
+              avatarUrl,
+            },
+          });
+      } else {
+        // Existing email user — link the Google account.
+        user =
+          await this.prisma.user.update({
+            where: { id: user.id },
+            data: {
+              googleId,
+              name: name ?? user.name,
+              avatarUrl: avatarUrl ?? user.avatarUrl,
+            },
+          });
+      }
     }
 
     const tokens =

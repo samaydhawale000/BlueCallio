@@ -174,62 +174,124 @@ const STEPS = [
    },
 ];
 
+const EVERY_PLAN_INCLUDES = [
+   "Hosted Meeting UI",
+   "React UI Components",
+   "Headless SDK",
+   "REST API",
+   "WebSocket Signaling",
+   "Authentication",
+   "Video Calling",
+   "Audio Calling",
+   "Screen Sharing",
+   "Device Selection",
+   "API Playground",
+   "Documentation",
+   "Dashboard",
+];
+
 const PLANS = [
-   {
-      name: "Starter",
-      price: "Free",
-      sub: "No credit card required",
-      desc: "Perfect for building and testing.",
+{
+      emoji: "🟢",
+      name: "Free",
+      price: "₹0",
+      sub: "per month",
+      desc: "Best for Learning & Development",
+      minutes: "300 Communication Minutes / Month",
       features: [
-         "500 minutes included",
-         "Unlimited projects",
-         "Unlimited developers",
-         "REST API + WebSocket",
-         "Hosted UI — with branding",
-         "React UI components",
+         "300 Communication Minutes / Month",
+         "Unlimited Projects",
+         "Unlimited Developers",
+         "Hosted Meeting UI",
+         "React UI Components",
          "Headless SDK",
-         "Playground",
-         "TURN relay",
-         "Community support",
+         "REST API",
+         "WebSocket Signaling",
+         "Authentication",
+         "Video Calling",
+         "Audio Calling",
+         "Screen Sharing",
+         "Device Selection",
+         "Developer Dashboard",
+         "API Playground",
+         "Documentation",
+         "Community Support",
       ],
-      cta: "Get started free",
+      cta: "Start Free",
       ctaHref: "/signup",
       featured: false,
       showPrice: true,
    },
    {
-      name: "Launch",
-      price: "₹999",
+      emoji: "🚀",
+      name: "Starter",
+      price: "₹1,999",
       sub: "per month",
-      desc: "Perfect for early startups.",
+      desc: "Best for Startups & MVPs",
+      minutes: "2,500 Communication Minutes",
       features: [
-         "2,500 minutes",
-         "Everything in Starter",
-         "Voice & Video",
-         "Webhooks",
-         "Waiting room",
-         "Device selection",
-         "Usage analytics",
-         "Email support",
+         "2,500 Communication Minutes",
+         "Unlimited Projects",
+         "Unlimited Developers",
+         "Hosted Meeting UI",
+         "React UI Components",
+         "Headless SDK",
+         "REST API",
+         "WebSocket Signaling",
+         "Authentication",
+         "Video Calling",
+         "Audio Calling",
+         "Screen Sharing",
+         "Device Selection",
+         "Developer Dashboard",
+         "API Playground",
+         "Documentation",
+         "Email Support",
+         "Custom Branding",
+         "Custom Logo",
+         "Remove BlueJoinet Branding",
+         "Higher API Rate Limits",
+         "Production Usage",
+         "Better TURN Priority",
       ],
-      cta: "Start Launch",
+      cta: "Start Starter",
       ctaHref: "/signup",
       featured: false,
       showPrice: true,
    },
    {
+      emoji: "🚀",
       name: "Growth",
-      price: "₹2,499",
+      price: "₹6,999",
       sub: "per month",
-      desc: "For growing SaaS products.",
+      desc: "Best for Growing SaaS",
+      minutes: "12,000 Communication Minutes",
       features: [
-         "10,000 minutes",
-         "Everything in Launch",
-         "Priority support",
-         "Higher API limits",
-         "Advanced analytics",
-         "Call history & details",
-         "Team management",
+         "12,000 Communication Minutes",
+         "Unlimited Projects",
+         "Unlimited Developers",
+         "Hosted Meeting UI",
+         "React UI Components",
+         "Headless SDK",
+         "REST API",
+         "WebSocket Signaling",
+         "Authentication",
+         "Video Calling",
+         "Audio Calling",
+         "Screen Sharing",
+         "Device Selection",
+         "Developer Dashboard",
+         "API Playground",
+         "Documentation",
+         "Priority Email Support",
+         "Webhooks",
+         "Call History",
+         "Usage Dashboard",
+         "Team Management",
+         "API Keys Management",
+         "Staging Environment",
+         "Higher API Limits",
+         "Faster TURN Allocation",
       ],
       cta: "Start Growth",
       ctaHref: "/signup",
@@ -237,24 +299,74 @@ const PLANS = [
       showPrice: true,
    },
    {
-      name: "Costom Plans",
-      price: "NA",
-      sub: "starting price",
-      desc: "For high-volume production apps.",
+      emoji: "🚀",
+      name: "Pro",
+      price: "₹16,999",
+      sub: "per month",
+      desc: "Best for Scale-Ups",
+      minutes: "35,000 Communication Minutes",
       features: [
-         "Unlimited minutes",
-         "Dedicated TURN server",
-         "SLA guarantee",
-         "Technical account manager",
-         "Custom branding & domains",
-         "Custom integrations",
-         "Dedicated infrastructure",
-         "Volume discounts",
+         "35,000 Communication Minutes",
+         "Unlimited Projects",
+         "Unlimited Developers",
+         "Hosted Meeting UI",
+         "React UI Components",
+         "Headless SDK",
+         "REST API",
+         "WebSocket Signaling",
+         "Authentication",
+         "Video Calling",
+         "Audio Calling",
+         "Screen Sharing",
+         "Device Selection",
+         "Developer Dashboard",
+         "API Playground",
+         "Documentation",
+         "Priority Technical Support",
+         "SLA",
+         "Dedicated Success Manager",
+         "Advanced Monitoring",
+         "Custom Domains",
+         "Custom Hosted UI Branding",
+         "Dedicated TURN Pool",
+         "Highest API Limits",
+         "Early Access Features",
+      ],
+      cta: "Start Pro",
+      ctaHref: "/signup",
+      featured: false,
+      showPrice: true,
+   },
+   {
+      emoji: "🏢",
+      name: "Enterprise",
+      price: "Custom",
+      sub: "pricing",
+      desc: "For organizations with large-scale communication needs.",
+      minutes: "Custom Minute Packages",
+      features: [
+         "Unlimited Customization",
+         "Custom Minute Packages",
+         "Dedicated Infrastructure",
+         "Dedicated TURN Servers",
+         "Private Deployment Options",
+         "Custom SLA",
+         "99.99% Uptime SLA",
+         "Priority Engineering Support",
+         "Dedicated Account Manager",
+         "Migration Assistance",
+         "Security Review",
+         "Custom Integrations",
+         "Volume Discounts",
+         "Custom Billing",
+         "Invoice Billing",
+         "White-label Deployment",
+         "On-premise / Private Cloud (Future)",
       ],
       cta: "Talk to Sales",
       ctaHref: "mailto:hello@bluejoinet.com",
       featured: false,
-      showPrice: false,
+      showPrice: true,
    },
 ];
 
@@ -635,25 +747,46 @@ export default function LandingPage() {
             </div>
          </section>
 
-         {/* ── Pricing ── */}
+{/* ── Pricing ── */}
          <section id="pricing" className="section-base py-24 px-6">
             <div className="max-w-6xl mx-auto">
                <p className="section-label font-mono text-xs tracking-widest uppercase mb-4">
                   Pricing
                </p>
                <h2 className="lp-h2 font-bold text-white mb-4">
-                  Transparent pricing. No surprises.
+                  Value-based pricing. Clear and predictable.
                </h2>
                <p className="text-slate-400 mb-14 max-w-2xl">
-                  No confusing calculators, no hidden fees. You understand our
-                  pricing in one minute.
+                  Every plan includes the complete platform. Choose a plan based
+                  only on your usage — minutes and support.
                </p>
 
-               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-                  {PLANS.map((plan) => (
+               {/* Comparison banner */}
+               <div
+                  className="rounded-xl border border-[#2A3D64] p-6 mb-12 text-center"
+                  style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05))' }}
+               >
+                  <p className="font-bold text-white text-lg mb-2">
+                     One Platform. Three Ways to Integrate.
+                  </p>
+                  <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-slate-300">
+                     <span className="inline-flex items-center gap-1.5">🚀 Hosted UI</span>
+                     <span className="text-slate-600">•</span>
+                     <span className="inline-flex items-center gap-1.5">⚛️ React Components</span>
+                     <span className="text-slate-600">•</span>
+                     <span className="inline-flex items-center gap-1.5">🧩 Headless SDK</span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-3">
+                     Every plan includes the complete platform. Choose a plan based only on your usage.
+                  </p>
+               </div>
+
+               {/* Plan cards: Free + paid tiers */}
+               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 items-stretch">
+                  {PLANS.filter((p) => p.name !== 'Enterprise').map((plan) => (
                      <div
                         key={plan.name}
-                        className={`${plan.featured ? "card-featured border-[#2A3D64]" : "card-surface border-[#1A2642]"} relative rounded-xl border p-7 flex flex-col`}
+                        className={`${plan.featured ? "card-featured border-[#2A3D64]" : "card-surface border-[#1A2642]"} relative rounded-xl border p-6 flex flex-col`}
                      >
                         {plan.featured && (
                            <div className="badge-gradient absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-mono px-3 py-0.5 rounded-full text-white whitespace-nowrap">
@@ -661,31 +794,37 @@ export default function LandingPage() {
                            </div>
                         )}
 
-                        <p className="font-semibold text-white mb-1">
-                           {plan.name}
-                        </p>
-                        <p className="text-slate-500 text-xs mb-5">
+                        <div className="flex items-center gap-2 mb-1">
+                           <span className="text-lg">{plan.emoji}</span>
+                           <p className="font-semibold text-white">{plan.name}</p>
+                        </div>
+                        <p className="text-slate-500 text-xs mb-4 leading-relaxed">
                            {plan.desc}
                         </p>
+
                         {plan.showPrice && (
-                           <div className="mb-5">
+                           <div
+                              className="mb-5 rounded-lg p-4"
+                              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid #1A2642' }}
+                           >
                               <span className="price-text font-bold text-white">
                                  {plan.price}
                               </span>
-                              {plan.price !== "Free" && (
-                                 <span className="text-slate-500 text-xs ml-1">
-                                    {plan.sub}
-                                 </span>
-                              )}
-                              {plan.price === "Free" && (
-                                 <p className="text-xs text-slate-500 mt-0.5">
-                                    {plan.sub}
+                              <span className="text-slate-500 text-xs ml-1">
+                                 {plan.sub}
+                              </span>
+<div className="mt-2 space-y-1">
+                                 <p
+                                    className="text-xs font-semibold"
+                                    style={{ color: plan.featured ? '#A5B4FC' : '#94A3B8' }}
+                                 >
+                                    📅 {plan.minutes}
                                  </p>
-                              )}
+                              </div>
                            </div>
                         )}
 
-                        <div className="space-y-2.5 mb-8 flex-1">
+                        <div className="space-y-2 mb-6 flex-1">
                            {plan.features.map((f) => (
                               <div key={f} className="flex items-start gap-2">
                                  <span
@@ -702,27 +841,125 @@ export default function LandingPage() {
                            ))}
                         </div>
 
-                        {plan.ctaHref.startsWith("mailto") ? (
-                           <a
-                              href={plan.ctaHref}
-                              className="block text-center text-sm font-medium text-white px-4 py-2.5 rounded-lg border border-[#1A2642] hover:border-[#2A3D64] transition-all"
-                           >
-                              {plan.cta}
-                           </a>
-                        ) : (
-                           <Link
-                              href={plan.ctaHref}
-                              className={`${plan.featured ? "btn-primary" : "border border-[#1A2642] hover:border-[#2A3D64]"} block text-center text-sm font-medium text-white px-4 py-2.5 rounded-lg transition-all hover:opacity-90`}
-                           >
-                              {plan.cta}
-                           </Link>
-                        )}
+                        <Link
+                           href={plan.ctaHref}
+                           className={`${plan.featured ? "btn-primary" : "border border-[#1A2642] hover:border-[#2A3D64]"} block text-center text-sm font-medium text-white px-4 py-2.5 rounded-lg transition-all hover:opacity-90`}
+                        >
+                           {plan.cta}
+                        </Link>
                      </div>
                   ))}
                </div>
 
-               <p className="text-center text-xs text-slate-600 mt-8">
-                  All prices in INR. No hidden charges. No per-minute billing.
+               {/* Enterprise wide card */}
+               {(() => {
+                  const plan = PLANS.find((p) => p.name === 'Enterprise');
+                  if (!plan) return null;
+                  return (
+                     <div
+                        className="relative rounded-xl border border-[#2A3D64] mt-5 overflow-hidden"
+                        style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.04))' }}
+                     >
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-8">
+                           <div className="lg:col-span-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                 <span className="text-2xl">{plan.emoji}</span>
+                                 <p className="font-bold text-white text-lg">{plan.name}</p>
+                              </div>
+                              <p className="text-slate-400 text-sm mb-4 leading-relaxed">
+                                 {plan.desc}
+                              </p>
+                              <div className="mb-5">
+                                 <span className="price-text font-bold text-white text-2xl">
+                                    {plan.price}
+                                 </span>
+                                 <span className="text-slate-500 text-sm ml-1">
+                                    {plan.sub}
+                                 </span>
+<div className="mt-2 space-y-1">
+                                    <p className="text-xs font-semibold text-slate-300">
+                                       📅 {plan.minutes}
+                                    </p>
+                                 </div>
+                              </div>
+                              <a
+                                 href={plan.ctaHref}
+                                 className="inline-block text-center text-sm font-medium text-white px-6 py-3 rounded-lg border border-[#2A3D64] hover:border-[#6366F1] transition-all"
+                              >
+                                 {plan.cta} →
+                              </a>
+                           </div>
+<div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+                              {plan.features.map((f) => (
+                                 <div key={f} className="flex items-start gap-2">
+                                    <span className="check-indigo text-xs mt-0.5">✓</span>
+                                    <p className="text-sm text-slate-300">{f}</p>
+                                 </div>
+                              ))}
+                           </div>
+                        </div>
+                     </div>
+                  );
+               })()}
+
+{/* Every plan includes */}
+               <div
+                  className="rounded-xl border border-[#1A2642] mt-14 p-8"
+                  style={{ background: '#0D1421' }}
+               >
+                  <p className="text-center font-bold text-white text-lg mb-2">
+                     Every Plan Includes
+                  </p>
+                  <p className="text-center text-sm text-slate-500 mb-8">
+                     The complete platform is available on every plan — choose a plan based only on your usage.
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                     {EVERY_PLAN_INCLUDES.map((item) => (
+                        <div
+                           key={item}
+                           className="flex items-center gap-2.5 rounded-lg px-4 py-3"
+                           style={{ background: '#060B18', border: '1px solid #1A2642' }}
+                        >
+                           <span className="check-indigo text-sm mt-0.5">✓</span>
+                           <p className="text-sm text-slate-300">{item}</p>
+                        </div>
+                     ))}
+                  </div>
+               </div>
+
+               {/* Pricing FAQ CTA */}
+               <div
+                  className="mt-12 rounded-xl border border-[#1A2642] p-8 text-center"
+                  style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.03))' }}
+               >
+                  <p className="font-bold text-white text-lg mb-2">
+                     Questions about pricing?
+                  </p>
+                  <p className="text-sm text-slate-400 mb-6 max-w-xl mx-auto">
+                     We've answered the most common questions about minutes, plans,
+                     upgrades, and billing. If you still need help, our engineers
+                     are one email away.
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-3">
+                     <Link
+                        href="/faq#pricing"
+                        className="inline-flex items-center gap-2 text-white font-medium text-sm px-6 py-2.5 rounded-lg transition-all hover:opacity-90"
+                        style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}
+                     >
+                        View pricing FAQ →
+                     </Link>
+                     <a
+                        href="mailto:hello@bluejoinet.com"
+                        className="inline-flex items-center gap-2 text-slate-300 font-medium text-sm px-6 py-2.5 rounded-lg border border-[#1A2642] hover:border-[#2A3D64] transition-all"
+                     >
+                        Talk to an engineer
+                     </a>
+                  </div>
+               </div>
+
+               <p className="text-center text-xs text-slate-600 mt-10">
+                  All prices in INR. Every plan includes a monthly minute
+                  allowance. No hidden charges.
                </p>
             </div>
          </section>

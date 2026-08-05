@@ -67,20 +67,37 @@ const FAQ_GROUPS = [
       },
     ],
   },
-  {
+{
     group: 'Pricing & Billing',
+    id: 'pricing',
     items: [
       {
-        q: 'How does pricing work?',
-        a: 'We offer predictable flat tiers — no per-minute surprises. The Starter plan is free with 500 minutes. Paid plans add more minutes, webhooks, analytics, and priority support. See the pricing section on the homepage.',
-      },
-      {
         q: 'Is there a free plan?',
-        a: 'Yes. The Starter plan is free forever and includes 500 minutes, unlimited projects, the REST API + WebSocket signaling, hosted UI, playground, and TURN relay.',
+        a: 'Yes. Build, test and prototype with 300 free communication minutes every month. The Free plan includes unlimited projects, unlimited developers, and 2 active calls simultaneously.',
       },
       {
-        q: 'Can I cancel at any time?',
-        a: 'Yes. All plans are month-to-month with no lock-in. Manage your subscription from the dashboard.',
+        q: 'Can I use React Components on the Free plan?',
+        a: 'Yes. Every plan includes the complete React Component Library.',
+      },
+      {
+        q: 'Can I use the Headless SDK?',
+        a: 'Yes. The SDK is included in every plan.',
+      },
+      {
+        q: 'Do I need to upgrade to use Hosted UI?',
+        a: 'No. Hosted UI is available on every plan.',
+      },
+      {
+        q: 'What happens if I exceed my minutes?',
+        a: 'You can upgrade your plan at any time or purchase additional communication minutes.',
+      },
+      {
+        q: 'Are communication minutes shared?',
+        a: 'Yes. Minutes are shared across audio calls, video calls, and screen-sharing sessions.',
+      },
+      {
+        q: 'Can I cancel anytime?',
+        a: 'Yes. Monthly subscriptions can be upgraded, downgraded, or canceled at any time.',
       },
     ],
   },
@@ -155,7 +172,7 @@ export default function FaqPage() {
       <div className="max-w-4xl mx-auto px-6 pb-24">
         <div className="flex flex-col gap-12">
           {FAQ_GROUPS.map((g) => (
-            <div key={g.group}>
+            <div key={g.group} id={g.id} className={g.id ? 'scroll-mt-24' : ''}>
               <h2 className="font-semibold text-white mb-4" style={{ fontSize: '1.1rem' }}>
                 <span className="gradient-text font-mono text-xs tracking-widest uppercase mr-3">{g.group}</span>
               </h2>
