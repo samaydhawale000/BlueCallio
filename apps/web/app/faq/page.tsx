@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const FAQ_GROUPS = [
   {
@@ -68,44 +68,6 @@ const FAQ_GROUPS = [
     ],
   },
 {
-    group: 'Pricing & Billing',
-    id: 'pricing',
-    items: [
-      {
-        q: 'Is there a free tier?',
-        a: 'Yes. You get 500 audio and 200 video participant-minutes free every month, plus unlimited projects and developers. No credit card is required to start.',
-      },
-      {
-        q: 'How does usage-based pricing work?',
-        a: 'There are no subscriptions or up-front fees. You pay a simple per-participant-minute rate only for minutes beyond the free allowance: audio ₹0.20/min, video ₹0.80/min, and screen share +₹0.10/min (added on top of video).',
-      },
-      {
-        q: 'Is screen sharing billable separately?',
-        a: 'Yes. Screen sharing is always billable at +₹0.10 per participant-minute on top of the video rate, and has no free allowance.',
-      },
-      {
-        q: 'Do I need to add a payment method to start?',
-        a: 'No. Your free allowance covers development and prototyping. You only add a payment method when you go to production and exceed the free minutes.',
-      },
-      {
-        q: 'When and how am I charged?',
-        a: 'At the end of each month we generate an invoice for your billable usage and charge your saved card automatically. A GST of 18% applies on billable usage.',
-      },
-      {
-        q: 'What happens if a payment fails?',
-        a: 'We retry, notify you, and enter a 7-day grace period. During grace you can keep existing calls, but you cannot start new ones until the payment succeeds. Active calls are never interrupted.',
-      },
-      {
-        q: 'Can I see my usage and invoices?',
-        a: 'Yes. The dashboard Usage page shows per-type minutes and estimated month-end cost, and the Billing page lists your payment methods and past invoices.',
-      },
-      {
-        q: 'Is every feature included on the free tier?',
-        a: 'Yes. Hosted UI, React Components, Headless SDK, REST API, WebSocket signaling, and the developer dashboard are all available. You only pay for minutes beyond the free allowance.',
-      },
-    ],
-  },
-  {
     group: 'Development & Support',
     items: [
       {
@@ -153,6 +115,43 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 }
 
 export default function FaqPage() {
+  const [rates, setRates] = useState<{
+    audioPaise: number;
+    videoPaise: number;
+    screenSharePaise: number;
+    freeAudioMins: number;
+    freeVideoMins: number;
+    taxPercent: number;
+  } | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    fetch('/billing/rates')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (active && data) setRates(data); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  const paiseToINR = (p: number) => `₹${((p ?? 0) / 100).toFixed(2)}`;
+  const freeAudio = rates?.freeAudioMins ?? 500;
+  const freeVideo = rates?.freeVideoMins ?? 200;
+  const gst = rates?.taxPercent ?? 18;
+  const audioRate = paiseToINR(rates?.audioPaise ?? 20);
+  const videoRate = paiseToINR(rates?.videoPaise ?? 80);
+  const screenRate = paiseToINR(rates?.screenSharePaise ?? 10);
+
+  const pricingItems = [
+    { q: 'Is there a free tier?', a: `Yes. You get ${freeAudio} audio and ${freeVideo} video participant-minutes free every month, plus unlimited projects and developers. No credit card is required to start.` },
+    { q: 'How does usage-based pricing work?', a: `There are no subscriptions or up-front fees. You pay a simple per-participant-minute rate only for minutes beyond the free allowance: audio ${audioRate}/min, video ${videoRate}/min, and screen share +${screenRate}/min (added on top of video).` },
+    { q: 'Is screen sharing billable separately?', a: `Yes. Screen sharing is always billable at +${screenRate} per participant-minute on top of the video rate, and has no free allowance.` },
+    { q: 'Do I need to add a payment method to start?', a: 'No. Your free allowance covers development and prototyping. You only add a payment method when you go to production and exceed the free minutes.' },
+    { q: 'When and how am I charged?', a: `At the end of each month we generate an invoice for your billable usage and charge your saved card automatically. A GST of ${gst}% applies on billable usage.` },
+    { q: 'What happens if a payment fails?', a: 'We retry, notify you, and enter a 7-day grace period. During grace you can keep existing calls, but you cannot start new ones until the payment succeeds. Active calls are never interrupted.' },
+    { q: 'Can I see my usage and invoices?', a: 'Yes. The dashboard Usage page shows per-type minutes and estimated month-end cost, and the Billing page lists your payment methods and past invoices.' },
+    { q: 'Is every feature included on the free tier?', a: 'Yes. Hosted UI, React Components, Headless SDK, REST API, WebSocket signaling, and the developer dashboard are all available. You only pay for minutes beyond the free allowance.' },
+  ];
+
   return (
     <div style={{ background: '#060B18', color: '#F1F5F9', minHeight: '100vh' }}>
 
@@ -174,9 +173,9 @@ export default function FaqPage() {
 
       {/* FAQ groups */}
       <div className="max-w-4xl mx-auto px-6 pb-24">
-        <div className="flex flex-col gap-12">
-          {FAQ_GROUPS.map((g) => (
-            <div key={g.group} id={g.id} className={g.id ? 'scroll-mt-24' : ''}>
+<div className="flex flex-col gap-12">
+{FAQ_GROUPS.map((g) => (
+            <div key={g.group}>
               <h2 className="font-semibold text-white mb-4" style={{ fontSize: '1.1rem' }}>
                 <span className="gradient-text font-mono text-xs tracking-widest uppercase mr-3">{g.group}</span>
               </h2>
@@ -187,6 +186,18 @@ export default function FaqPage() {
               </div>
             </div>
           ))}
+
+          {/* Pricing & Billing (dynamic rates) */}
+          <div id="pricing" className="scroll-mt-24">
+            <h2 className="font-semibold text-white mb-4" style={{ fontSize: '1.1rem' }}>
+              <span className="gradient-text font-mono text-xs tracking-widest uppercase mr-3">Pricing &amp; Billing</span>
+            </h2>
+            <div className="flex flex-col gap-3">
+              {pricingItems.map((item) => (
+                <FaqItem key={item.q} q={item.q} a={item.a} />
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* CTA */}

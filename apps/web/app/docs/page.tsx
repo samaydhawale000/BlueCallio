@@ -108,6 +108,14 @@ function Endpoint({ method, path, summary, children, id }: { method: 'GET' | 'PO
 // ── Main ─────────────────────────────────────────────────────────────────────
 export default function DocsPage() {
   const [activeId, setActiveId] = useState('quickstart');
+  const [rates, setRates] = useState<{
+    audioPaise: number;
+    videoPaise: number;
+    screenSharePaise: number;
+    freeAudioMins: number;
+    freeVideoMins: number;
+    taxPercent: number;
+  } | null>(null);
 
   useEffect(() => {
     const ob = new IntersectionObserver(
@@ -117,6 +125,23 @@ export default function DocsPage() {
     document.querySelectorAll('section[id]').forEach((el) => ob.observe(el));
     return () => ob.disconnect();
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    fetch('/billing/rates')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (active && data) setRates(data); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  const paiseToINR = (p: number) => `₹${((p ?? 0) / 100).toFixed(2)}`;
+  const audio = paiseToINR(rates?.audioPaise ?? 20);
+  const video = paiseToINR(rates?.videoPaise ?? 80);
+  const screen = paiseToINR(rates?.screenSharePaise ?? 10);
+  const freeAudio = rates?.freeAudioMins ?? 500;
+  const freeVideo = rates?.freeVideoMins ?? 200;
+  const gst = rates?.taxPercent ?? 18;
 
   return (
     <div style={{ background: '#060B18', color: '#F1F5F9', minHeight: '100vh' }}>
@@ -867,12 +892,12 @@ meeting.microphone.enable();`} />
               for usage beyond the monthly free allowance.
             </p>
 
-            {/* Free tier + rates */}
+{/* Free tier + rates */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
               {[
-                { media: 'Audio', rate: '₹0.20', note: 'First 500 audio min/month free' },
-                { media: 'Video', rate: '₹0.80', note: 'First 200 video min/month free' },
-                { media: 'Screen share', rate: '+₹0.10', note: 'Always billable, on top of video' },
+                { media: 'Audio', rate: audio, note: `First ${freeAudio} audio min/month free` },
+                { media: 'Video', rate: video, note: `First ${freeVideo} video min/month free` },
+                { media: 'Screen share', rate: `+${screen}`, note: 'Always billable, on top of video' },
               ].map((r) => (
                 <div key={r.media} className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
                   <p className="text-xs text-slate-500">{r.media}</p>
@@ -886,9 +911,9 @@ meeting.microphone.enable();`} />
             <p className="text-sm font-semibold text-white mb-3">How billing works</p>
             <div className="space-y-3 mb-6">
               {[
-                { t: 'Start free', d: 'Every account gets 500 audio + 200 video minutes/month at no cost. No card required to begin.' },
+                { t: 'Start free', d: `Every account gets ${freeAudio} audio + ${freeVideo} video minutes/month at no cost. No card required to begin.` },
                 { t: 'Add a payment method', d: 'In the dashboard, add a card only when you go to production. You are only charged for minutes beyond the free tier.' },
-                { t: 'Monthly invoice', d: 'At the end of each month we generate an invoice for billable usage and auto-charge your saved card. GST of 18% applies on billable usage.' },
+                { t: 'Monthly invoice', d: `At the end of each month we generate an invoice for billable usage and auto-charge your saved card. GST of ${gst}% applies on billable usage.` },
                 { t: 'Failed payment', d: 'We retry and enter a 7-day grace period. Active calls are never interrupted, but new calls are blocked until payment succeeds.' },
               ].map((s) => (
                 <div key={s.t} className="flex gap-3 rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>

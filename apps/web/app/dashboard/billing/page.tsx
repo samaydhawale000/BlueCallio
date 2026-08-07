@@ -130,9 +130,11 @@ export default function BillingPage() {
     );
   }
 
-  const u = usage?.usage;
+const u = usage?.usage;
   const cost = usage?.cost;
   const free = usage?.freeAllowance;
+  const rates = usage?.rates;
+  const paiseToINRShort = (p: number) => `₹${(p / 100).toFixed(2)}`;
 
   const hasDefaultCard = paymentMethods.some((pm) => pm.default);
   const hasBillableUsage = (cost?.totalPaise ?? 0) > 0 || (usage?.estimatedMonthEndPaise ?? 0) > 0;
@@ -183,8 +185,8 @@ export default function BillingPage() {
             </div>
             <div>
               <p className="text-lg font-bold text-white">Free Tier</p>
-              <p className="text-sm text-slate-400 mt-0.5">
-                500 audio + 200 video mins / month free · screen share always paid
+<p className="text-sm text-slate-400 mt-0.5">
+                {free?.audioMinutes ?? 500} audio + {free?.videoMinutes ?? 200} video mins / month free · screen share always paid
               </p>
             </div>
           </div>
@@ -199,13 +201,13 @@ export default function BillingPage() {
 
         {/* Per-type breakdown */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-          <TypeRow
+<TypeRow
             icon={<PhoneCall size={16} style={{ color: '#818CF8' }} />}
             label="Audio"
             minutes={u?.audioMinutes ?? 0}
             costPaise={cost?.audioPaise ?? 0}
             freeOf={free?.audioMinutes ?? 0}
-            rate="₹0.20 / participant-min"
+            rate={`${paiseToINRShort(rates?.audioPaise ?? 20)} / participant-min`}
             color="#818CF8"
           />
           <TypeRow
@@ -214,7 +216,7 @@ export default function BillingPage() {
             minutes={u?.videoMinutes ?? 0}
             costPaise={cost?.videoPaise ?? 0}
             freeOf={free?.videoMinutes ?? 0}
-            rate="₹0.80 / participant-min"
+            rate={`${paiseToINRShort(rates?.videoPaise ?? 80)} / participant-min`}
             color="#C084FC"
           />
           <TypeRow
@@ -223,7 +225,7 @@ export default function BillingPage() {
             minutes={u?.screenShareMinutes ?? 0}
             costPaise={cost?.screenSharePaise ?? 0}
             freeOf={0}
-            rate="+₹0.10 / participant-min"
+            rate={`+${paiseToINRShort(rates?.screenSharePaise ?? 10)} / participant-min`}
             color="#34D399"
           />
         </div>
@@ -260,12 +262,13 @@ export default function BillingPage() {
       </div>
 
       {/* ── How billing works ── */}
-      <BillingTimeline
+<BillingTimeline
         hasUsage={(u?.callsCompleted ?? 0) > 0 || (u?.audioMinutes ?? 0) > 0 || (u?.videoMinutes ?? 0) > 0}
         hasBillableUsage={hasBillableUsage}
         hasPaymentMethod={hasDefaultCard}
         nextBillingDate={usage?.nextBillingDate ?? null}
         hasInvoices={invoices.length > 0}
+        freeAllowance={usage?.freeAllowance}
       />
 
       {/* ── Payment method ── */}
@@ -329,10 +332,10 @@ export default function BillingPage() {
 
       {/* ── How it works ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <InfoCard
+<InfoCard
           icon={<Wallet size={16} style={{ color: '#34D399' }} />}
           title="Free tier"
-          body="500 audio + 200 video participant-minutes free every month. Screen sharing is always billable."
+          body={`${free?.audioMinutes ?? 500} audio + ${free?.videoMinutes ?? 200} video participant-minutes free every month. Screen sharing is always billable.`}
         />
         <InfoCard
           icon={<Clock size={16} style={{ color: '#818CF8' }} />}

@@ -432,10 +432,14 @@ const priceId = plan.razorpayPlanId;
       });
     }
 
-    // Price per minute in paise (INR) — ₹0.70/min → 70.
+    // Price per minute in paise (INR) — derived from the DB billing rates.
+    // Top-ups are priced at the video rate so they cover the costliest media.
+    const rates = await this.prisma.billingRate.findUnique({
+      where: { key: 'default' },
+    });
     const paisePerMinute = process.env.TOPUP_PAISE_PER_MINUTE
       ? Number(process.env.TOPUP_PAISE_PER_MINUTE)
-      : 70;
+      : rates?.videoPaise ?? 80;
     const amount = minutes * paisePerMinute;
 
     const base = process.env.APP_URL || 'http://localhost:3000';

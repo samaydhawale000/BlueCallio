@@ -111,9 +111,11 @@ export default function UsagePage() {
     );
   }
 
-  const u = usage?.usage;
+const u = usage?.usage;
   const cost = usage?.cost;
   const free = usage?.freeAllowance;
+  const rates = usage?.rates;
+  const paiseToINRShort = (p: number) => `₹${(p / 100).toFixed(2)}`;
   const maxMin = Math.max(...chart.map((d) => d.minutes), 1);
   const totalCallsInChart = chart.reduce((acc, d) => acc + d.calls, 0);
   const totalBillableMinutes =
@@ -144,8 +146,8 @@ export default function UsagePage() {
         <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
           <div>
             <p className="text-sm font-semibold text-white">Usage by media type</p>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Free tier: 500 audio + 200 video min/month · screen share always paid
+<p className="text-xs text-slate-500 mt-0.5">
+              Free tier: {free?.audioMinutes ?? 500} audio + {free?.videoMinutes ?? 200} video min/month · screen share always paid
             </p>
           </div>
           <Link
@@ -157,13 +159,13 @@ export default function UsagePage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <TypeRow
+<TypeRow
             icon={<PhoneCall size={16} style={{ color: '#818CF8' }} />}
             label="Audio"
             minutes={u?.audioMinutes ?? 0}
             costPaise={cost?.audioPaise ?? 0}
             freeOf={free?.audioMinutes ?? 0}
-            rate="₹0.20 / participant-min"
+            rate={`${paiseToINRShort(rates?.audioPaise ?? 20)} / participant-min`}
           />
           <TypeRow
             icon={<Video size={16} style={{ color: '#C084FC' }} />}
@@ -171,7 +173,7 @@ export default function UsagePage() {
             minutes={u?.videoMinutes ?? 0}
             costPaise={cost?.videoPaise ?? 0}
             freeOf={free?.videoMinutes ?? 0}
-            rate="₹0.80 / participant-min"
+            rate={`${paiseToINRShort(rates?.videoPaise ?? 80)} / participant-min`}
           />
           <TypeRow
             icon={<Monitor size={16} style={{ color: '#34D399' }} />}
@@ -179,7 +181,7 @@ export default function UsagePage() {
             minutes={u?.screenShareMinutes ?? 0}
             costPaise={cost?.screenSharePaise ?? 0}
             freeOf={0}
-            rate="+₹0.10 / participant-min"
+            rate={`+${paiseToINRShort(rates?.screenSharePaise ?? 10)} / participant-min`}
           />
         </div>
       </div>
@@ -279,7 +281,7 @@ export default function UsagePage() {
           <p className="text-sm font-medium text-white">How usage is billed</p>
           <p className="text-xs text-slate-500 mt-0.5">
             Minutes are counted per participant from when a call connects until it ends. Anything
-            beyond the free allowance is billed at ₹0.20 (audio), ₹0.80 (video), and +₹0.10
+            beyond the free allowance is billed at {paiseToINRShort(rates?.audioPaise ?? 20)} (audio), {paiseToINRShort(rates?.videoPaise ?? 80)} (video), and +{paiseToINRShort(rates?.screenSharePaise ?? 10)}
             (screen share) per participant-minute. An invoice is generated and your card charged
             on the 1st of each month.
           </p>

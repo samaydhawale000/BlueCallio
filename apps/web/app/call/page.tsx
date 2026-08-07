@@ -119,6 +119,29 @@ function useDeviceEnumerate() {
   return { devices, audioInputs, audioOutputs, videoInputs, loading, refresh };
 }
 
+// getUserMedia that can never hang the accept flow — it rejects after a
+// timeout if the browser doesn't resolve the camera/mic permission prompt.
+function getUserMediaWithTimeout(
+  constraints: MediaStreamConstraints,
+  timeoutMs = 8000,
+): Promise<MediaStream> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error('Media permission timed out'));
+    }, timeoutMs);
+    navigator.mediaDevices
+      .getUserMedia(constraints)
+      .then((stream) => {
+        clearTimeout(timer);
+        resolve(stream);
+      })
+      .catch((err) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+  });
+}
+
 // ── Main ──────────────────────────────────────────────────
 
 function CallPageContent() {
@@ -145,10 +168,11 @@ function CallPageContent() {
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
-  const screenStreamRef = useRef<MediaStream | null>(null);
+const screenStreamRef = useRef<MediaStream | null>(null);
   const stateRef = useRef<CallState>('connecting');
+  const callTypeRef = useRef<'AUDIO' | 'VIDEO'>('VIDEO');
 
-  const duration = useDurationTimer(state === 'in-call');
+const duration = useDurationTimer(state === 'in-call');
   const isDark = branding.theme === 'DARK';
   const primary = branding.primaryColor;
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3005';
@@ -156,6 +180,10 @@ function CallPageContent() {
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
+
+  useEffect(() => {
+    callTypeRef.current = callType;
+  }, [callType]);
 
   // Fetch branding + participant identity.
   useEffect(() => {
@@ -197,24 +225,11 @@ function CallPageContent() {
     }
   }, [token, apiUrl]);
 
-  const initMedia = useCallback(async (video = true) => {
-    const constraints: MediaStreamConstraints = { audio: true };
-    if (video) {
-      constraints.video = selectedDevice.video
-        ? { deviceId: { exact: selectedDevice.video } }
-        : true;
-    }
-
-    const [stream, iceServers] = await Promise.all([
-      navigator.mediaDevices.getUserMedia(constraints),
-      fetchIceServers(),
-    ]);
-    localStreamRef.current = stream;
-    if (localVideoRef.current) localVideoRef.current.srcObject = stream;
-
-    const pc = new RTCPeerConnection({ iceServers });
-
-    stream.getTracks().forEach((t) => pc.addTrack(t, stream));
+// Create the RTCPeerConnection synchronously so nothing blocks the accept
+  // flow. ICE servers are applied in the background via setConfiguration().
+  const createPeer = useCallback((): RTCPeerConnection => {
+    const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+    pcRef.current = pc;
 
     pc.ontrack = (event) => {
       const s = event.streams[0];
@@ -226,8 +241,39 @@ function CallPageContent() {
       if (event.candidate) socket.emit('ice-candidate', { candidate: event.candidate });
     };
 
-    pcRef.current = pc;
-  }, [selectedDevice.video, fetchIceServers]);
+    // Apply real ICE/TURN servers in the background (never blocks the call).
+    fetchIceServers()
+      .then((servers) => pc.setConfiguration({ iceServers: servers }))
+      .catch(() => {});
+
+    return pc;
+  }, [fetchIceServers]);
+
+  // Acquire media (bounded by a timeout so it can never hang) and attach the
+  // local tracks to the peer connection. Best-effort: falls back to audio-only.
+  const attachMedia = useCallback(
+    async (pc: RTCPeerConnection, video = true) => {
+      const constraints: MediaStreamConstraints = { audio: true };
+      if (video) {
+        constraints.video = selectedDevice.video
+          ? { deviceId: { exact: selectedDevice.video } }
+          : true;
+      }
+      const stream = await getUserMediaWithTimeout(constraints);
+      localStreamRef.current = stream;
+      if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+      stream.getTracks().forEach((t) => pc.addTrack(t, stream));
+    },
+    [selectedDevice.video],
+  );
+
+const initMedia = useCallback(
+    async (video = true) => {
+      const pc = pcRef.current ?? createPeer();
+      await attachMedia(pc, video);
+    },
+    [createPeer, attachMedia],
+  );
 
   const createOffer = useCallback(async () => {
     if (!pcRef.current) return;
@@ -259,10 +305,15 @@ function CallPageContent() {
 
 socket.on('call-accepted', async () => {
       try {
-        // Best-effort media init — fall back to audio-only if video fails.
-        await initMedia(callType === 'VIDEO').catch(async () => {
-          await initMedia(false).catch(() => {});
-        });
+        // Create the peer connection synchronously so the offer is never
+        // dropped, then attach local media (bounded by a timeout) so the offer
+        // carries tracks.
+        const pc = pcRef.current ?? createPeer();
+        const isVideo = callTypeRef.current === 'VIDEO';
+        await attachMedia(pc, isVideo)
+          .catch(() => attachMedia(pc, false))
+          .catch(() => {});
+
         setState('in-call');
         await createOffer();
         socket.emit('call.started', { callId: urlCallId });
@@ -280,11 +331,22 @@ socket.on('call-rejected', () => setState('rejected'));
       setState('missed');
     });
 
-    socket.on('offer', async ({ offer }: { offer: RTCSessionDescriptionInit }) => {
+socket.on('offer', async ({ offer }: { offer: RTCSessionDescriptionInit }) => {
       if (!pcRef.current) return;
-      await pcRef.current.setRemoteDescription(new RTCSessionDescription(offer));
-      const answer = await pcRef.current.createAnswer();
-      await pcRef.current.setLocalDescription(answer);
+      const pc = pcRef.current;
+
+// Ensure local media is attached before answering so the answer carries
+      // the receiver's audio/video tracks. Bounded by a timeout (never hangs).
+      if (pc.getSenders().length === 0) {
+        const isVideo = callTypeRef.current === 'VIDEO';
+        await attachMedia(pc, isVideo)
+          .catch(() => attachMedia(pc, false))
+          .catch(() => {});
+      }
+
+      await pc.setRemoteDescription(new RTCSessionDescription(offer));
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
       socket.emit('answer', { answer });
     });
 
@@ -304,10 +366,6 @@ socket.on('call-rejected', () => setState('rejected'));
       setState('ended');
     });
 
-    socket.on('connected', () => {
-      socket.emit('authenticate', { token });
-    });
-
     socket.on('connect', () => {
       socket.emit(
         'authenticate',
@@ -322,7 +380,7 @@ socket.on('call-rejected', () => setState('rejected'));
     socket.connect();
 
     return () => {
-['incoming-call', 'call-accepted', 'call-rejected', 'call-missed', 'offer', 'answer', 'ice-candidate', 'call-ended', 'connected', 'connect']
+['incoming-call', 'call-accepted', 'call-rejected', 'call-missed', 'offer', 'answer', 'ice-candidate', 'call-ended', 'connect']
         .forEach((e) => socket.off(e));
       socket.disconnect();
       cleanup();
@@ -342,30 +400,39 @@ socket.on('call-rejected', () => setState('rejected'));
   }, [isDark]);
 
   async function sessionPost(path: string) {
-    return fetch(`${apiUrl}${path}`, {
+    const res = await fetch(`${apiUrl}${path}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
     });
+    if (!res.ok) throw new Error(`${path} failed with ${res.status}`);
+    return res;
   }
 
 async function acceptCall() {
     if (!incomingData) return;
     try {
-      // Initialize media (audio always; video best-effort). If the camera
-      // fails we still want the call to connect with audio only rather than
-      // leaving the UI stuck on the incoming screen.
-      await initMedia(incomingData.type === 'VIDEO').catch(async () => {
-        // Retry audio-only if the full (video) init failed.
-        await initMedia(false).catch(() => {});
-      });
+      // Create the peer connection synchronously so the caller's offer is
+      // never dropped (the offer handler needs pcRef set). Nothing here
+      // awaits a network call, so the button responds immediately.
       setCallType(incomingData.type);
+      callTypeRef.current = incomingData.type;
+      const pc = pcRef.current ?? createPeer();
+
+      // Accept + join the call server-side so the caller is notified.
       await sessionPost(`/calls/${incomingData.callId}/accept`);
       await sessionPost(`/calls/${incomingData.callId}/join`);
       setState('in-call');
       socket.emit('call.started', { callId: incomingData.callId });
+
+      // Attach local media in the background (bounded by a timeout, so a
+      // pending/blocked permission prompt can never stall the call). Video
+      // best-effort, falling back to audio-only.
+      attachMedia(pc, incomingData.type === 'VIDEO')
+        .catch(() => attachMedia(pc, false))
+        .catch(() => {});
     } catch (err) {
       console.error('Failed to accept call', err);
       setState('error');
@@ -374,7 +441,9 @@ async function acceptCall() {
 
   async function rejectCall() {
     if (!incomingData) return;
-    await sessionPost(`/calls/${incomingData.callId}/reject`);
+    await sessionPost(`/calls/${incomingData.callId}/reject`).catch((err) => {
+      console.error('Failed to reject call', err);
+    });
     setState('rejected');
   }
 

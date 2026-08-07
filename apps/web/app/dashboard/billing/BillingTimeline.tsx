@@ -8,6 +8,7 @@ interface Props {
   hasPaymentMethod: boolean;
   nextBillingDate: string | null;
   hasInvoices: boolean;
+  freeAllowance?: { audioMinutes?: number; videoMinutes?: number };
 }
 
 export default function BillingTimeline({
@@ -16,13 +17,14 @@ export default function BillingTimeline({
   hasPaymentMethod,
   nextBillingDate,
   hasInvoices,
+  freeAllowance,
 }: Props) {
   const nextBillingLabel = nextBillingDate
     ? new Date(nextBillingDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
     : '—';
 
   const steps = [
-    { icon: Wallet, label: 'Free Tier', desc: '500 audio + 200 video mins', done: true },
+    { icon: Wallet, label: 'Free Tier', desc: `${freeAllowance?.audioMinutes ?? 500} audio + ${freeAllowance?.videoMinutes ?? 200} video mins`, done: true },
     { icon: Activity, label: 'You Use APIs', desc: 'Usage tracked live', done: hasUsage },
     { icon: Calculator, label: 'Estimated Balance', desc: 'Beyond free allowance', done: hasBillableUsage },
     { icon: CalendarClock, label: 'Month Ends', desc: nextBillingLabel, done: false },

@@ -75,6 +75,7 @@ interface CurrentUsage {
     screenShareMinutes: number;
     participants: number;
   };
+  freeAllowance: { audioMinutes: number; videoMinutes: number };
   cost: {
     audioPaise: number;
     videoPaise: number;
@@ -282,7 +283,7 @@ const minutesUsed = usage?.minutesUsed ?? 0;
             <div>
               <p className="text-sm font-semibold text-white">Free Tier</p>
               <p className="text-xs text-slate-500 mt-0.5">
-                Pay only for what you use · 500 audio + 200 video mins free
+                Pay only for what you use · {currentUsage?.freeAllowance?.audioMinutes ?? 500} audio + {currentUsage?.freeAllowance?.videoMinutes ?? 200} video mins free
               </p>
             </div>
             <Link

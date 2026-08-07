@@ -30,10 +30,16 @@ export class BillingController {
     @Inject(PAYMENT_SERVICE) private payments: PaymentService,
   ) {}
 
-  // ── Public: plans list ──────────────────────────────
+// ── Public: plans list ──────────────────────────────
   @Get('plans')
   async getPlans() {
     return this.billingService.getPlans();
+  }
+
+  // ── Public: billing rates (no auth — used by landing/docs/FAQ) ──
+  @Get('rates')
+  async getRatesPublic() {
+    return this.usageBilling.getRates();
   }
 
   // ── Customer (auth) endpoints ───────────────────────
