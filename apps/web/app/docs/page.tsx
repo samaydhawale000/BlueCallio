@@ -8,7 +8,8 @@ const NAV = [
   { group: 'Start here', items: [{ id: 'quickstart', label: '⚡ Quick Start' }, { id: 'how-it-works', label: '🔄 How it works' }, { id: 'authentication', label: '🔑 Authentication' }] },
   { group: 'Products', items: [{ id: 'hosted-ui', label: '🖥 Hosted UI' }, { id: 'react-components', label: '⚛️ React Components' }, { id: 'headless-sdk', label: '🧩 Headless SDK' }] },
   { group: 'REST API', items: [{ id: 'api-create', label: 'POST /calls' }, { id: 'api-join', label: 'POST /calls/:id/join' }, { id: 'api-leave', label: 'POST /calls/:id/leave' }, { id: 'api-accept', label: 'POST /calls/:id/accept' }, { id: 'api-reject', label: 'POST /calls/:id/reject' }, { id: 'api-end', label: 'POST /calls/:id/end' }, { id: 'api-get', label: 'GET /calls/:id' }] },
-  { group: 'Real-time', items: [{ id: 'websocket', label: '🔌 WebSocket Events' }, { id: 'webhooks', label: '🪝 Webhooks' }] },
+{ group: 'Real-time', items: [{ id: 'websocket', label: '🔌 WebSocket Events' }, { id: 'webhooks', label: '🪝 Webhooks' }] },
+  { group: 'Billing', items: [{ id: 'usage-billing', label: '💳 Usage & Billing' }] },
   { group: 'Reference', items: [{ id: 'examples', label: '💡 Examples' }, { id: 'errors', label: '🚨 Errors' }, { id: 'faq', label: '❓ FAQ' }] },
 ];
 
@@ -855,6 +856,56 @@ meeting.microphone.enable();`} />
                 </tbody>
               </table>
             </div>
+          </Section>
+
+{/* ── Usage & Billing ─────────────────────────── */}
+          <Section id="usage-billing">
+            <Heading>💳 Usage & Billing</Heading>
+            <p className="text-slate-400 text-sm mb-5">
+              BlueJoinet is pay-as-you-go. There are no subscriptions and no
+              up-front fees — you pay a simple per-participant-minute rate only
+              for usage beyond the monthly free allowance.
+            </p>
+
+            {/* Free tier + rates */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+              {[
+                { media: 'Audio', rate: '₹0.20', note: 'First 500 audio min/month free' },
+                { media: 'Video', rate: '₹0.80', note: 'First 200 video min/month free' },
+                { media: 'Screen share', rate: '+₹0.10', note: 'Always billable, on top of video' },
+              ].map((r) => (
+                <div key={r.media} className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
+                  <p className="text-xs text-slate-500">{r.media}</p>
+                  <p className="text-2xl font-bold text-white mt-1">{r.rate}</p>
+                  <p className="text-[11px] text-slate-500 mt-1">/ participant-minute</p>
+                  <p className="text-[11px] text-slate-500 mt-2">{r.note}</p>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-sm font-semibold text-white mb-3">How billing works</p>
+            <div className="space-y-3 mb-6">
+              {[
+                { t: 'Start free', d: 'Every account gets 500 audio + 200 video minutes/month at no cost. No card required to begin.' },
+                { t: 'Add a payment method', d: 'In the dashboard, add a card only when you go to production. You are only charged for minutes beyond the free tier.' },
+                { t: 'Monthly invoice', d: 'At the end of each month we generate an invoice for billable usage and auto-charge your saved card. GST of 18% applies on billable usage.' },
+                { t: 'Failed payment', d: 'We retry and enter a 7-day grace period. Active calls are never interrupted, but new calls are blocked until payment succeeds.' },
+              ].map((s) => (
+                <div key={s.t} className="flex gap-3 rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
+                  <span className="shrink-0 w-6 h-6 rounded-lg flex items-center justify-center font-mono text-xs font-bold" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2))', color: '#A5B4FC', border: '1px solid rgba(99,102,241,0.25)' }}>✓</span>
+                  <div>
+                    <p className="text-sm font-semibold text-white">{s.t}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{s.d}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <Tip type="info">
+              Screen sharing is always billable (no free allowance). Everything else —
+              Hosted UI, React Components, Headless SDK, REST API, signaling, and the
+              dashboard — is included on the free tier.
+            </Tip>
           </Section>
 
           {/* ── FAQ ───────────────────────────────────── */}

@@ -72,32 +72,36 @@ const FAQ_GROUPS = [
     id: 'pricing',
     items: [
       {
-        q: 'Is there a free plan?',
-        a: 'Yes. Build, test and prototype with 300 free communication minutes every month. The Free plan includes unlimited projects, unlimited developers, and 2 active calls simultaneously.',
+        q: 'Is there a free tier?',
+        a: 'Yes. You get 500 audio and 200 video participant-minutes free every month, plus unlimited projects and developers. No credit card is required to start.',
       },
       {
-        q: 'Can I use React Components on the Free plan?',
-        a: 'Yes. Every plan includes the complete React Component Library.',
+        q: 'How does usage-based pricing work?',
+        a: 'There are no subscriptions or up-front fees. You pay a simple per-participant-minute rate only for minutes beyond the free allowance: audio ₹0.20/min, video ₹0.80/min, and screen share +₹0.10/min (added on top of video).',
       },
       {
-        q: 'Can I use the Headless SDK?',
-        a: 'Yes. The SDK is included in every plan.',
+        q: 'Is screen sharing billable separately?',
+        a: 'Yes. Screen sharing is always billable at +₹0.10 per participant-minute on top of the video rate, and has no free allowance.',
       },
       {
-        q: 'Do I need to upgrade to use Hosted UI?',
-        a: 'No. Hosted UI is available on every plan.',
+        q: 'Do I need to add a payment method to start?',
+        a: 'No. Your free allowance covers development and prototyping. You only add a payment method when you go to production and exceed the free minutes.',
       },
       {
-        q: 'What happens if I exceed my minutes?',
-        a: 'You can upgrade your plan at any time or purchase additional communication minutes.',
+        q: 'When and how am I charged?',
+        a: 'At the end of each month we generate an invoice for your billable usage and charge your saved card automatically. A GST of 18% applies on billable usage.',
       },
       {
-        q: 'Are communication minutes shared?',
-        a: 'Yes. Minutes are shared across audio calls, video calls, and screen-sharing sessions.',
+        q: 'What happens if a payment fails?',
+        a: 'We retry, notify you, and enter a 7-day grace period. During grace you can keep existing calls, but you cannot start new ones until the payment succeeds. Active calls are never interrupted.',
       },
       {
-        q: 'Can I cancel anytime?',
-        a: 'Yes. Monthly subscriptions can be upgraded, downgraded, or canceled at any time.',
+        q: 'Can I see my usage and invoices?',
+        a: 'Yes. The dashboard Usage page shows per-type minutes and estimated month-end cost, and the Billing page lists your payment methods and past invoices.',
+      },
+      {
+        q: 'Is every feature included on the free tier?',
+        a: 'Yes. Hosted UI, React Components, Headless SDK, REST API, WebSocket signaling, and the developer dashboard are all available. You only pay for minutes beyond the free allowance.',
       },
     ],
   },

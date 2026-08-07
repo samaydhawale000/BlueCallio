@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../store/auth.store';
+import { api } from '../lib/api';
 
 /**
  * Redirects to /login if the user is not authenticated.
@@ -12,16 +13,37 @@ import { useAuthStore } from '../store/auth.store';
 export function useRequireAuth() {
   const router = useRouter();
   const token = useAuthStore((s) => s.token);
+  const setUser = useAuthStore((s) => s.setUser);
   const hasHydrated = useAuthStore((s) => s.hasHydrated);
 
-  useEffect(() => {
+useEffect(() => {
     // Wait until the persisted session has been restored from localStorage.
     if (!hasHydrated) return;
 
     if (!token) {
       router.replace('/login');
+      return;
     }
-  }, [hasHydrated, token, router]);
+
+    // Keep the user profile in sync from the server on every mount. This
+    // ensures the sidebar/settings show the correct name, email and avatar
+    // even after a hard reload, and repairs any stale persisted user.
+    api
+      .get('/auth/me')
+      .then((res) => {
+        if (res.data) {
+          setUser({
+            userId: res.data.userId,
+            email: res.data.email ?? null,
+            name: res.data.name ?? null,
+            avatarUrl: res.data.avatarUrl ?? null,
+          });
+        }
+      })
+      .catch(() => {
+        // ignore — will be handled by the auth guard on next request
+      });
+  }, [hasHydrated, token, setUser, router]);
 
   return { isAuthed: hasHydrated && !!token, isReady: hasHydrated };
 }

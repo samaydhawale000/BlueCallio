@@ -8,10 +8,12 @@ import { AuthService } from './auth.service';
 
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthMeController } from './auth.me.controller';
+import { BillingModule } from '../billing/billing.module';
 
 @Module({
   imports: [
     JwtModule.register({}),
+    BillingModule,
   ],
 
   controllers: [

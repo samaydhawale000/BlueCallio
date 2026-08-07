@@ -6,6 +6,7 @@ import { CallService } from './services/call.service';
 import { CallSessionModule } from '../call-session/call-session.module';
 import { SocketModule } from '../socket/socket.module';
 import { WebhookModule } from '../webhook/webhook.module';
+import { BillingModule } from '../billing/billing.module';
 
 import { CallSessionGuard } from '../common/guards/call-session.guard';
 
@@ -14,6 +15,7 @@ import { CallSessionGuard } from '../common/guards/call-session.guard';
     CallSessionModule,
     SocketModule,
     WebhookModule,
+    BillingModule,
   ],
   controllers: [CallController],
   providers: [

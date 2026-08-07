@@ -154,11 +154,24 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
         role: 'RECEIVER',
       });
 
-      client.emit('incoming-call', {
-        callId: receiver.call.id,
-        callerId: receiver.call.callerId,
-        type: receiver.call.type,
-      });
+      // If the call has already left the RINGING state (e.g. auto-missed
+      // while the receiver was connecting), do not show a stale incoming
+      // screen with dead Accept/Decline buttons. Emit the terminal state
+      // so the UI reflects reality.
+      const status = receiver.call.status;
+      if (status === 'MISSED') {
+        client.emit('call-missed', { callId: receiver.call.id });
+      } else if (status === 'ENDED') {
+        client.emit('call-ended', { callId: receiver.call.id });
+      } else if (status === 'REJECTED') {
+        client.emit('call-rejected', { callId: receiver.call.id });
+      } else {
+        client.emit('incoming-call', {
+          callId: receiver.call.id,
+          callerId: receiver.call.callerId,
+          type: receiver.call.type,
+        });
+      }
 
       return { success: true, role: 'RECEIVER' };
     }

@@ -34,7 +34,7 @@ declare global {
 
 export function useGoogleAuth() {
   const router = useRouter();
-  const { setTokens } = useAuthStore();
+  const { setTokens, setUser } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -49,7 +49,17 @@ const handleCredential = useCallback(
         const res = await api.post('/auth/google', {
           idToken: credential,
         });
-        setTokens(res.data.accessToken, res.data.refreshToken);
+setTokens(res.data.accessToken, res.data.refreshToken);
+        if (res.data.user) {
+          // Normalize the Prisma user ({ id, ... }) to the store shape ({ userId, ... }).
+          const u = res.data.user;
+          setUser({
+            userId: u.userId ?? u.id,
+            email: u.email ?? null,
+            name: u.name ?? null,
+            avatarUrl: u.avatarUrl ?? null,
+          });
+        }
         router.push('/dashboard');
       } catch {
         setError('Google sign-in failed. Please try again.');
@@ -57,7 +67,7 @@ const handleCredential = useCallback(
         setLoading(false);
       }
     },
-    [router, setTokens],
+    [router, setTokens, setUser],
   );
 
   // True once the Google Identity Services script has loaded.

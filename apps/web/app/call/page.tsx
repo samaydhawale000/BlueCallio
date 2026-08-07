@@ -257,11 +257,19 @@ function CallPageContent() {
       setState('incoming');
     });
 
-    socket.on('call-accepted', async () => {
-      await initMedia(callType === 'VIDEO');
-      setState('in-call');
-      await createOffer();
-      socket.emit('call.started', { callId: urlCallId });
+socket.on('call-accepted', async () => {
+      try {
+        // Best-effort media init — fall back to audio-only if video fails.
+        await initMedia(callType === 'VIDEO').catch(async () => {
+          await initMedia(false).catch(() => {});
+        });
+        setState('in-call');
+        await createOffer();
+        socket.emit('call.started', { callId: urlCallId });
+      } catch (err) {
+        console.error('Failed to answer accepted call', err);
+        setState('error');
+      }
     });
 
 socket.on('call-rejected', () => setState('rejected'));
@@ -343,14 +351,25 @@ socket.on('call-rejected', () => setState('rejected'));
     });
   }
 
-  async function acceptCall() {
+async function acceptCall() {
     if (!incomingData) return;
-    await initMedia(incomingData.type === 'VIDEO');
-    setCallType(incomingData.type);
-    await sessionPost(`/calls/${incomingData.callId}/accept`);
-    await sessionPost(`/calls/${incomingData.callId}/join`);
-    setState('in-call');
-    socket.emit('call.started', { callId: incomingData.callId });
+    try {
+      // Initialize media (audio always; video best-effort). If the camera
+      // fails we still want the call to connect with audio only rather than
+      // leaving the UI stuck on the incoming screen.
+      await initMedia(incomingData.type === 'VIDEO').catch(async () => {
+        // Retry audio-only if the full (video) init failed.
+        await initMedia(false).catch(() => {});
+      });
+      setCallType(incomingData.type);
+      await sessionPost(`/calls/${incomingData.callId}/accept`);
+      await sessionPost(`/calls/${incomingData.callId}/join`);
+      setState('in-call');
+      socket.emit('call.started', { callId: incomingData.callId });
+    } catch (err) {
+      console.error('Failed to accept call', err);
+      setState('error');
+    }
   }
 
   async function rejectCall() {

@@ -11,6 +11,8 @@ import { JwtService } from '@nestjs/jwt';
 
 import { OAuth2Client } from 'google-auth-library';
 
+import { BillingService } from '../billing/billing.service';
+
 @Injectable()
 export class AuthService {
   private googleClient: OAuth2Client;
@@ -18,6 +20,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private billingService: BillingService,
   ) {
     this.googleClient = new OAuth2Client(
       process.env.GOOGLE_CLIENT_ID,
@@ -76,7 +79,7 @@ export class AuthService {
               avatarUrl,
             },
           });
-      } else {
+} else {
         // Existing email user — link the Google account.
         user =
           await this.prisma.user.update({
@@ -89,6 +92,11 @@ export class AuthService {
           });
       }
     }
+
+    // Ensure the user has a subscription + usage record (Free plan by default).
+    this.billingService.getOrCreateFreeSubscription(user.id).catch(() => {
+      // Non-fatal: subscription assignment should not block login.
+    });
 
     const tokens =
       await this.generateTokens(user.id);

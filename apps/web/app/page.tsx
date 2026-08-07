@@ -174,6 +174,44 @@ const STEPS = [
    },
 ];
 
+const RATES = [
+   {
+      media: "Audio",
+      icon: "🎤",
+      price: "₹0.20",
+      unit: "/ participant-minute",
+      note: "Free tier: first 500 audio min/month included.",
+   },
+   {
+      media: "Video",
+      icon: "🎥",
+      price: "₹0.80",
+      unit: "/ participant-minute",
+      note: "Free tier: first 200 video min/month included.",
+      highlight: true,
+   },
+   {
+      media: "Screen Share",
+      icon: "🖥",
+      price: "+₹0.10",
+      unit: "/ participant-minute",
+      note: "Added on top of video. Screen share is always billable.",
+   },
+];
+
+const FREE_TIER = [
+   "500 audio participant-minutes / month",
+   "200 video participant-minutes / month",
+   "Unlimited projects & developers",
+   "Hosted Meeting UI",
+   "React UI Components",
+   "Headless SDK",
+   "REST API + WebSocket Signaling",
+   "Device selection & screen sharing",
+   "Developer Dashboard",
+   "API Playground & documentation",
+];
+
 const EVERY_PLAN_INCLUDES = [
    "Hosted Meeting UI",
    "React UI Components",
@@ -188,186 +226,20 @@ const EVERY_PLAN_INCLUDES = [
    "API Playground",
    "Documentation",
    "Dashboard",
+   "Per-project API Keys",
+   "Webhook Events",
+   "TURN Relay",
 ];
 
-const PLANS = [
-{
-      emoji: "🟢",
-      name: "Free",
-      price: "₹0",
-      sub: "per month",
-      desc: "Best for Learning & Development",
-      minutes: "300 Communication Minutes / Month",
-      features: [
-         "300 Communication Minutes / Month",
-         "Unlimited Projects",
-         "Unlimited Developers",
-         "Hosted Meeting UI",
-         "React UI Components",
-         "Headless SDK",
-         "REST API",
-         "WebSocket Signaling",
-         "Authentication",
-         "Video Calling",
-         "Audio Calling",
-         "Screen Sharing",
-         "Device Selection",
-         "Developer Dashboard",
-         "API Playground",
-         "Documentation",
-         "Community Support",
-      ],
-      cta: "Start Free",
-      ctaHref: "/signup",
-      featured: false,
-      showPrice: true,
-   },
-   {
-      emoji: "🚀",
-      name: "Starter",
-      price: "₹1,999",
-      sub: "per month",
-      desc: "Best for Startups & MVPs",
-      minutes: "2,500 Communication Minutes",
-      features: [
-         "2,500 Communication Minutes",
-         "Unlimited Projects",
-         "Unlimited Developers",
-         "Hosted Meeting UI",
-         "React UI Components",
-         "Headless SDK",
-         "REST API",
-         "WebSocket Signaling",
-         "Authentication",
-         "Video Calling",
-         "Audio Calling",
-         "Screen Sharing",
-         "Device Selection",
-         "Developer Dashboard",
-         "API Playground",
-         "Documentation",
-         "Email Support",
-         "Custom Branding",
-         "Custom Logo",
-         "Remove BlueJoinet Branding",
-         "Higher API Rate Limits",
-         "Production Usage",
-         "Better TURN Priority",
-      ],
-      cta: "Start Starter",
-      ctaHref: "/signup",
-      featured: false,
-      showPrice: true,
-   },
-   {
-      emoji: "🚀",
-      name: "Growth",
-      price: "₹6,999",
-      sub: "per month",
-      desc: "Best for Growing SaaS",
-      minutes: "12,000 Communication Minutes",
-      features: [
-         "12,000 Communication Minutes",
-         "Unlimited Projects",
-         "Unlimited Developers",
-         "Hosted Meeting UI",
-         "React UI Components",
-         "Headless SDK",
-         "REST API",
-         "WebSocket Signaling",
-         "Authentication",
-         "Video Calling",
-         "Audio Calling",
-         "Screen Sharing",
-         "Device Selection",
-         "Developer Dashboard",
-         "API Playground",
-         "Documentation",
-         "Priority Email Support",
-         "Webhooks",
-         "Call History",
-         "Usage Dashboard",
-         "Team Management",
-         "API Keys Management",
-         "Staging Environment",
-         "Higher API Limits",
-         "Faster TURN Allocation",
-      ],
-      cta: "Start Growth",
-      ctaHref: "/signup",
-      featured: true,
-      showPrice: true,
-   },
-   {
-      emoji: "🚀",
-      name: "Pro",
-      price: "₹16,999",
-      sub: "per month",
-      desc: "Best for Scale-Ups",
-      minutes: "35,000 Communication Minutes",
-      features: [
-         "35,000 Communication Minutes",
-         "Unlimited Projects",
-         "Unlimited Developers",
-         "Hosted Meeting UI",
-         "React UI Components",
-         "Headless SDK",
-         "REST API",
-         "WebSocket Signaling",
-         "Authentication",
-         "Video Calling",
-         "Audio Calling",
-         "Screen Sharing",
-         "Device Selection",
-         "Developer Dashboard",
-         "API Playground",
-         "Documentation",
-         "Priority Technical Support",
-         "SLA",
-         "Dedicated Success Manager",
-         "Advanced Monitoring",
-         "Custom Domains",
-         "Custom Hosted UI Branding",
-         "Dedicated TURN Pool",
-         "Highest API Limits",
-         "Early Access Features",
-      ],
-      cta: "Start Pro",
-      ctaHref: "/signup",
-      featured: false,
-      showPrice: true,
-   },
-   {
-      emoji: "🏢",
-      name: "Enterprise",
-      price: "Custom",
-      sub: "pricing",
-      desc: "For organizations with large-scale communication needs.",
-      minutes: "Custom Minute Packages",
-      features: [
-         "Unlimited Customization",
-         "Custom Minute Packages",
-         "Dedicated Infrastructure",
-         "Dedicated TURN Servers",
-         "Private Deployment Options",
-         "Custom SLA",
-         "99.99% Uptime SLA",
-         "Priority Engineering Support",
-         "Dedicated Account Manager",
-         "Migration Assistance",
-         "Security Review",
-         "Custom Integrations",
-         "Volume Discounts",
-         "Custom Billing",
-         "Invoice Billing",
-         "White-label Deployment",
-         "On-premise / Private Cloud (Future)",
-      ],
-      cta: "Talk to Sales",
-      ctaHref: "mailto:hello@bluejoinet.com",
-      featured: false,
-      showPrice: true,
-   },
+const ENTERPRISE_FEATURES = [
+   "Dedicated TURN servers",
+   "White-label / custom branding",
+   "Custom SLA & 99.99% uptime",
+   "Dedicated account manager",
+   "Priority engineering support",
+   "Custom integrations & migration",
+   "Volume discounts & custom billing",
+   "Private / on-premise deployment (future)",
 ];
 
 const PLAYGROUND_STEPS = [
@@ -413,9 +285,9 @@ export default function LandingPage() {
 
             <div className="relative max-w-6xl mx-auto">
                <div className="hero-badge inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono mb-8 border">
-                  <span className="hero-badge-dot w-1.5 h-1.5 rounded-full animate-pulse" />
-                  No per-minute pricing &nbsp;·&nbsp; No complex setup
-                  &nbsp;·&nbsp; Startup-first
+<span className="hero-badge-dot w-1.5 h-1.5 rounded-full animate-pulse" />
+                  Start free &nbsp;·&nbsp; Pay only for what you use
+                  &nbsp;·&nbsp; No hidden fees
                </div>
 
                <h1 className="lp-h1 font-bold text-white leading-tight mb-6">
@@ -504,8 +376,8 @@ export default function LandingPage() {
                         The problem today
                      </p>
                      <div className="space-y-3">
-                        {[
-                           "Expensive per-minute pricing",
+{[
+                           "Monthly subscriptions you barely use",
                            "Confusing pricing with hidden fees",
                            "Complex SDKs that take weeks to integrate",
                            "Enterprise-only documentation",
@@ -526,12 +398,12 @@ export default function LandingPage() {
                         The BlueJoinet way
                      </p>
                      <div className="space-y-3">
-                        {[
-                           "Predictable flat pricing — you always know what you pay",
-                           "No hidden fees, no confusing calculators",
+{[
+                           "Start free with 500 audio + 200 video minutes",
+                           "Pay only for what you use — no monthly subscription",
                            "Integration in minutes with a simple REST API",
                            "Documentation treated as a product",
-                           "Developer-first dashboard with the tools you need",
+                           "Developer-first dashboard with your usage & invoices",
                         ].map((item) => (
                            <div key={item} className="flex items-start gap-3">
                               <span className="text-green-400 mt-0.5 text-sm">
@@ -753,165 +625,119 @@ export default function LandingPage() {
                <p className="section-label font-mono text-xs tracking-widest uppercase mb-4">
                   Pricing
                </p>
-               <h2 className="lp-h2 font-bold text-white mb-4">
-                  Value-based pricing. Clear and predictable.
+<h2 className="lp-h2 font-bold text-white mb-4">
+                  Start free. Pay only for what you use.
                </h2>
                <p className="text-slate-400 mb-14 max-w-2xl">
-                  Every plan includes the complete platform. Choose a plan based
-                  only on your usage — minutes and support.
+                  No subscriptions, no up-front fees. Get 500 audio + 200 video
+                  minutes free every month, then pay a simple per-participant-minute
+                  rate only for what goes beyond the free allowance.
                </p>
 
-               {/* Comparison banner */}
-               <div
-                  className="rounded-xl border border-[#2A3D64] p-6 mb-12 text-center"
-                  style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05))' }}
-               >
-                  <p className="font-bold text-white text-lg mb-2">
-                     One Platform. Three Ways to Integrate.
-                  </p>
-                  <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-slate-300">
-                     <span className="inline-flex items-center gap-1.5">🚀 Hosted UI</span>
-                     <span className="text-slate-600">•</span>
-                     <span className="inline-flex items-center gap-1.5">⚛️ React Components</span>
-                     <span className="text-slate-600">•</span>
-                     <span className="inline-flex items-center gap-1.5">🧩 Headless SDK</span>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-3">
-                     Every plan includes the complete platform. Choose a plan based only on your usage.
-                  </p>
-               </div>
-
-               {/* Plan cards: Free + paid tiers */}
-               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 items-stretch">
-                  {PLANS.filter((p) => p.name !== 'Enterprise').map((plan) => (
-                     <div
-                        key={plan.name}
-                        className={`${plan.featured ? "card-featured border-[#2A3D64]" : "card-surface border-[#1A2642]"} relative rounded-xl border p-6 flex flex-col`}
-                     >
-                        {plan.featured && (
-                           <div className="badge-gradient absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-mono px-3 py-0.5 rounded-full text-white whitespace-nowrap">
-                              Most popular
-                           </div>
-                        )}
-
-                        <div className="flex items-center gap-2 mb-1">
-                           <span className="text-lg">{plan.emoji}</span>
-                           <p className="font-semibold text-white">{plan.name}</p>
-                        </div>
-                        <p className="text-slate-500 text-xs mb-4 leading-relaxed">
-                           {plan.desc}
+{/* Free tier + rates */}
+               <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 items-stretch mb-5">
+                  {/* Free tier */}
+                  <div
+                     className="lg:col-span-2 relative rounded-xl border border-[#2A3D64] p-7 flex flex-col"
+                     style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05))' }}
+                  >
+                     <div className="badge-gradient absolute -top-3 left-6 text-xs font-mono px-3 py-0.5 rounded-full text-white whitespace-nowrap">
+                        Free tier
+                     </div>
+                     <div className="flex items-center gap-2 mb-1">
+                        <span className="text-lg">🟢</span>
+                        <p className="font-semibold text-white">Start Free</p>
+                     </div>
+                     <p className="text-slate-500 text-xs mb-4 leading-relaxed">
+                        Build, test and prototype free. Add a card only when you go to production.
+                     </p>
+                     <div className="mb-5 rounded-lg p-4" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid #1A2642' }}>
+                        <span className="price-text font-bold text-white">₹0</span>
+                        <span className="text-slate-500 text-xs ml-1">/ month</span>
+                        <p className="text-xs text-slate-400 mt-2">
+                           Every paid plan starts free. No credit card required to begin.
                         </p>
-
-                        {plan.showPrice && (
-                           <div
-                              className="mb-5 rounded-lg p-4"
-                              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid #1A2642' }}
-                           >
-                              <span className="price-text font-bold text-white">
-                                 {plan.price}
-                              </span>
-                              <span className="text-slate-500 text-xs ml-1">
-                                 {plan.sub}
-                              </span>
-<div className="mt-2 space-y-1">
-                                 <p
-                                    className="text-xs font-semibold"
-                                    style={{ color: plan.featured ? '#A5B4FC' : '#94A3B8' }}
-                                 >
-                                    📅 {plan.minutes}
-                                 </p>
-                              </div>
+                     </div>
+                     <div className="space-y-2 flex-1">
+                        {FREE_TIER.map((f) => (
+                           <div key={f} className="flex items-start gap-2">
+                              <span className="check-indigo text-xs mt-0.5">✓</span>
+                              <p className="text-sm text-slate-400">{f}</p>
                            </div>
-                        )}
+                        ))}
+                     </div>
+                     <Link href="/signup" className="btn-primary block text-center text-sm font-medium text-white px-4 py-2.5 rounded-lg transition-all hover:opacity-90 mt-6">
+                        Start Free →
+                     </Link>
+                  </div>
 
-                        <div className="space-y-2 mb-6 flex-1">
-                           {plan.features.map((f) => (
-                              <div key={f} className="flex items-start gap-2">
-                                 <span
-                                    className={`${plan.featured ? "check-violet" : "check-indigo"} text-xs mt-0.5`}
-                                 >
-                                    ✓
-                                 </span>
-                                 <p
-                                    className={`text-sm ${plan.featured ? "text-slate-300" : "text-slate-400"}`}
-                                 >
-                                    {f}
-                                 </p>
+                  {/* Rates */}
+                  <div className="lg:col-span-3 flex flex-col gap-4">
+                     <div className="rounded-xl border border-[#1A2642] p-6 flex flex-col" style={{ background: '#0D1421' }}>
+                        <p className="font-semibold text-white mb-1">Pay only for what you use</p>
+                        <p className="text-xs text-slate-500 mb-5">
+                           No subscriptions. No up-front fees. Billed per participant-minute at the end of each month.
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+                           {RATES.map((r) => (
+                              <div
+                                 key={r.media}
+                                 className="rounded-xl border p-4 text-center"
+                                 style={{
+                                    background: r.highlight ? 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.08))' : '#060B18',
+                                    borderColor: r.highlight ? '#2A3D64' : '#1A2642',
+                                 }}
+                              >
+                                 <div className="text-xl mb-2">{r.icon}</div>
+                                 <p className="text-xs text-slate-500">{r.media}</p>
+                                 <p className="price-text font-bold text-white text-xl mt-1">{r.price}</p>
+                                 <p className="text-[10px] text-slate-600">{r.unit}</p>
+                                 <p className="text-[11px] text-slate-500 mt-2 leading-relaxed">{r.note}</p>
                               </div>
                            ))}
                         </div>
-
-                        <Link
-                           href={plan.ctaHref}
-                           className={`${plan.featured ? "btn-primary" : "border border-[#1A2642] hover:border-[#2A3D64]"} block text-center text-sm font-medium text-white px-4 py-2.5 rounded-lg transition-all hover:opacity-90`}
-                        >
-                           {plan.cta}
-                        </Link>
+                        <p className="text-xs text-slate-500 leading-relaxed px-1">
+                           💳 Add a payment method in the dashboard — you'll only be charged for minutes beyond the
+                           free allowance. GST of 18% applies on billable usage.
+                        </p>
                      </div>
-                  ))}
-               </div>
 
-               {/* Enterprise wide card */}
-               {(() => {
-                  const plan = PLANS.find((p) => p.name === 'Enterprise');
-                  if (!plan) return null;
-                  return (
-                     <div
-                        className="relative rounded-xl border border-[#2A3D64] mt-5 overflow-hidden"
-                        style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.04))' }}
-                     >
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-8">
-                           <div className="lg:col-span-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                 <span className="text-2xl">{plan.emoji}</span>
-                                 <p className="font-bold text-white text-lg">{plan.name}</p>
-                              </div>
-                              <p className="text-slate-400 text-sm mb-4 leading-relaxed">
-                                 {plan.desc}
-                              </p>
-                              <div className="mb-5">
-                                 <span className="price-text font-bold text-white text-2xl">
-                                    {plan.price}
-                                 </span>
-                                 <span className="text-slate-500 text-sm ml-1">
-                                    {plan.sub}
-                                 </span>
-<div className="mt-2 space-y-1">
-                                    <p className="text-xs font-semibold text-slate-300">
-                                       📅 {plan.minutes}
-                                    </p>
-                                 </div>
-                              </div>
-                              <a
-                                 href={plan.ctaHref}
-                                 className="inline-block text-center text-sm font-medium text-white px-6 py-3 rounded-lg border border-[#2A3D64] hover:border-[#6366F1] transition-all"
-                              >
-                                 {plan.cta} →
-                              </a>
+                     {/* Enterprise */}
+                     <div className="rounded-xl border border-[#2A3D64] p-6 flex flex-col sm:flex-row sm:items-center gap-6" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.03))' }}>
+                        <div className="sm:w-2/5">
+                           <div className="flex items-center gap-2 mb-1">
+                              <span className="text-2xl">🏢</span>
+                              <p className="font-bold text-white text-lg">Enterprise</p>
                            </div>
-<div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
-                              {plan.features.map((f) => (
-                                 <div key={f} className="flex items-start gap-2">
-                                    <span className="check-indigo text-xs mt-0.5">✓</span>
-                                    <p className="text-sm text-slate-300">{f}</p>
-                                 </div>
-                              ))}
-                           </div>
+                           <p className="text-slate-400 text-sm mb-3 leading-relaxed">
+                              For organizations with large-scale communication needs.
+                           </p>
+                           <a href="mailto:hello@bluejoinet.com" className="inline-block text-center text-sm font-medium text-white px-5 py-2.5 rounded-lg border border-[#2A3D64] hover:border-[#6366F1] transition-all">
+                              Talk to Sales →
+                           </a>
+                        </div>
+                        <div className="sm:w-3/5 grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-2">
+                           {ENTERPRISE_FEATURES.map((f) => (
+                              <div key={f} className="flex items-start gap-2">
+                                 <span className="check-indigo text-xs mt-0.5">✓</span>
+                                 <p className="text-sm text-slate-300">{f}</p>
+                              </div>
+                           ))}
                         </div>
                      </div>
-                  );
-               })()}
+                  </div>
+               </div>
 
-{/* Every plan includes */}
+               {/* Every plan includes */}
                <div
                   className="rounded-xl border border-[#1A2642] mt-14 p-8"
                   style={{ background: '#0D1421' }}
                >
-                  <p className="text-center font-bold text-white text-lg mb-2">
-                     Every Plan Includes
+<p className="text-center font-bold text-white text-lg mb-2">
+                     Every account includes
                   </p>
                   <p className="text-center text-sm text-slate-500 mb-8">
-                     The complete platform is available on every plan — choose a plan based only on your usage.
+                     The complete platform — same features on the free tier and pay-as-you-go. You only pay for minutes beyond the free allowance.
                   </p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                      {EVERY_PLAN_INCLUDES.map((item) => (
@@ -935,10 +761,10 @@ export default function LandingPage() {
                   <p className="font-bold text-white text-lg mb-2">
                      Questions about pricing?
                   </p>
-                  <p className="text-sm text-slate-400 mb-6 max-w-xl mx-auto">
-                     We've answered the most common questions about minutes, plans,
-                     upgrades, and billing. If you still need help, our engineers
-                     are one email away.
+<p className="text-sm text-slate-400 mb-6 max-w-xl mx-auto">
+                     We've answered the most common questions about the free tier,
+                     metered rates, payment methods, and monthly invoices. If you
+                     still need help, our engineers are one email away.
                   </p>
                   <div className="flex flex-wrap justify-center gap-3">
                      <Link
@@ -957,9 +783,9 @@ export default function LandingPage() {
                   </div>
                </div>
 
-               <p className="text-center text-xs text-slate-600 mt-10">
-                  All prices in INR. Every plan includes a monthly minute
-                  allowance. No hidden charges.
+<p className="text-center text-xs text-slate-600 mt-10">
+                  All rates in INR, charged per participant-minute beyond the free
+                  allowance. GST of 18% applies on billable usage. No hidden charges.
                </p>
             </div>
          </section>

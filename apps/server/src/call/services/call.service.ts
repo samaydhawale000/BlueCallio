@@ -11,6 +11,8 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CallSessionService } from '../../call-session/services/call-session.service';
 import { CallGateway } from '../../socket/gateways/call.gateway';
 import { WebhookService } from '../../webhook/webhook.service';
+import { BillingService } from '../../billing/billing.service';
+import { UsageBillingService } from '../../billing/usage-billing.service';
 
 @Injectable()
 export class CallService implements OnModuleInit {
@@ -25,10 +27,17 @@ export class CallService implements OnModuleInit {
     private callSessionService: CallSessionService,
     private callGateway: CallGateway,
     private webhookService: WebhookService,
+    private billingService: BillingService,
+    private usageBilling: UsageBillingService,
   ) {
+// Enforce a sane minimum so a misconfigured env can't make unanswered
+    // calls expire faster than a user can open the receiver tab / device and
+    // grant camera+mic permissions (the playground opens two tabs/devices).
     const parsed = Number(process.env.CALL_RING_TIMEOUT_MS);
-    this.ringTimeoutMs =
-      Number.isFinite(parsed) && parsed > 0 ? parsed : 15_000;
+    this.ringTimeoutMs = Math.max(
+      60_000,
+      Number.isFinite(parsed) && parsed > 0 ? parsed : 60_000,
+    );
   }
 
   onModuleInit() {
@@ -49,10 +58,33 @@ async createCall(
     receiverId: string;
     type: CallType;
   },
-  options?: {
+options?: {
     skipWebhook?: boolean;
+    skipUsageCheck?: boolean;
   },
 ) {
+// Resolve the project owner and enforce the usage-based free allowance.
+    // Screen share is always billable (no free allowance), so it is never blocked.
+    if (!options?.skipUsageCheck) {
+      const project = await this.prisma.project.findUnique({
+        where: { id: data.projectId },
+        select: { ownerId: true },
+      });
+      if (project) {
+        const status =
+          await this.usageBilling.getFreeAllowanceStatus(project.ownerId);
+        const mediaExhausted =
+          data.type === CallType.AUDIO
+            ? status.audioExhausted
+            : status.videoExhausted;
+        if (mediaExhausted) {
+          throw new BadRequestException(
+            `Your free ${data.type === CallType.AUDIO ? 'audio' : 'video'} allowance is used up. Add a payment method to continue making calls.`,
+          );
+        }
+      }
+    }
+
     const call = await this.prisma.call.create({
       data: {
         projectId: data.projectId,
@@ -214,21 +246,52 @@ this.callGateway.emitToParticipant(callId, 'CALLER', 'call-missed', { callId });
     return updated;
   }
 
-  async endCall(callId: string) {
+async endCall(callId: string) {
+    const call = await this.prisma.call.findUnique({
+      where: { id: callId },
+      include: { project: true },
+    });
+    if (!call) throw new NotFoundException('Call not found');
+
+    const endedAt = new Date();
     const updated = await this.prisma.call.update({
       where: { id: callId },
-      data: { status: CallStatus.ENDED, endedAt: new Date() },
+      data: { status: CallStatus.ENDED, endedAt },
     });
 
     await this.prisma.callEvent.create({
       data: { callId, event: 'CALL_ENDED' },
     });
 
+    // Record actual usage based on the call duration and media type.
+    try {
+      const durationMs = call.startedAt
+        ? endedAt.getTime() - call.startedAt.getTime()
+        : 0;
+      const durationMinutes = Math.max(0, durationMs / 60000);
+      // Participant-minutes: 2 participants on a 1:1 call.
+      const participants = call.callerId && call.receiverId ? 2 : 1;
+      const participantMinutes = Math.round(durationMinutes * participants);
+
+await this.usageBilling.recordCallUsage(call.project.ownerId, call.id, {
+        audioMinutes:
+          call.type === CallType.AUDIO ? participantMinutes : 0,
+        videoMinutes:
+          call.type === CallType.VIDEO ? participantMinutes : 0,
+        screenShareMinutes: 0, // screen-share minutes not tracked server-side yet
+        participants,
+        startedAt: call.startedAt ?? undefined,
+        endedAt,
+      });
+    } catch (err) {
+      // Usage recording must never break the call end.
+      console.error('Failed to record call usage', call.id, err);
+    }
+
     this.webhookService.fireForCall(callId, 'call.ended');
 
     return updated;
   }
-
   async getCall(callId: string) {
     const call = await this.prisma.call.findUnique({ where: { id: callId } });
     if (!call) throw new NotFoundException('Call not found');

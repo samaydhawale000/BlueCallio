@@ -1,9 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
+  Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 
@@ -22,6 +25,7 @@ export class ApiKeyController {
 
   @Post()
   create(
+    @Req() req: any,
     @Body()
     body: CreateApiKeyDto,
   ) {
@@ -31,13 +35,47 @@ export class ApiKeyController {
     );
   }
 
+  @Get()
+  getAll(
+    @Req() req: any,
+  ) {
+    return this.apiKeyService.getAllKeys(
+      req.user.userId,
+    );
+  }
+
   @Get(':projectId')
   getKeys(
+    @Req() req: any,
     @Param('projectId')
     projectId: string,
   ) {
     return this.apiKeyService.getProjectKeys(
       projectId,
+    );
+  }
+
+  @Patch(':id')
+  update(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() body: { isActive?: boolean; name?: string },
+  ) {
+    return this.apiKeyService.updateKey(
+      req.user.userId,
+      id,
+      body,
+    );
+  }
+
+  @Delete(':id')
+  revoke(
+    @Req() req: any,
+    @Param('id') id: string,
+  ) {
+    return this.apiKeyService.revokeKey(
+      req.user.userId,
+      id,
     );
   }
 }

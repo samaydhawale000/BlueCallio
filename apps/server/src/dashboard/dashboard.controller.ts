@@ -18,9 +18,26 @@ export class DashboardController {
     return this.dashboardService.getCallDetails(req.user.userId, id);
   }
 
-  @Get('usage')
+@Get('usage')
   getUsage(@Req() req: any) {
     return this.dashboardService.getUsage(req.user.userId);
+  }
+
+  @Get('overview')
+  getOverview(@Req() req: any) {
+    return this.dashboardService.getOverview(req.user.userId);
+  }
+
+  @Get('usage/chart')
+  getUsageChart(
+    @Req() req: any,
+    @Query('days') days?: string,
+  ) {
+    const d = parseInt(days ?? '', 10);
+    return this.dashboardService.getUsageChart(
+      req.user.userId,
+      Number.isFinite(d) && d > 0 ? d : 7,
+    );
   }
 }
 

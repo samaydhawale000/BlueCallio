@@ -22,6 +22,53 @@ enum CallStatus {
   ENDED
 }
 
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum BillingStatus {
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+  UNPAID
+}
+
+enum PaymentStatus {
+  PAID
+  FAILED
+  PENDING
+  REFUNDED
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum AuditAction {
+  USER_REGISTERED
+  PROJECT_CREATED
+  API_KEY_GENERATED
+  PLAN_CHANGED
+  ACCOUNT_SUSPENDED
+  ACCOUNT_RESUMED
+  SUBSCRIPTION_CREATED
+  SUBSCRIPTION_CANCELED
+  SUBSCRIPTION_RESUMED
+  PAYMENT_RECEIVED
+  PAYMENT_FAILED
+  PAYMENT_METHOD_REMOVED
+  PAYMENT_METHOD_UPDATED
+}
+
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
@@ -31,10 +78,219 @@ model User {
   passwordHash String?
   refreshTokenHash String?
 
+  role   UserRole   @default(USER)
+  status UserStatus @default(ACTIVE)
+
+  razorpayCustomerId String?
+  razorpayTokenId    String?
+  cardBrand          String?
+  cardLast4          String?
+  cardExpMonth       Int?
+  cardExpYear        Int?
+
+  lastActiveAt DateTime?
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  projects     Project[]
+projects     Project[]
+  auditLogs    AuditLog[]
+  subscriptions Subscription[]
+  usages        Usage[]
+  usageInvoices UsageInvoice[]
+}
+
+model Plan {
+  id             String   @id @default(uuid())
+  name           String
+  slug           String   @unique
+  monthlyPrice   Int      @default(0)
+  currency       String   @default("INR")
+  includedMinutes Int     @default(0)
+  razorpayPlanId  String?
+  features       Json?
+  status         Boolean  @default(true)
+  displayOrder   Int      @default(0)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  subscriptions  Subscription[]
+}
+
+model Subscription {
+  id                   String   @id @default(uuid())
+  companyId            String
+  company              User     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  planId               String
+  plan                 Plan     @relation(fields: [planId], references: [id])
+  razorpayCustomerId   String?
+  razorpaySubscriptionId String?
+status               BillingStatus @default(ACTIVE)
+  billingCycle         BillingCycle  @default(MONTHLY)
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean  @default(false)
+  gracePeriodEndsAt    DateTime?
+  dunningAttempts      Int      @default(0)
+  paymentFailedAt      DateTime?
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+payments Payment[]
+  invoices  Invoices[]
+  usage     Usage[]
+}
+
+model Payment {
+  id                    String   @id @default(uuid())
+  subscriptionId        String
+  subscription          Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  razorpayPaymentId     String?
+  razorpayOrderId       String?
+  amount                Int      @default(0)
+  currency              String   @default("INR")
+  paymentStatus         PaymentStatus @default(PENDING)
+  paymentMethod         String?
+
+  paidAt                DateTime?
+
+  createdAt             DateTime @default(now())
+}
+
+model Usage {
+  id                String   @id @default(uuid())
+  companyId         String
+  company           User     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  subscriptionId    String?
+  subscription      Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+billingCycleStart DateTime
+  billingCycleEnd   DateTime
+  minutesUsed       Int      @default(0)
+  minutesPurchased  Int      @default(0)
+  callsCreated      Int      @default(0)
+  callsCompleted    Int      @default(0)
+  participants      Int      @default(0)
+  apiRequests       Int      @default(0)
+
+  // ── Usage-based billing (participant minutes by media type) ──
+  audioMinutes      Int      @default(0)
+  videoMinutes      Int      @default(0)
+  screenShareMinutes Int     @default(0)
+  // Estimated cost in paise for the current cycle (computed from line items)
+  usageCostPaise    Int      @default(0)
+
+  createdAt         DateTime @default(now())
+
+  callUsage         CallUsage[]
+
+  @@unique([companyId, billingCycleStart])
+}
+
+// Editable billing rates + free allowances (per-minute pricing).
+// Stored in DB so admins can change them from the admin portal.
+model BillingRate {
+  id             String  @id @default(uuid())
+  key            String  @unique // e.g. "default"
+  audioPaise     Int     @default(20)   // ₹0.20 / participant-minute
+  videoPaise     Int     @default(80)   // ₹0.80 / participant-minute
+  screenSharePaise Int   @default(10)   // +₹0.10 / participant-minute (add-on to video)
+  freeAudioMins  Int     @default(500)  // Developer Free Tier audio allowance
+  freeVideoMins  Int     @default(200)  // Developer Free Tier video allowance
+  taxPercent     Int     @default(18)   // GST
+  updatedAt      DateTime @updatedAt
+  createdAt      DateTime @default(now())
+}
+
+// Per-call billing line item (call analytics + invoicing).
+model CallUsage {
+  id                String   @id @default(uuid())
+  usageId           String
+  usage             Usage    @relation(fields: [usageId], references: [id], onDelete: Cascade)
+  callId            String
+  audioMinutes      Int      @default(0)
+  videoMinutes      Int      @default(0)
+  screenShareMinutes Int     @default(0)
+  participants      Int      @default(0)
+  costPaise         Int      @default(0)
+  startedAt         DateTime?
+  endedAt           DateTime?
+  createdAt         DateTime @default(now())
+
+  @@index([usageId])
+  @@index([callId])
+}
+
+model Invoices {
+  id                String   @id @default(uuid())
+  subscriptionId    String
+  subscription      Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  razorpayPaymentId String?
+  invoiceNumber     String?
+  hostedInvoiceUrl  String?
+  invoicePdf        String?
+amount            Int      @default(0)
+  currency          String   @default("INR")
+  status            String   @default("open")
+  generatedAt       DateTime?
+  paidAt            DateTime?
+
+  createdAt         DateTime @default(now())
+}
+
+// Month-end usage invoice (usage-based billing v2).
+model UsageInvoice {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cycleStart    DateTime
+  cycleEnd      DateTime
+  invoiceNumber String?
+  razorpayPaymentId String?
+  razorpayOrderId String?
+  // Line-item totals (paise)
+  audioMinutes  Int      @default(0)
+  videoMinutes  Int      @default(0)
+  screenShareMinutes Int @default(0)
+  audioPaise    Int      @default(0)
+  videoPaise    Int      @default(0)
+  screenSharePaise Int  @default(0)
+  subtotalPaise Int      @default(0)
+  taxPaise      Int      @default(0)
+  totalPaise    Int      @default(0)
+  currency      String   @default("INR")
+  status        String   @default("open") // open | paid | failed | dunning
+  dueAt         DateTime?
+  paidAt        DateTime?
+  createdAt     DateTime @default(now())
+
+  lineItems     UsageInvoiceLineItem[]
+
+  @@unique([userId, cycleStart])
+}
+
+model UsageInvoiceLineItem {
+  id        String   @id @default(uuid())
+  invoiceId String
+  invoice   UsageInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  callId    String?
+  mediaType String   // audio | video | screen_share
+  minutes   Int      @default(0)
+  participants Int   @default(0)
+  amountPaise Int    @default(0)
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String       @id @default(uuid())
+  action    AuditAction
+  actorId   String?
+  actor     User?        @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  metadata  Json?
+  createdAt DateTime     @default(now())
+
+  @@index([createdAt])
 }
 
 enum ProjectTheme {

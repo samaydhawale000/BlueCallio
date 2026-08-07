@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import {
   Mail,
   ArrowUpRight,
@@ -34,6 +35,16 @@ const footerLinks = {
 };
 
 export default function Footer() {
+const pathname = usePathname();
+  // Dashboard has its own app layout — hide the marketing footer there.
+  if (pathname?.startsWith("/dashboard")) {
+    return null;
+  }
+  // Login/signup are auth pages — hide the marketing footer there too.
+  if (pathname?.startsWith("/login") || pathname?.startsWith("/signup")) {
+    return null;
+  }
+
   return (
     <footer className="relative overflow-hidden border-t border-white/10 bg-[#050816]">
 

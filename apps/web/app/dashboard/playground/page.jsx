@@ -70,13 +70,10 @@ export default function PlaygroundPage() {
     setSession(null);
   }
 
-  return (
+return (
     <>
-      <div
-        className="min-h-screen"
-        style={{ background: "#060B18" }}
-      >
-        <main className="max-w-6xl mx-auto px-6 py-16">
+      <div className="flex flex-col gap-8">
+        <main className="max-w-3xl">
 
           <Hero />
 

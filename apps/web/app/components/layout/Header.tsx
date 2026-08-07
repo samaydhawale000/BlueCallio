@@ -11,16 +11,24 @@ import MobileMenu from "./MobileMenu";
 import { useAuthStore } from "../../store/auth.store";
 
 export default function Header() {
-  const { token, logout } = useAuthStore();
+  const { token, user, logout } = useAuthStore();
   const pathname = usePathname();
   const router = useRouter();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  const isLoggedIn = !!token;
-  // /call is a full-screen meeting page — hide the marketing nav there.
+const isLoggedIn = !!token;
+  const displayName = user?.name || user?.email || 'Account';
+  const avatarUrl = user?.avatarUrl || '';
+// /call is a full-screen meeting page — hide the marketing nav there.
   const isCallPage = pathname?.startsWith("/call") ?? false;
+  // Dashboard has its own app layout with a sidebar — hide the marketing nav.
+  const isAppPage =
+    pathname?.startsWith("/dashboard") ?? false;
+  // Login/signup are auth pages — hide the marketing nav there too.
+  const isAuthPage =
+    pathname?.startsWith("/login") || pathname?.startsWith("/signup") || false;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -54,7 +62,7 @@ export default function Header() {
     return () => window.removeEventListener("keydown", handleEsc);
   }, []);
 
-  if (isCallPage) {
+if (isCallPage || isAppPage || isAuthPage) {
     return null;
   }
 
@@ -102,12 +110,28 @@ export default function Header() {
           {/* Desktop Actions */}
 
           <div className="hidden items-center gap-3 lg:flex">
-            {isLoggedIn ? (
+{isLoggedIn ? (
               <>
                 <Link
                   href="/dashboard"
-                  className="text-sm text-slate-400 transition hover:text-white"
+                  className="flex items-center gap-2 text-sm text-slate-400 transition hover:text-white"
+                  title={displayName}
                 >
+                  {avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={avatarUrl}
+                      alt={displayName}
+                      className="w-7 h-7 rounded-full object-cover"
+                    />
+                  ) : (
+                    <span
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                      style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}
+                    >
+                      {(displayName || 'U')[0].toUpperCase()}
+                    </span>
+                  )}
                   Dashboard
                 </Link>
 

@@ -13,6 +13,9 @@ import { TurnModule } from './turn/turn.module';
 import { WebhookModule } from './webhook/webhook.module';
 import { PlaygroundModule } from './playground/playground.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { BillingModule } from './billing/billing.module';
+import { PaymentModule } from './payment/payment.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -27,9 +30,11 @@ import { DashboardModule } from './dashboard/dashboard.module';
     ApiKeyModule,
     CallSessionModule,
     TurnModule,
-    WebhookModule,
+WebhookModule,
     PlaygroundModule,
-    DashboardModule
+DashboardModule,
+    BillingModule,
+    AdminModule
   ],
   controllers: [TestController],
 })

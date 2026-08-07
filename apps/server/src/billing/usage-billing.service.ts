@@ -1,0 +1,381 @@
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+
+export interface UsageSnapshot {
+  audioMinutes: number;
+  videoMinutes: number;
+  screenShareMinutes: number;
+  participants: number;
+  callsCreated: number;
+  callsCompleted: number;
+}
+
+export interface UsageCost {
+  audioPaise: number;
+  videoPaise: number;
+  screenSharePaise: number;
+  totalPaise: number;
+}
+
+export interface BillingRates {
+  audioPaise: number;
+  videoPaise: number;
+  screenSharePaise: number;
+  freeAudioMins: number;
+  freeVideoMins: number;
+  taxPercent: number;
+}
+
+/**
+ * Usage-based, per-participant-minute billing engine (BlueJoinet v2).
+ *
+ * Rates:
+ *  - Audio       ₹0.20 / participant-minute
+ *  - Video       ₹0.80 / participant-minute
+ *  - Screen share +₹0.10 / participant-minute (add-on to video)
+ *
+ * Developer Free Tier: 500 audio + 200 video participant-minutes / month.
+ * Screen sharing is always billable (no free allowance).
+ *
+ * Rates + free allowances are stored in the `BillingRate` table so admins
+ * can edit them from the admin portal.
+ */
+@Injectable()
+export class UsageBillingService {
+  private readonly logger = new Logger(UsageBillingService.name);
+
+  constructor(private prisma: PrismaService) {}
+
+  /** Fetch the default billing rates (fall back to defaults if not seeded). */
+  async getRates(): Promise<BillingRates> {
+    const rate = await this.prisma.billingRate.findUnique({
+      where: { key: 'default' },
+    });
+    if (!rate) {
+      return {
+        audioPaise: 20,
+        videoPaise: 80,
+        screenSharePaise: 10,
+        freeAudioMins: 500,
+        freeVideoMins: 200,
+        taxPercent: 18,
+      };
+    }
+    return {
+      audioPaise: rate.audioPaise,
+      videoPaise: rate.videoPaise,
+      screenSharePaise: rate.screenSharePaise,
+      freeAudioMins: rate.freeAudioMins,
+      freeVideoMins: rate.freeVideoMins,
+      taxPercent: rate.taxPercent,
+    };
+  }
+
+  /** Compute the cost (in paise) for a usage snapshot at the current rates. */
+  async computeCost(snapshot: UsageSnapshot): Promise<UsageCost> {
+    const rates = await this.getRates();
+    const audioPaise = snapshot.audioMinutes * rates.audioPaise;
+    const videoPaise = snapshot.videoMinutes * rates.videoPaise;
+    const screenSharePaise =
+      snapshot.screenShareMinutes * rates.screenSharePaise;
+    return {
+      audioPaise,
+      videoPaise,
+      screenSharePaise,
+      totalPaise: audioPaise + videoPaise + screenSharePaise,
+    };
+  }
+
+  /**
+   * Get (or create) the current monthly usage record for a user.
+   * Uses a rolling 30-day window keyed to the first day of the current month.
+   */
+  async getOrCreateUsage(userId: string) {
+    const now = new Date();
+    const cycleStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const cycleEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    cycleEnd.setHours(23, 59, 59, 999);
+
+    const existing = await this.prisma.usage.findUnique({
+      where: {
+        companyId_billingCycleStart: {
+          companyId: userId,
+          billingCycleStart: cycleStart,
+        },
+      },
+    });
+    if (existing) return existing;
+
+    return this.prisma.usage.create({
+      data: {
+        companyId: userId,
+        billingCycleStart: cycleStart,
+        billingCycleEnd: cycleEnd,
+        minutesUsed: 0,
+        minutesPurchased: 0,
+        callsCreated: 0,
+        callsCompleted: 0,
+        participants: 0,
+        apiRequests: 0,
+        audioMinutes: 0,
+        videoMinutes: 0,
+        screenShareMinutes: 0,
+        usageCostPaise: 0,
+      },
+    });
+  }
+
+  /**
+   * Record a completed call's usage and write a per-call line item.
+   *
+   * @param userId   owner of the project the call belongs to
+   * @param callId   the call id
+   * @param data     minutes + participants per media type
+   */
+  async recordCallUsage(
+    userId: string,
+    callId: string,
+    data: {
+      audioMinutes: number;
+      videoMinutes: number;
+      screenShareMinutes: number;
+      participants: number;
+      startedAt?: Date;
+      endedAt?: Date;
+    },
+  ) {
+    const usage = await this.getOrCreateUsage(userId);
+    const cost = await this.computeCost({
+      audioMinutes: data.audioMinutes,
+      videoMinutes: data.videoMinutes,
+      screenShareMinutes: data.screenShareMinutes,
+      participants: data.participants,
+      callsCreated: 0,
+      callsCompleted: 1,
+    });
+
+    const updated = await this.prisma.usage.update({
+      where: { id: usage.id },
+      data: {
+        audioMinutes: { increment: Math.round(data.audioMinutes) },
+        videoMinutes: { increment: Math.round(data.videoMinutes) },
+        screenShareMinutes: {
+          increment: Math.round(data.screenShareMinutes),
+        },
+        participants: { increment: data.participants },
+        callsCompleted: { increment: 1 },
+        usageCostPaise: { increment: cost.totalPaise },
+      },
+    });
+
+    // Write a per-call line item for analytics + invoicing.
+    await this.prisma.callUsage.create({
+      data: {
+        usageId: usage.id,
+        callId,
+        audioMinutes: Math.round(data.audioMinutes),
+        videoMinutes: Math.round(data.videoMinutes),
+        screenShareMinutes: Math.round(data.screenShareMinutes),
+        participants: data.participants,
+        costPaise: cost.totalPaise,
+        startedAt: data.startedAt ?? null,
+        endedAt: data.endedAt ?? new Date(),
+      },
+    });
+
+    this.logger.log(
+      `Recorded call ${callId} for user ${userId}: ${data.audioMinutes}a/${data.videoMinutes}v/${data.screenShareMinutes}ss mins, ${cost.totalPaise} paise`,
+    );
+
+    return updated;
+  }
+
+  /**
+   * Current usage + cost for the user's current cycle.
+   */
+  async getCurrentUsage(userId: string) {
+    const usage = await this.getOrCreateUsage(userId);
+    const rates = await this.getRates();
+    const cost = await this.computeCost({
+      audioMinutes: usage.audioMinutes,
+      videoMinutes: usage.videoMinutes,
+      screenShareMinutes: usage.screenShareMinutes,
+      participants: usage.participants,
+      callsCreated: usage.callsCreated,
+      callsCompleted: usage.callsCompleted,
+    });
+
+    // Free allowance only covers audio + video (screen share always paid).
+    const billableAudio = Math.max(
+      0,
+      usage.audioMinutes - rates.freeAudioMins,
+    );
+    const billableVideo = Math.max(
+      0,
+      usage.videoMinutes - rates.freeVideoMins,
+    );
+    // Screen share is always billable.
+    const billableScreenShare = usage.screenShareMinutes;
+
+    const billableCostAudio = billableAudio * rates.audioPaise;
+    const billableCostVideo = billableVideo * rates.videoPaise;
+    const billableCostScreenShare =
+      billableScreenShare * rates.screenSharePaise;
+    const billableTotal = billableCostAudio + billableCostVideo + billableCostScreenShare;
+
+    // Estimate end-of-month based on elapsed days in the cycle.
+    const start = usage.billingCycleStart.getTime();
+    const now = Date.now();
+    const elapsedDays = Math.max(1, (now - start) / 86400000);
+    const daysInMonth = Math.max(
+      1,
+      (usage.billingCycleEnd.getTime() - start) / 86400000,
+    );
+    const projectedPaise = Math.round(
+      (billableTotal / elapsedDays) * daysInMonth,
+    );
+
+    return {
+      cycle: {
+        start: usage.billingCycleStart,
+        end: usage.billingCycleEnd,
+      },
+      usage: {
+        audioMinutes: usage.audioMinutes,
+        videoMinutes: usage.videoMinutes,
+        screenShareMinutes: usage.screenShareMinutes,
+        participants: usage.participants,
+        callsCreated: usage.callsCreated,
+        callsCompleted: usage.callsCompleted,
+      },
+      freeAllowance: {
+        audioMinutes: rates.freeAudioMins,
+        videoMinutes: rates.freeVideoMins,
+      },
+      rates: {
+        audioPaise: rates.audioPaise,
+        videoPaise: rates.videoPaise,
+        screenSharePaise: rates.screenSharePaise,
+      },
+      cost: {
+        audioPaise: billableCostAudio,
+        videoPaise: billableCostVideo,
+        screenSharePaise: billableCostScreenShare,
+        totalPaise: billableTotal,
+      },
+      estimatedMonthEndPaise: projectedPaise,
+      nextBillingDate: new Date(usage.billingCycleEnd.getTime() + 1),
+    };
+  }
+
+  /**
+   * Per-call line items for a user's current cycle (call analytics).
+   */
+  async getCallUsage(userId: string) {
+    const usage = await this.getOrCreateUsage(userId);
+    return this.prisma.callUsage.findMany({
+      where: { usageId: usage.id },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+  }
+
+  /**
+   * Whether the user can still start a new AUDIO/VIDEO call under the free
+   * allowance. Screen-share is always allowed (billable). Returns remaining
+   * free minutes so the caller can decide.
+   */
+  async getFreeAllowanceStatus(userId: string) {
+    const usage = await this.getOrCreateUsage(userId);
+    const rates = await this.getRates();
+    return {
+      audioRemaining: Math.max(0, rates.freeAudioMins - usage.audioMinutes),
+      videoRemaining: Math.max(0, rates.freeVideoMins - usage.videoMinutes),
+      audioExhausted: usage.audioMinutes >= rates.freeAudioMins,
+      videoExhausted: usage.videoMinutes >= rates.freeVideoMins,
+    };
+  }
+
+/**
+   * Admin: aggregate usage across all users since a given date.
+   * Sums per-media-type minutes + cost for all Usage rows in the window.
+   */
+  async summarizeAdminUsage(since: Date) {
+    const [aggregate, lineItems] = await Promise.all([
+      this.prisma.usage.aggregate({
+        where: { billingCycleStart: { gte: since } },
+        _sum: {
+          audioMinutes: true,
+          videoMinutes: true,
+          screenShareMinutes: true,
+          participants: true,
+          usageCostPaise: true,
+          callsCompleted: true,
+        },
+        _count: true,
+      }),
+      this.prisma.callUsage.aggregate({
+        where: { createdAt: { gte: since } },
+        _sum: {
+          audioMinutes: true,
+          videoMinutes: true,
+          screenShareMinutes: true,
+          participants: true,
+          costPaise: true,
+        },
+        _count: true,
+      }),
+    ]);
+
+    const rates = await this.getRates();
+    return {
+      since,
+      usage: {
+        audioMinutes: aggregate._sum.audioMinutes ?? 0,
+        videoMinutes: aggregate._sum.videoMinutes ?? 0,
+        screenShareMinutes: aggregate._sum.screenShareMinutes ?? 0,
+        participants: aggregate._sum.participants ?? 0,
+        estimatedCostPaise: aggregate._sum.usageCostPaise ?? 0,
+        callsCompleted: aggregate._sum.callsCompleted ?? 0,
+        activeAccounts: aggregate._count,
+      },
+      lineItems: {
+        audioMinutes: lineItems._sum.audioMinutes ?? 0,
+        videoMinutes: lineItems._sum.videoMinutes ?? 0,
+        screenShareMinutes: lineItems._sum.screenShareMinutes ?? 0,
+        participants: lineItems._sum.participants ?? 0,
+        costPaise: lineItems._sum.costPaise ?? 0,
+        calls: lineItems._count,
+      },
+      rates,
+      currency: 'INR',
+    };
+  }
+
+  /** Update billing rates (admin). */
+  async updateRates(data: Partial<BillingRates>) {
+    const existing = await this.prisma.billingRate.findUnique({
+      where: { key: 'default' },
+    });
+    if (!existing) {
+      throw new NotFoundException('Billing rate not found. Run the seed.');
+    }
+    return this.prisma.billingRate.update({
+      where: { id: existing.id },
+      data: {
+        ...(data.audioPaise !== undefined && { audioPaise: data.audioPaise }),
+        ...(data.videoPaise !== undefined && { videoPaise: data.videoPaise }),
+        ...(data.screenSharePaise !== undefined && {
+          screenSharePaise: data.screenSharePaise,
+        }),
+        ...(data.freeAudioMins !== undefined && {
+          freeAudioMins: data.freeAudioMins,
+        }),
+        ...(data.freeVideoMins !== undefined && {
+          freeVideoMins: data.freeVideoMins,
+        }),
+        ...(data.taxPercent !== undefined && { taxPercent: data.taxPercent }),
+      },
+    });
+  }
+}

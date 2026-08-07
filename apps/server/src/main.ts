@@ -9,9 +9,10 @@ import {
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app =
+const app =
     await NestFactory.create(
       AppModule,
+      { rawBody: true },
     );
 
   app.useGlobalPipes(
