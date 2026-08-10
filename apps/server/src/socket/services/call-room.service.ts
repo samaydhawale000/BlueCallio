@@ -67,8 +67,22 @@ export class CallRoomService {
     );
   }
 
-  hasRoom(callId: string) {
+hasRoom(callId: string) {
     return this.rooms.has(callId);
+  }
+
+  /** Number of distinct call rooms currently holding at least one socket. */
+  getActiveRoomCount(): number {
+    return this.rooms.size;
+  }
+
+  /** Total sockets currently inside any call room. */
+  getTotalInCall(): number {
+    let total = 0;
+    for (const room of this.rooms.values()) {
+      total += room.size;
+    }
+    return total;
   }
 
   /**

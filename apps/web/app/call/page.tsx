@@ -164,8 +164,9 @@ function CallPageContent() {
 
   const deviceState = useDeviceEnumerate();
 
-  const localVideoRef = useRef<HTMLVideoElement>(null);
+const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
 const screenStreamRef = useRef<MediaStream | null>(null);
@@ -193,8 +194,12 @@ const duration = useDurationTimer(state === 'in-call');
         const res = await fetch(`${apiUrl}/calls/${urlCallId}/details`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (res.ok) {
+if (res.ok) {
           const data = await res.json();
+          if (data.type === 'AUDIO' || data.type === 'VIDEO') {
+            setCallType(data.type);
+            callTypeRef.current = data.type;
+          }
           if (data.branding) {
             setBranding({
               companyName: data.branding.companyName ?? 'BlueJoinet',
@@ -387,9 +392,13 @@ socket.on('offer', async ({ offer }: { offer: RTCSessionDescriptionInit }) => {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
+useEffect(() => {
     if (remoteVideoRef.current && remoteStream) {
       remoteVideoRef.current.srcObject = remoteStream;
+    }
+    if (remoteAudioRef.current && remoteStream) {
+      remoteAudioRef.current.srcObject = remoteStream;
+      remoteAudioRef.current.play().catch(() => {});
     }
   }, [remoteStream]);
 
@@ -725,6 +734,9 @@ if (state === 'rejected') {
           {duration}
         </span>
       </div>
+
+{/* Hidden audio element — plays remote audio for audio-only calls */}
+      <audio ref={remoteAudioRef} autoPlay playsInline style={{ display: 'none' }} />
 
       {/* Video area */}
       <div className="flex-1 relative overflow-hidden" style={{ minHeight: 0 }}>

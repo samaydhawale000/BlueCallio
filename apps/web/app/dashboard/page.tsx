@@ -11,13 +11,9 @@ import {
   Video,
   Phone,
   Monitor,
-  ArrowUpRight,
-Sparkles,
-  ChefHat,
-  ShieldCheck,
+ArrowUpRight,
+  Sparkles,
   Wallet,
-  Users,
-  FileText,
   Code2,
   Layout as LayoutIcon,
   Server,
@@ -82,7 +78,10 @@ interface CurrentUsage {
     screenSharePaise: number;
     totalPaise: number;
   };
-  estimatedMonthEndPaise: number;
+estimatedMonthEndPaise: number;
+  isFreeTier?: boolean;
+  hasPaymentMethod?: boolean;
+  freeUsagePercent?: number;
 }
 
 const paiseToINR = (paise: number) => `₹${(paise / 100).toFixed(2)}`;
@@ -101,15 +100,11 @@ const RESOURCES = [
   { label: 'REST API', icon: Server, href: '/docs' },
 ];
 
-const WEEK_DATA = [
-  { day: 'Mon', minutes: 40 },
-  { day: 'Tue', minutes: 85 },
-  { day: 'Wed', minutes: 60 },
-  { day: 'Thu', minutes: 120 },
-  { day: 'Fri', minutes: 95 },
-  { day: 'Sat', minutes: 130 },
-  { day: 'Sun', minutes: 90 },
-];
+interface ChartPoint {
+  label: string;
+  minutes: number;
+  calls: number;
+}
 
 export default function DashboardPage() {
   const { token, logout } = useAuthStore();
@@ -135,6 +130,8 @@ const [calls, setCalls] = useState<Call[]>([]);
   const [usage, setUsage] = useState<Usage | null>(null);
   const [currentUsage, setCurrentUsage] = useState<CurrentUsage | null>(null);
   const [selectedCall, setSelectedCall] = useState<Call | null>(null);
+  const [chart, setChart] = useState<ChartPoint[]>([]);
+  const [userName, setUserName] = useState('there');
 
   const [webhookInputs, setWebhookInputs] = useState<Record<string, string>>({});
   const [savingWebhook, setSavingWebhook] = useState<string | null>(null);
@@ -157,14 +154,18 @@ const [calls, setCalls] = useState<Call[]>([]);
 
 const fetchDashboardData = useCallback(async () => {
     try {
-      const [callsRes, usageRes, currentRes] = await Promise.all([
+      const [callsRes, usageRes, currentRes, chartRes, meRes] = await Promise.all([
         api.get('/dashboard/calls'),
         api.get('/dashboard/usage'),
         api.get('/billing/current-usage'),
+        api.get('/dashboard/usage/chart?days=7'),
+        api.get('/auth/me'),
       ]);
       setCalls(callsRes.data);
       setUsage(usageRes.data);
       setCurrentUsage(currentRes.data);
+      setChart(chartRes.data ?? []);
+      setUserName(meRes.data?.name || meRes.data?.email?.split('@')[0] || 'there');
     } catch {
       // Non-fatal
     }
@@ -233,7 +234,27 @@ const fetchDashboardData = useCallback(async () => {
 
 const minutesUsed = usage?.minutesUsed ?? 0;
   const totalKeys = Object.values(projectKeys).flat().length;
-  const maxWeek = Math.max(...WEEK_DATA.map((d) => d.minutes), 1);
+  const weekData = chart.length > 0 ? chart : [];
+  const maxWeek = Math.max(...weekData.map((d) => d.minutes), 1);
+
+  const recentActivity = calls.slice(0, 5).map((call) => {
+    const statusText =
+      call.status === 'ACCEPTED'
+        ? `Call ${call.type === 'VIDEO' ? 'video' : 'audio'} completed`
+        : call.status === 'RINGING' || call.status === 'INITIATED'
+          ? `Call ${call.type === 'VIDEO' ? 'video' : 'audio'} started`
+          : call.status === 'REJECTED'
+            ? `Call ${call.type === 'VIDEO' ? 'video' : 'audio'} rejected`
+            : call.status === 'MISSED'
+              ? `Call ${call.type === 'VIDEO' ? 'video' : 'audio'} missed`
+              : `Call ${call.type === 'VIDEO' ? 'video' : 'audio'} ${(call.status || '').toLowerCase()}`;
+    return {
+      id: call.id,
+      text: statusText,
+      time: relativeTime(call.createdAt),
+      color: call.status === 'ACCEPTED' ? '#10B981' : call.status === 'RINGING' || call.status === 'INITIATED' ? '#F59E0B' : '#F87171',
+    };
+  });
   const audioMins = currentUsage?.usage?.audioMinutes ?? 0;
   const videoMins = currentUsage?.usage?.videoMinutes ?? 0;
   const screenMins = currentUsage?.usage?.screenShareMinutes ?? 0;
@@ -260,8 +281,8 @@ const minutesUsed = usage?.minutesUsed ?? 0;
       {/* ── Header row ── */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">
-            Welcome back, <span className="gradient-text-hero">Samay</span> 👋
+<h1 className="text-2xl font-bold text-white">
+            Welcome back, <span className="gradient-text-hero capitalize">{userName}</span> 👋
           </h1>
           <p className="text-sm text-slate-500 mt-1">
             Your communication platform at a glance.
@@ -294,11 +315,11 @@ const minutesUsed = usage?.minutesUsed ?? 0;
             </Link>
           </div>
 
-          {/* Per-type summary */}
+{/* Per-type summary */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-            <MiniType label="Audio" mins={audioMins} costPaise={currentUsage?.cost?.audioPaise ?? 0} />
-            <MiniType label="Video" mins={videoMins} costPaise={currentUsage?.cost?.videoPaise ?? 0} />
-            <MiniType label="Screen Share" mins={screenMins} costPaise={currentUsage?.cost?.screenSharePaise ?? 0} />
+            <MiniType label="Audio" mins={audioMins} costPaise={currentUsage?.cost?.audioPaise ?? 0} showCost={!currentUsage?.isFreeTier} />
+            <MiniType label="Video" mins={videoMins} costPaise={currentUsage?.cost?.videoPaise ?? 0} showCost={!currentUsage?.isFreeTier} />
+            <MiniType label="Screen Share" mins={screenMins} costPaise={currentUsage?.cost?.screenSharePaise ?? 0} showCost={!currentUsage?.isFreeTier} />
           </div>
 
           <div className="flex flex-wrap items-center justify-between mt-2 gap-3">
@@ -307,20 +328,24 @@ const minutesUsed = usage?.minutesUsed ?? 0;
                 <p className="text-xs text-slate-500">Total minutes</p>
                 <p className="text-lg font-bold text-white">{totalBillable.toLocaleString()}</p>
               </div>
-              <div>
-                <p className="text-xs text-slate-500">Current cost</p>
-                <p className="text-lg font-bold" style={{ color: '#34D399' }}>{paiseToINR(currentCost)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">Est. month-end</p>
-                <p className="text-lg font-bold text-white">{paiseToINR(monthEndCost)}</p>
-              </div>
+              {!currentUsage?.isFreeTier && (
+                <>
+                  <div>
+                    <p className="text-xs text-slate-500">Current cost</p>
+                    <p className="text-lg font-bold" style={{ color: '#34D399' }}>{paiseToINR(currentCost)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500">Est. month-end</p>
+                    <p className="text-lg font-bold text-white">{paiseToINR(monthEndCost)}</p>
+                  </div>
+                </>
+              )}
             </div>
             <div
               className="text-xs font-mono px-3 py-1.5 rounded-full"
               style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', color: '#34D399' }}
             >
-              2 Active Calls
+              {usage?.activeCalls ?? 0} Active Calls
             </div>
           </div>
         </div>
@@ -334,19 +359,25 @@ const minutesUsed = usage?.minutesUsed ?? 0;
             <p className="text-sm font-semibold text-white">Minutes this week</p>
             <span className="text-xs text-slate-500">{minutesUsed.toLocaleString()} total</span>
           </div>
-          <div className="flex items-end justify-between gap-2 h-32">
-            {WEEK_DATA.map((d) => (
-              <div key={d.day} className="flex flex-col items-center gap-2 flex-1">
-                <div
-                  className="w-full rounded-t-md transition-all"
-                  style={{
-                    height: `${Math.max(8, (d.minutes / maxWeek) * 100)}%`,
-                    background: 'linear-gradient(180deg, #6366F1, rgba(99,102,241,0.3))',
-                  }}
-                />
-                <span className="text-[10px] text-slate-600">{d.day}</span>
+<div className="flex items-end justify-between gap-2 h-32">
+            {weekData.length === 0 ? (
+              <div className="w-full flex items-center justify-center h-full text-xs text-slate-600">
+                No usage this week yet
               </div>
-            ))}
+            ) : (
+              weekData.map((d) => (
+                <div key={d.label} className="flex flex-col items-center gap-2 flex-1">
+                  <div
+                    className="w-full rounded-t-md transition-all"
+                    style={{
+                      height: `${Math.max(8, (d.minutes / maxWeek) * 100)}%`,
+                      background: 'linear-gradient(180deg, #6366F1, rgba(99,102,241,0.3))',
+                    }}
+                  />
+                  <span className="text-[10px] text-slate-600">{d.label}</span>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -585,7 +616,7 @@ const minutesUsed = usage?.minutesUsed ?? 0;
         </div>
       </div>
 
-      {/* ── Recent Activity ── */}
+{/* ── Recent Activity ── */}
       <div
         className="rounded-2xl border border-[#1A2642]"
         style={{ background: '#0D1421' }}
@@ -594,23 +625,24 @@ const minutesUsed = usage?.minutesUsed ?? 0;
           <p className="font-semibold text-white">Recent Activity</p>
         </div>
         <div className="divide-y divide-[#1A2642]">
-          {[
-            { icon: KeyRound, text: 'API key created', time: '2h ago', color: '#8B5CF6' },
-            { icon: PhoneCall, text: 'Call accepted', time: '5h ago', color: '#10B981' },
-            { icon: FolderKanban, text: 'Project created', time: '1d ago', color: '#6366F1' },
-            { icon: ShieldCheck, text: 'Security review passed', time: '2d ago', color: '#F59E0B' },
-          ].map((item) => (
-            <div key={item.text} className="flex items-center gap-3 px-6 py-4">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                style={{ background: `${item.color}1A`, border: `1px solid ${item.color}33` }}
-              >
-                <item.icon size={15} style={{ color: item.color }} />
-              </div>
-              <p className="text-sm text-slate-300">{item.text}</p>
-              <span className="ml-auto text-xs text-slate-600">{item.time}</span>
+          {recentActivity.length === 0 ? (
+            <div className="px-6 py-8 text-center text-sm text-slate-500">
+              No activity yet. Create a project or place your first call.
             </div>
-          ))}
+          ) : (
+            recentActivity.map((item) => (
+              <div key={item.id} className="flex items-center gap-3 px-6 py-4">
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                  style={{ background: `${item.color}1A`, border: `1px solid ${item.color}33` }}
+                >
+                  <PhoneCall size={15} style={{ color: item.color }} />
+                </div>
+                <p className="text-sm text-slate-300">{item.text}</p>
+                <span className="ml-auto text-xs text-slate-600">{item.time}</span>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -663,10 +695,12 @@ function MiniType({
   label,
   mins,
   costPaise,
+  showCost,
 }: {
   label: string;
   mins: number;
   costPaise: number;
+  showCost?: boolean;
 }) {
   return (
     <div className="rounded-xl border border-[#1A2642] px-4 py-3 text-center" style={{ background: '#0A0F1E' }}>
@@ -675,7 +709,7 @@ function MiniType({
         {Math.round(mins).toLocaleString()}
         <span className="text-xs font-normal text-slate-500"> min</span>
       </p>
-      <p className="text-[11px] font-semibold text-violet-300">{paiseToINR(costPaise)}</p>
+      {showCost && <p className="text-[11px] font-semibold text-violet-300">{paiseToINR(costPaise)}</p>}
     </div>
   );
 }

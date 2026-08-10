@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Video, Phone, Monitor } from "lucide-react";
+import { Video, Phone } from "lucide-react";
 
 import { api } from "../../lib/api";
 import { useRequireAuth } from "../../hooks/useRequireAuth";
@@ -16,13 +16,13 @@ export default function PlaygroundPage() {
   const [session, setSession] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  async function startVideoDemo() {
+  async function startDemo(type) {
     try {
       setLoading(true);
 
-      const { data } = await api.post("/playground/video");
+const { data } = await api.post("/playground/create", { type });
 
-      setSession(data);
+      setSession({ ...data, type });
       setDialogOpen(true);
     } catch (err) {
       console.error(err);
@@ -77,7 +77,7 @@ return (
 
           <Hero />
 
-          <div className="grid lg:grid-cols-3 gap-6">
+<div className="grid lg:grid-cols-2 gap-6">
 
             <DemoCard
               title="Video Calling"
@@ -88,7 +88,7 @@ return (
                   ? "Creating Session..."
                   : "Start Demo"
               }
-              onClick={startVideoDemo}
+              onClick={() => startDemo('VIDEO')}
               disabled={loading}
             />
 
@@ -96,16 +96,13 @@ return (
               title="Audio Calling"
               description="Crystal clear audio calling built on the same infrastructure."
               icon={<Phone color="#818CF8" />}
-              buttonText="Coming Soon"
-              disabled
-            />
-
-            <DemoCard
-              title="Screen Sharing"
-              description="Share your entire screen or any application during calls."
-              icon={<Monitor color="#818CF8" />}
-              buttonText="Coming Soon"
-              disabled
+              buttonText={
+                loading
+                  ? "Creating Session..."
+                  : "Start Demo"
+              }
+              onClick={() => startDemo('AUDIO')}
+              disabled={loading}
             />
 
           </div>

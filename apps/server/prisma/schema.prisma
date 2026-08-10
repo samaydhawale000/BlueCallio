@@ -293,6 +293,15 @@ model AuditLog {
   @@index([createdAt])
 }
 
+// Server-wide platform settings (maintenance mode, announcements, etc.).
+model PlatformSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     Json?
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
 enum ProjectTheme {
   LIGHT
   DARK
@@ -368,8 +377,29 @@ model Call {
   updatedAt DateTime @updatedAt
 
   events CallEvent[]
-
+  usageSegments UsageSegment[]
   session CallSession?
+}
+
+// A time-bounded interval of a call with a homogeneous media state and a
+// fixed set of participants. Built from the call's event stream, then rated
+// per participant-minute. This is how telecom billing works: events →
+// segments → money.
+model UsageSegment {
+  id           String   @id @default(uuid())
+  callId       String
+  call         Call     @relation(fields: [callId], references: [id], onDelete: Cascade)
+  startedAt    DateTime
+  endedAt      DateTime
+  participantCount Int  @default(0)
+  audio        Boolean  @default(false)
+  video        Boolean  @default(false)
+  screenShare  Boolean  @default(false)
+  // Rated cost in paise for this segment (after free-allowance application).
+  costPaise    Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  @@index([callId, startedAt])
 }
 
 model CallEvent {
@@ -381,9 +411,13 @@ model CallEvent {
 
   event String
 
+  participantId String?
+
   metadata Json?
 
   createdAt DateTime @default(now())
+
+  @@index([callId, createdAt])
 }
 
 model CallSession {

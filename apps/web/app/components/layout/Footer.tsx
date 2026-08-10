@@ -19,7 +19,7 @@ const footerLinks = {
     { name: "Playground", href: "/dashboard/playground" },
   ],
 
-  Resources: [
+Resources: [
     { name: "FAQ", href: "/faq" },
     { name: "Support", href: "mailto:hello@bluejoinet.com" },
     { name: "Docs", href: "/docs" },
@@ -27,10 +27,11 @@ const footerLinks = {
   ],
 
   Legal: [
-    { name: "Privacy", href: "/privacy" },
-    { name: "Terms", href: "/terms" },
-    { name: "Cookies", href: "/cookies" },
-    { name: "Security", href: "/security" },
+    { name: "Terms of Service", href: "/terms" },
+    { name: "Privacy Policy", href: "/privacy" },
+    { name: "Refund & Cancellation", href: "/refund" },
+    { name: "Acceptable Use", href: "/acceptable-use" },
+    { name: "Billing & Usage", href: "/billing-terms" },
   ],
 };
 
@@ -132,7 +133,7 @@ const pathname = usePathname();
             © {new Date().getFullYear()} BlueJoinet. All rights reserved.
           </span>
 
-          <div className="flex items-center gap-6">
+<div className="flex items-center gap-6">
 
             <Link
               href="/privacy"
@@ -149,10 +150,17 @@ const pathname = usePathname();
             </Link>
 
             <Link
-              href="/support"
+              href="/refund"
               className="transition hover:text-white"
             >
-              Support
+              Refund Policy
+            </Link>
+
+            <Link
+              href="/billing-terms"
+              className="transition hover:text-white"
+            >
+              Billing &amp; Usage
             </Link>
 
           </div>

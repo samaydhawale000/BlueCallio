@@ -6,6 +6,8 @@ import { BillingService } from './billing.service';
 import { BillingJobsService } from './billing-jobs.service';
 import { UsageBillingService } from './usage-billing.service';
 import { InvoiceBillingService } from './invoice-billing.service';
+import { UsageSegmentService } from './usage-segment.service';
+import { RatingEngineService } from './rating-engine.service';
 import { BillingGuard } from '../common/guards/billing.guard';
 import { PaymentModule } from '../payment/payment.module';
 import { PrismaModule } from '../prisma/prisma.module';
@@ -23,12 +25,16 @@ import { PrismaModule } from '../prisma/prisma.module';
     BillingJobsService,
     UsageBillingService,
     InvoiceBillingService,
+    UsageSegmentService,
+    RatingEngineService,
     BillingGuard,
   ],
   exports: [
     BillingService,
     UsageBillingService,
     InvoiceBillingService,
+    UsageSegmentService,
+    RatingEngineService,
     BillingGuard,
   ],
 })

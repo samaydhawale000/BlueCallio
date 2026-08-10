@@ -203,13 +203,13 @@ export default function SignupPage() {
               </div>
             </div>
 
-            <p className="text-center text-xs text-slate-600 mt-6">
-              By continuing you agree to our{' '}
-              <Link href="/terms" className="hover:text-slate-400 transition-colors">
-                Terms
+<p className="text-center text-xs text-slate-600 mt-6">
+              By creating an account, you agree to our{' '}
+              <Link href="/terms" className="hover:text-slate-300 transition-colors">
+                Terms of Service
               </Link>{' '}
-              &amp;{' '}
-              <Link href="/privacy" className="hover:text-slate-400 transition-colors">
+              and{' '}
+              <Link href="/privacy" className="hover:text-slate-300 transition-colors">
                 Privacy Policy
               </Link>
               .

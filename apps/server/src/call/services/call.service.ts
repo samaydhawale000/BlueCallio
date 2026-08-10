@@ -13,6 +13,8 @@ import { CallGateway } from '../../socket/gateways/call.gateway';
 import { WebhookService } from '../../webhook/webhook.service';
 import { BillingService } from '../../billing/billing.service';
 import { UsageBillingService } from '../../billing/usage-billing.service';
+import { UsageSegmentService } from '../../billing/usage-segment.service';
+import { RatingEngineService } from '../../billing/rating-engine.service';
 
 @Injectable()
 export class CallService implements OnModuleInit {
@@ -29,6 +31,8 @@ export class CallService implements OnModuleInit {
     private webhookService: WebhookService,
     private billingService: BillingService,
     private usageBilling: UsageBillingService,
+    private segmentService: UsageSegmentService,
+    private ratingEngine: RatingEngineService,
   ) {
 // Enforce a sane minimum so a misconfigured env can't make unanswered
     // calls expire faster than a user can open the receiver tab / device and
@@ -95,8 +99,8 @@ options?: {
       },
     });
 
-    await this.prisma.callEvent.create({
-      data: { callId: call.id, event: 'CALL_CREATED' },
+await this.prisma.callEvent.create({
+      data: { callId: call.id, event: 'CALL_CREATED', participantId: data.callerId },
     });
 
     const session = await this.callSessionService.createSession(call.id);
@@ -260,32 +264,80 @@ async endCall(callId: string) {
     });
 
     await this.prisma.callEvent.create({
-      data: { callId, event: 'CALL_ENDED' },
+      data: { callId, event: 'CALL_ENDED', participantId: call.callerId },
     });
 
-    // Record actual usage based on the call duration and media type.
+    // Segment-based usage recording: rebuild segments from the live event
+    // stream and rate them so billing is accurate per media state (not a
+    // coarse "whole call is video" aggregate).
     try {
-      const durationMs = call.startedAt
-        ? endedAt.getTime() - call.startedAt.getTime()
-        : 0;
-      const durationMinutes = Math.max(0, durationMs / 60000);
-      // Participant-minutes: 2 participants on a 1:1 call.
-      const participants = call.callerId && call.receiverId ? 2 : 1;
-      const participantMinutes = Math.round(durationMinutes * participants);
+      // Ensure the call has a CALL_STARTED event before rebuilding (the
+      // gateway already fires it when signaling starts; here we guarantee it).
+      const hasStart = await this.prisma.callEvent.findFirst({
+        where: { callId, event: 'CALL_STARTED' },
+      });
+      if (!hasStart && call.startedAt) {
+        await this.prisma.callEvent.create({
+          data: {
+            callId,
+            event: 'CALL_STARTED',
+            participantId: call.callerId,
+            metadata: { at: call.startedAt.toISOString() },
+          },
+        });
+        // Backdate the event timestamp so the first segment starts then.
+        await this.prisma.callEvent.updateMany({
+          where: { callId, event: 'CALL_STARTED' },
+          data: { createdAt: call.startedAt },
+        });
+      }
 
-await this.usageBilling.recordCallUsage(call.project.ownerId, call.id, {
-        audioMinutes:
-          call.type === CallType.AUDIO ? participantMinutes : 0,
-        videoMinutes:
-          call.type === CallType.VIDEO ? participantMinutes : 0,
-        screenShareMinutes: 0, // screen-share minutes not tracked server-side yet
-        participants,
+      await this.segmentService.rebuildSegmentsForCall(call.id);
+      const rated = await this.ratingEngine.persistRatedCosts(call.id);
+
+      // Peak concurrent participants across the call's media segments —
+      // used for per-participant-minute reporting / invoicing line items.
+      const peakParticipants = rated.segments.reduce(
+        (max, s) => Math.max(max, s.participantCount),
+        0,
+      );
+      const participantCount = Math.max(
+        call.callerId && call.receiverId ? 2 : 1,
+        peakParticipants,
+      );
+
+      await this.usageBilling.recordCallUsage(call.project.ownerId, call.id, {
+        audioMinutes: rated.totals.audioMins,
+        videoMinutes: rated.totals.videoMins,
+        screenShareMinutes: rated.totals.screenShareMins,
+        participants: participantCount,
         startedAt: call.startedAt ?? undefined,
         endedAt,
       });
     } catch (err) {
       // Usage recording must never break the call end.
-      console.error('Failed to record call usage', call.id, err);
+      console.error('Failed to record segment-based call usage', call.id, err);
+      // Fallback: coarse aggregate so we never lose a call's usage entirely.
+      try {
+        const durationMs = call.startedAt
+          ? endedAt.getTime() - call.startedAt.getTime()
+          : 0;
+        const durationMinutes = Math.max(0, durationMs / 60000);
+        const participants = call.callerId && call.receiverId ? 2 : 1;
+        const participantMinutes = Math.round(durationMinutes * participants);
+        await this.usageBilling.recordCallUsage(call.project.ownerId, call.id, {
+          audioMinutes:
+            call.type === CallType.AUDIO ? participantMinutes : 0,
+          videoMinutes:
+            call.type === CallType.VIDEO ? participantMinutes : 0,
+          screenShareMinutes: 0,
+          participants,
+          startedAt: call.startedAt ?? undefined,
+          endedAt,
+        });
+      } catch (e2) {
+        console.error('Failed to record fallback call usage', call.id, e2);
+      }
     }
 
     this.webhookService.fireForCall(callId, 'call.ended');
@@ -341,15 +393,19 @@ const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
     const call = await this.prisma.call.findUnique({ where: { id: callId } });
     if (!call) throw new NotFoundException('Call not found');
 
+const participantId = session?.callerToken
+      ? call.callerId
+      : call.receiverId;
+
     await this.prisma.callEvent.create({
-      data: { callId, event: 'PARTICIPANT_JOINED' },
+      data: { callId, event: 'PARTICIPANT_JOINED', participantId },
     });
 
     return {
       callId,
       status: call.status,
       joined: true,
-      participantId: session?.callerToken ? call.callerId : call.receiverId,
+      participantId,
     };
   }
 
@@ -360,14 +416,18 @@ const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
     const call = await this.prisma.call.findUnique({ where: { id: callId } });
     if (!call) throw new NotFoundException('Call not found');
 
+const participantId = session?.callerToken
+      ? call.callerId
+      : call.receiverId;
+
     await this.prisma.callEvent.create({
-      data: { callId, event: 'PARTICIPANT_LEFT' },
+      data: { callId, event: 'PARTICIPANT_LEFT', participantId },
     });
 
     return {
       callId,
       left: true,
-      participantId: session?.callerToken ? call.callerId : call.receiverId,
+      participantId,
     };
   }
 

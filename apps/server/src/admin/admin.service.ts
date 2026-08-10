@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { CallGateway } from '../socket/gateways/call.gateway';
 
 @Injectable()
 export class AdminService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private callGateway: CallGateway,
+  ) {}
 
   // ── Overview ──────────────────────────────────────────
   async getOverview() {
@@ -183,7 +187,7 @@ const users = await this.prisma.user.findMany({
   }
 
   // ── Live calls ───────────────────────────────────────
-  async getLiveCalls() {
+async getLiveCalls() {
     const calls = await this.prisma.call.findMany({
       where: { status: { in: ['RINGING', 'ACCEPTED', 'INITIATED'] } },
       orderBy: { createdAt: 'desc' },
@@ -197,7 +201,7 @@ const users = await this.prisma.user.findMany({
       startedAt: c.startedAt,
       createdAt: c.createdAt,
       company: c.project?.owner?.name || c.project?.owner?.email || 'Unknown',
-      participants: 2,
+      participants: this.callGateway.getRoomParticipantCount(c.id),
       duration: c.startedAt ? this.nowDiffMinutes(c.startedAt) : 0,
     }));
   }
@@ -253,13 +257,14 @@ const users = await this.prisma.user.findMany({
       dbOk = false;
     }
 
-    const memory = process.memoryUsage();
+const memory = process.memoryUsage();
+    const ws = this.callGateway.getMetrics();
 
     return {
       node: { status: 'healthy', uptime: process.uptime() },
       database: { status: dbOk ? 'healthy' : 'unhealthy' },
       turn: { status: 'healthy' },
-      websocket: { clients: 0 },
+      websocket: { clients: ws.clients, inCall: ws.inCall, rooms: ws.rooms },
       cpu: { usage: this.getCpuPercent() },
       memory: {
         usage: Math.round(memory.heapUsed / 1024 / 1024),
@@ -312,18 +317,42 @@ async getSettings() {
         displayOrder: true,
       },
     });
+
+    const maintenanceMode = await this.getSetting<boolean>('maintenanceMode');
+    const announcement = await this.getSetting<string | null>('announcement');
+
     return {
       plans,
-      maintenanceMode: false,
-      announcement: null,
+      maintenanceMode: maintenanceMode ?? false,
+      announcement: announcement ?? null,
     };
   }
 
   async updateSettings(body: any) {
+    if (typeof body.maintenanceMode === 'boolean') {
+      await this.setSetting('maintenanceMode', body.maintenanceMode);
+    }
+    if (body.announcement !== undefined) {
+      await this.setSetting('announcement', body.announcement ?? null);
+    }
     return {
-      maintenanceMode: body.maintenanceMode ?? false,
-      announcement: body.announcement ?? null,
+      maintenanceMode:
+        (await this.getSetting<boolean>('maintenanceMode')) ?? false,
+      announcement: await this.getSetting<string | null>('announcement'),
     };
+  }
+
+  private async getSetting<T>(key: string): Promise<T | null> {
+    const row = await this.prisma.platformSetting.findUnique({ where: { key } });
+    return (row?.value as T | null) ?? null;
+  }
+
+  private async setSetting(key: string, value: unknown) {
+    await this.prisma.platformSetting.upsert({
+      where: { key },
+      update: { value: value as any },
+      create: { key, value: value as any },
+    });
   }
 
   // ── Helpers ──────────────────────────────────────────

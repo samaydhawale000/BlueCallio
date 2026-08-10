@@ -7,7 +7,7 @@ type HealthData = {
   node: { status: string; uptime: number };
   database: { status: string };
   turn: { status: string };
-  websocket: { clients: number };
+  websocket: { clients: number; inCall?: number; rooms?: number };
   cpu: { usage: number };
   memory: { usage: number; total: number };
 };
@@ -98,11 +98,13 @@ export default function AdminHealthPage() {
         ))}
       </div>
 
-      {/* Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+{/* Metrics */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         <MetricCard label="CPU Usage" value={`${health.cpu.usage}%`} />
         <MetricCard label="Memory" value={`${health.memory.usage} / ${health.memory.total} MB`} />
         <MetricCard label="WebSocket Clients" value={String(health.websocket.clients)} />
+        <MetricCard label="Participants In Call" value={String(health.websocket.inCall ?? 0)} />
+        <MetricCard label="Active Call Rooms" value={String(health.websocket.rooms ?? 0)} />
       </div>
     </div>
   );

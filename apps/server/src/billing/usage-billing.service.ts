@@ -190,7 +190,7 @@ export class UsageBillingService {
     return updated;
   }
 
-  /**
+/**
    * Current usage + cost for the user's current cycle.
    */
   async getCurrentUsage(userId: string) {
@@ -204,6 +204,29 @@ export class UsageBillingService {
       callsCreated: usage.callsCreated,
       callsCompleted: usage.callsCompleted,
     });
+
+    // Free-tier + payment-method status so the UI can decide whether to show
+    // costs and when to prompt the user to add a card.
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { razorpayTokenId: true },
+    });
+    const sub = await this.prisma.subscription.findFirst({
+      where: { companyId: userId },
+      orderBy: { createdAt: 'desc' },
+      include: { plan: { select: { slug: true, monthlyPrice: true } } },
+    });
+    const isFreeTier = !sub || (sub.plan.monthlyPrice ?? 0) === 0;
+    const hasPaymentMethod = !!user?.razorpayTokenId;
+
+    // Free-allowance usage percentage (max of audio/video) for the 90% warning.
+    const audioPct = rates.freeAudioMins > 0
+      ? Math.round((usage.audioMinutes / rates.freeAudioMins) * 100)
+      : 0;
+    const videoPct = rates.freeVideoMins > 0
+      ? Math.round((usage.videoMinutes / rates.freeVideoMins) * 100)
+      : 0;
+    const freeUsagePercent = Math.max(audioPct, videoPct);
 
     // Free allowance only covers audio + video (screen share always paid).
     const billableAudio = Math.max(
@@ -257,7 +280,7 @@ export class UsageBillingService {
         videoPaise: rates.videoPaise,
         screenSharePaise: rates.screenSharePaise,
       },
-      cost: {
+cost: {
         audioPaise: billableCostAudio,
         videoPaise: billableCostVideo,
         screenSharePaise: billableCostScreenShare,
@@ -265,6 +288,10 @@ export class UsageBillingService {
       },
       estimatedMonthEndPaise: projectedPaise,
       nextBillingDate: new Date(usage.billingCycleEnd.getTime() + 1),
+      // Flags for the UI: free-tier status, card presence, free-usage %.
+      isFreeTier,
+      hasPaymentMethod,
+      freeUsagePercent,
     };
   }
 

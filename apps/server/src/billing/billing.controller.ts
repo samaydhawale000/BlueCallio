@@ -16,6 +16,8 @@ import { AdminGuard } from '../admin/guards/admin.guard';
 import { BillingService } from './billing.service';
 import { UsageBillingService } from './usage-billing.service';
 import { InvoiceBillingService } from './invoice-billing.service';
+import { UsageSegmentService } from './usage-segment.service';
+import { RatingEngineService } from './rating-engine.service';
 import { PAYMENT_SERVICE } from '../payment/payment.service';
 import type { PaymentService } from '../payment/payment.service';
 import { CheckoutDto } from './dto/checkout.dto';
@@ -27,6 +29,8 @@ export class BillingController {
     private billingService: BillingService,
     private usageBilling: UsageBillingService,
     private invoiceBilling: InvoiceBillingService,
+    private segmentService: UsageSegmentService,
+    private ratingEngine: RatingEngineService,
     @Inject(PAYMENT_SERVICE) private payments: PaymentService,
   ) {}
 
@@ -168,10 +172,45 @@ export class BillingController {
     return this.usageBilling.getCurrentUsage(req.user.userId);
   }
 
-  @Get('call-usage')
+@Get('call-usage')
   @UseGuards(JwtGuard)
   async callUsage(@Req() req: any) {
     return this.usageBilling.getCallUsage(req.user.userId);
+  }
+
+  // ── Segment engine: per-call usage timeline ─────────
+  @Get('call/:id/segments')
+  @UseGuards(JwtGuard)
+  async callSegments(@Req() req: any, @Param('id') callId: string) {
+    // Ensure the caller owns this call (via a project they own).
+    await this.ensureCallOwnedByUser(callId, req.user.userId);
+    const segments = await this.segmentService.getSegmentsForCall(callId);
+    const rated = await this.ratingEngine.rateCall(callId);
+    return { callId, segments, totals: rated.totals };
+  }
+
+  // ── Admin: segment analytics ─────────────────────────
+  @Get('admin/segment-analytics')
+  @UseGuards(JwtGuard, AdminGuard)
+  async segmentAnalytics() {
+    const start = new Date();
+    start.setDate(1);
+    start.setHours(0, 0, 0, 0);
+
+    const segments = await this.segmentService.getSegmentsSince(start);
+    const rated = await this.ratingEngine.rateSegments(segments);
+    return {
+      since: start,
+      segmentCount: segments.length,
+      totals: rated,
+    };
+  }
+
+  private async ensureCallOwnedByUser(callId: string, userId: string) {
+    const call = await this.segmentService.getCallOwner(callId);
+    if (!call || call.project.ownerId !== userId) {
+      throw new Error('Call not found');
+    }
   }
 
   // ── Admin endpoints ─────────────────────────────────

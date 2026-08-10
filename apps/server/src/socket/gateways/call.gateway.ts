@@ -12,6 +12,7 @@ import { Server, Socket } from 'socket.io';
 import { CallRoomService } from '../services/call-room.service';
 
 import { CallSessionService } from '../../call-session/services/call-session.service';
+import { UsageSegmentService } from '../../billing/usage-segment.service';
 
 @WebSocketGateway({
   cors: {
@@ -22,6 +23,7 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly callSessionService: CallSessionService,
     private readonly roomService: CallRoomService,
+    private readonly segmentService: UsageSegmentService,
   ) {}
 
   @WebSocketServer()
@@ -76,8 +78,25 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  handleConnection(client: Socket) {
+handleConnection(client: Socket) {
     console.log('Socket Connected:', client.id);
+  }
+
+/** Live metrics for the admin health screen. */
+  getMetrics() {
+    return {
+      // Total connected sockets (including unauthenticated).
+      clients: this.server.sockets.sockets.size,
+      // Authenticated participants currently in a call.
+      inCall: this.authenticatedSockets.size,
+      // Unique call rooms with at least one participant.
+      rooms: this.roomService.getActiveRoomCount(),
+    };
+  }
+
+  /** Number of sockets currently in a given call room. */
+  getRoomParticipantCount(callId: string): number {
+    return this.roomService.getParticipantCount(callId);
   }
 
   handleDisconnect(client: Socket) {
@@ -273,7 +292,9 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
       participantId: participant.participantId,
       participants: count,
     });
-    this.server.to(body.callId).emit('participant-joined', { participants: count });
+this.server.to(body.callId).emit('participant-joined', { participants: count });
+
+    await this.safeRecordEvent(body.callId, 'PARTICIPANT_JOINED', participant.participantId);
 
     return { success: true, participants: count };
   }
@@ -296,12 +317,13 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     const count = this.roomService.getParticipantCount(body.callId);
 
-    if (participant) {
+if (participant) {
       this.server.to(body.callId).emit('participant.left', {
         callId: body.callId,
         participantId: participant.participantId,
         participants: count,
       });
+      await this.safeRecordEvent(body.callId, 'PARTICIPANT_LEFT', participant.participantId);
     }
     this.server.to(body.callId).emit('participant-left', { participants: count });
   }
@@ -319,6 +341,9 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const participant = this.getParticipantBySocketId(client.id);
     if (!participant) return { success: false, error: 'Not authenticated' };
     this.server.to(body.callId).emit('call.started', { callId: body.callId });
+
+    await this.safeRecordEvent(body.callId, 'CALL_STARTED', participant.participantId);
+
     return { success: true };
   }
 
@@ -332,9 +357,12 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
       callId: string;
     },
   ) {
-    const participant = this.getParticipantBySocketId(client.id);
+const participant = this.getParticipantBySocketId(client.id);
     if (!participant) return { success: false, error: 'Not authenticated' };
     this.server.to(body.callId).emit('call.ended', { callId: body.callId });
+
+    await this.safeRecordEvent(body.callId, 'CALL_ENDED', participant.participantId);
+
     return { success: true };
   }
 
@@ -425,7 +453,7 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const participant = this.getParticipantBySocketId(client.id);
     if (!participant) return { success: false, error: 'Not authenticated' };
 
-    const updated = this.roomService.updateMedia(client.id, patch);
+const updated = this.roomService.updateMedia(client.id, patch);
     if (!updated) return { success: false, error: 'Not in call room' };
 
     this.server.to(callId).emit(event, {
@@ -438,6 +466,58 @@ export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {
       participantId: participant.participantId,
       media: updated.media,
     });
+
+// Persist a media event into the audit trail used by the segment builder.
+    // These events are never priced at write-time — they are only ratings
+    // inputs that the Rating Engine later converts into money.
+    try {
+      await this.segmentService.recordEvent(
+        callId,
+        this.toMediaEventName(event),
+        participant.participantId,
+        { media: updated.media },
+      );
+
+      // Rebuild segments for the call so the timeline stays current.
+      await this.segmentService.rebuildSegmentsForCall(callId);
+    } catch (err) {
+      // Recording is best-effort and must never break a live call.
+      console.error('Failed to record media event', err);
+    }
+
     return { success: true };
+  }
+
+  private toMediaEventName(socketEvent: string): string {
+    switch (socketEvent) {
+      case 'camera.enabled':
+        return 'CAMERA_ENABLED';
+      case 'camera.disabled':
+        return 'CAMERA_DISABLED';
+      case 'microphone.enabled':
+        return 'MIC_ENABLED';
+      case 'microphone.disabled':
+        return 'MIC_DISABLED';
+      case 'screenShare.started':
+        return 'SCREEN_SHARE_STARTED';
+      case 'screenShare.stopped':
+        return 'SCREEN_SHARE_STOPPED';
+default:
+        return socketEvent.replace(/[-.]/g, '_').toUpperCase();
+    }
+  }
+
+  private async safeRecordEvent(
+    callId: string,
+    event: string,
+    participantId?: string,
+  ) {
+    try {
+      await this.segmentService.recordEvent(callId, event, participantId);
+      await this.segmentService.rebuildSegmentsForCall(callId);
+    } catch (err) {
+      // Best-effort — never break a live call because of event recording.
+      console.error('Failed to record event', event, err);
+    }
   }
 }

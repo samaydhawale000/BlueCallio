@@ -36,7 +36,10 @@ interface CurrentUsage {
     screenSharePaise: number;
     totalPaise: number;
   };
-  estimatedMonthEndPaise: number;
+estimatedMonthEndPaise: number;
+  isFreeTier?: boolean;
+  hasPaymentMethod?: boolean;
+  freeUsagePercent?: number;
 }
 
 interface CallUse {
@@ -59,6 +62,17 @@ interface ChartPoint {
   calls: number;
 }
 
+interface SegmentView {
+  id: string;
+  startedAt: string;
+  endedAt: string;
+  participantCount: number;
+  audio: boolean;
+  video: boolean;
+  screenShare: boolean;
+  costPaise: number;
+}
+
 const paiseToINR = (paise: number) => `₹${(paise / 100).toFixed(2)}`;
 
 export default function UsagePage() {
@@ -66,10 +80,35 @@ export default function UsagePage() {
   const router = useRouter();
   const { isReady } = useRequireAuth();
 
-  const [usage, setUsage] = useState<CurrentUsage | null>(null);
+const [usage, setUsage] = useState<CurrentUsage | null>(null);
   const [callUsage, setCallUsage] = useState<CallUse[]>([]);
   const [chart, setChart] = useState<ChartPoint[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedCall, setExpandedCall] = useState<string | null>(null);
+  const [segments, setSegments] = useState<Record<string, SegmentView[]>>({});
+  const [segmentLoading, setSegmentLoading] = useState<string | null>(null);
+
+  const toggleSegment = useCallback(
+    async (callId: string) => {
+      if (expandedCall === callId) {
+        setExpandedCall(null);
+        return;
+      }
+      setExpandedCall(callId);
+      if (!segments[callId]) {
+        setSegmentLoading(callId);
+        try {
+          const res = await api.get(`/billing/call/${callId}/segments`);
+          setSegments((prev) => ({ ...prev, [callId]: res.data.segments ?? [] }));
+        } catch (e) {
+          setSegments((prev) => ({ ...prev, [callId]: [] }));
+        } finally {
+          setSegmentLoading(null);
+        }
+      }
+    },
+    [expandedCall, segments, api],
+  );
 
   const fetchData = useCallback(async () => {
     try {
@@ -123,19 +162,60 @@ const u = usage?.usage;
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
+<div>
         <h1 className="text-2xl font-bold text-white">Current Usage</h1>
         <p className="text-sm text-slate-500 mt-1">
           Pay only for what you use. Track minutes and cost by media type.
         </p>
       </div>
 
-      {/* Overview cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      {/* Free-tier near-limit warning */}
+      {usage?.isFreeTier && (usage.freeUsagePercent ?? 0) >= 90 && (
+        <div
+          className="rounded-2xl border p-5 flex flex-col sm:flex-row sm:items-center gap-4"
+          style={{
+            background: 'linear-gradient(135deg, rgba(251,191,36,0.12), rgba(244,63,94,0.10))',
+            borderColor: 'rgba(251,191,36,0.4)',
+          }}
+        >
+          <div
+            className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+            style={{ background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)' }}
+          >
+            <Wallet size={18} style={{ color: '#FBBF24' }} />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-white">
+              You&apos;ve used {usage.freeUsagePercent}% of your free allowance
+            </p>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Audio and video beyond your free limit will be billed per
+              participant-minute. {usage.hasPaymentMethod
+                ? 'Your saved card will be charged automatically at month end.'
+                : 'Add a payment method to avoid interruption when your free allowance runs out.'}
+            </p>
+          </div>
+          <Link
+            href="/dashboard/billing"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-white px-4 py-2 rounded-lg transition-all hover:opacity-90 shrink-0"
+            style={{ background: 'linear-gradient(135deg, #F59E0B, #F43F5E)' }}
+          >
+            {usage.hasPaymentMethod ? 'View billing' : 'Add payment method'}
+            <ArrowUpRight size={14} />
+          </Link>
+        </div>
+      )}
+
+{/* Overview cards */}
+      <div className={`grid grid-cols-2 gap-4 ${usage?.isFreeTier ? 'sm:grid-cols-2' : 'sm:grid-cols-4'}`}>
         <UsageCard icon={Clock} label="Total Minutes" value={totalBillableMinutes} color="#8B5CF6" />
         <UsageCard icon={PhoneCall} label="Total Calls" value={u?.callsCompleted ?? 0} color="#6366F1" />
-        <UsageCard icon={Wallet} label="Current Cost" value={paiseToINR(cost?.totalPaise ?? 0)} color="#10B981" />
-        <UsageCard icon={Gauge} label="Est. Month-end" value={paiseToINR(usage?.estimatedMonthEndPaise ?? 0)} color="#F59E0B" />
+        {!usage?.isFreeTier && (
+          <>
+            <UsageCard icon={Wallet} label="Current Cost" value={paiseToINR(cost?.totalPaise ?? 0)} color="#10B981" />
+            <UsageCard icon={Gauge} label="Est. Month-end" value={paiseToINR(usage?.estimatedMonthEndPaise ?? 0)} color="#F59E0B" />
+          </>
+        )}
       </div>
 
       {/* Per-type breakdown + cost */}
@@ -158,14 +238,15 @@ const u = usage?.usage;
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-<TypeRow
+<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <TypeRow
             icon={<PhoneCall size={16} style={{ color: '#818CF8' }} />}
             label="Audio"
             minutes={u?.audioMinutes ?? 0}
             costPaise={cost?.audioPaise ?? 0}
             freeOf={free?.audioMinutes ?? 0}
             rate={`${paiseToINRShort(rates?.audioPaise ?? 20)} / participant-min`}
+            showCost={!usage?.isFreeTier}
           />
           <TypeRow
             icon={<Video size={16} style={{ color: '#C084FC' }} />}
@@ -174,6 +255,7 @@ const u = usage?.usage;
             costPaise={cost?.videoPaise ?? 0}
             freeOf={free?.videoMinutes ?? 0}
             rate={`${paiseToINRShort(rates?.videoPaise ?? 80)} / participant-min`}
+            showCost={!usage?.isFreeTier}
           />
           <TypeRow
             icon={<Monitor size={16} style={{ color: '#34D399' }} />}
@@ -182,6 +264,7 @@ const u = usage?.usage;
             costPaise={cost?.screenSharePaise ?? 0}
             freeOf={0}
             rate={`+${paiseToINRShort(rates?.screenSharePaise ?? 10)} / participant-min`}
+            showCost={!usage?.isFreeTier}
           />
         </div>
       </div>
@@ -214,13 +297,15 @@ const u = usage?.usage;
         </div>
       </div>
 
-      {/* Call analytics */}
+{/* Call analytics */}
       <div className="rounded-2xl border border-[#1A2642] p-6" style={{ background: '#0D1421' }}>
         <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-sm font-semibold text-white">Call analytics</p>
             <p className="text-xs text-slate-500 mt-0.5">
-              Per-call usage and cost for this billing cycle.
+              {usage?.isFreeTier
+                ? `Per-call usage for this billing cycle. You're on the free tier — costs are shown once you exceed your free allowance.`
+                : 'Per-call usage and cost for this billing cycle.'}
             </p>
           </div>
           <span className="text-xs text-slate-500">{callUsage.length} calls</span>
@@ -241,26 +326,52 @@ const u = usage?.usage;
                   <th className="py-2 pr-4 font-medium">Video</th>
                   <th className="py-2 pr-4 font-medium">Screen</th>
                   <th className="py-2 pr-4 font-medium">Participants</th>
-                  <th className="py-2 font-medium">Cost</th>
+                  {!usage?.isFreeTier && <th className="py-2 font-medium">Cost</th>}
                 </tr>
               </thead>
               <tbody>
                 {callUsage.map((c) => {
                   const totalMins = c.audioMinutes + c.videoMinutes + c.screenShareMinutes;
+                  const open = expandedCall === c.callId;
                   return (
-                    <tr key={c.id} className="border-b border-[#1A2642]/60 last:border-0">
-                      <td className="py-3 pr-4">
-                        <p className="font-mono text-xs text-slate-400">{c.callId.slice(0, 12)}…</p>
-                        <p className="text-[10px] text-slate-600 mt-0.5">
-                          {c.startedAt ? new Date(c.startedAt).toLocaleDateString('en-IN') : '—'}
-                        </p>
-                      </td>
-                      <td className="py-3 pr-4 text-slate-300">{Math.round(c.audioMinutes)} min</td>
-                      <td className="py-3 pr-4 text-slate-300">{Math.round(c.videoMinutes)} min</td>
-                      <td className="py-3 pr-4 text-slate-300">{Math.round(c.screenShareMinutes)} min</td>
-                      <td className="py-3 pr-4 text-slate-300">{c.participants}</td>
-                      <td className="py-3 font-medium text-white">{paiseToINR(c.costPaise)}</td>
-                    </tr>
+                    <>
+                      <tr
+                        key={c.id}
+                        className="border-b border-[#1A2642]/60 last:border-0 cursor-pointer select-none"
+                        onClick={() => toggleSegment(c.callId)}
+                      >
+                        <td className="py-3 pr-4">
+                          <p className="font-mono text-xs text-slate-400 flex items-center gap-1.5">
+                            <span className="text-slate-600 inline-block w-3 text-center">
+                              {open ? '▾' : '▸'}
+                            </span>
+                            {c.callId.slice(0, 12)}…
+                          </p>
+                          <p className="text-[10px] text-slate-600 mt-0.5 pl-[18px]">
+                            {c.startedAt ? new Date(c.startedAt).toLocaleDateString('en-IN') : '—'}
+                          </p>
+                        </td>
+                        <td className="py-3 pr-4 text-slate-300">{Math.round(c.audioMinutes)} min</td>
+                        <td className="py-3 pr-4 text-slate-300">{Math.round(c.videoMinutes)} min</td>
+                        <td className="py-3 pr-4 text-slate-300">{Math.round(c.screenShareMinutes)} min</td>
+                        <td className="py-3 pr-4 text-slate-300">{c.participants}</td>
+                        {!usage?.isFreeTier && (
+                          <td className="py-3 font-medium text-white">{paiseToINR(c.costPaise)}</td>
+                        )}
+                      </tr>
+                      {open && (
+                        <tr key={`${c.id}-segments`}>
+                          <td colSpan={usage?.isFreeTier ? 5 : 6} className="py-3 px-4">
+                            <SegmentTimeline
+                              callId={c.callId}
+                              loading={segmentLoading === c.callId}
+                              segments={segments[c.callId] ?? []}
+                              showCost={!usage?.isFreeTier}
+                            />
+                          </td>
+                        </tr>
+                      )}
+                    </>
                   );
                 })}
               </tbody>
@@ -313,6 +424,7 @@ function TypeRow({
   costPaise,
   freeOf,
   rate,
+  showCost,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -320,6 +432,7 @@ function TypeRow({
   costPaise: number;
   freeOf: number;
   rate: string;
+  showCost?: boolean;
 }) {
   const pct =
     freeOf > 0 ? Math.min(100, Math.round((minutes / freeOf) * 100)) : Math.min(100, minutes > 0 ? 100 : 0);
@@ -333,9 +446,9 @@ function TypeRow({
         {Math.round(minutes).toLocaleString()}
         <span className="text-xs font-normal text-slate-500"> min</span>
       </p>
-      <p className="text-xs font-semibold mt-1 text-violet-300">{paiseToINR(costPaise)}</p>
+      {showCost && <p className="text-xs font-semibold mt-1 text-violet-300">{paiseToINR(costPaise)}</p>}
       <p className="text-[11px] text-slate-600 mt-0.5">{rate}</p>
-      {freeOf > 0 && (
+{freeOf > 0 && (
         <div className="mt-2.5">
           <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
             <span>Free allowance: {freeOf} min</span>
@@ -352,6 +465,93 @@ function TypeRow({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function SegmentTimeline({
+  callId,
+  segments,
+  loading,
+  showCost,
+}: {
+  callId: string;
+  segments: SegmentView[];
+  loading: boolean;
+  showCost?: boolean;
+}) {
+  if (loading) {
+    return (
+      <div className="rounded-lg border border-[#1A2642] p-4 text-center text-xs text-slate-500">
+        Loading segment timeline…
+      </div>
+    );
+  }
+
+  if (segments.length === 0) {
+    return (
+      <div className="rounded-lg border border-[#1A2642] p-4 text-center text-xs text-slate-500">
+        No media segments recorded for this call.
+      </div>
+    );
+  }
+
+  const totalCost = segments.reduce((acc, s) => acc + (s.costPaise ?? 0), 0);
+  const fmtTime = (iso: string) =>
+    new Date(iso).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+  return (
+    <div className="rounded-lg border border-[#1A2642] p-4" style={{ background: '#0A0F1E' }}>
+<div className="flex items-center justify-between mb-3">
+        <p className="text-xs font-semibold text-white">Segment timeline</p>
+        <p className="text-xs text-slate-400">
+          {segments.length} segments
+          {showCost && <> · <span className="text-violet-300">{paiseToINR(totalCost)}</span></>}
+        </p>
+      </div>
+      <div className="space-y-2">
+        {segments.map((s, i) => {
+const durSec = Math.max(
+            0,
+            (new Date(s.endedAt).getTime() - new Date(s.startedAt).getTime()) / 1000,
+          );
+          const badges = [
+            s.audio && '🎧 Audio',
+            s.video && '📹 Video',
+            s.video && s.screenShare && '🖥 Screen',
+          ].filter(Boolean);
+          return (
+            <div
+              key={s.id ?? i}
+              className="flex items-center justify-between gap-3 rounded-lg border border-[#1A2642]/60 px-3 py-2"
+            >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[10px] font-mono text-slate-600">{fmtTime(s.startedAt)}</span>
+                  <span className="text-slate-600">→</span>
+                  <span className="text-[10px] font-mono text-slate-600">{fmtTime(s.endedAt)}</span>
+                  {badges.map((b) => (
+                    <span
+                      key={b}
+                      className="text-[10px] px-1.5 py-0.5 rounded-full"
+                      style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '#C7D2FE' }}
+                    >
+                      {b}
+                    </span>
+                  ))}
+                </div>
+<p className="text-[10px] text-slate-600 mt-0.5">
+                  {durSec.toFixed(0)}s · {s.participantCount || 1} participant
+                  {(s.participantCount || 1) > 1 ? 's' : ''}
+                </p>
+              </div>
+              {showCost && (
+                <p className="text-xs font-medium text-white whitespace-nowrap">{paiseToINR(s.costPaise ?? 0)}</p>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

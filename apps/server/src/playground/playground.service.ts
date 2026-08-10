@@ -13,7 +13,7 @@ export class PlaygroundService {
     private readonly prisma: PrismaService,
   ) {}
 
-  async createVideoCall(user: any) {
+async createDemoCall(user: any, type: 'AUDIO' | 'VIDEO' = 'VIDEO') {
     let project = await this.prisma.project.findFirst({
       where: { name: PLAYGROUND_PROJECT_NAME, ownerId: user.userId },
     });
@@ -33,7 +33,7 @@ export class PlaygroundService {
         projectId: project.id,
         callerId,
         receiverId,
-        type: CallType.VIDEO,
+        type: type === 'AUDIO' ? CallType.AUDIO : CallType.VIDEO,
       },
       {
         skipWebhook: true,

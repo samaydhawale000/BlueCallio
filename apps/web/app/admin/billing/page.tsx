@@ -53,6 +53,18 @@ interface Rates {
   taxPercent: number;
 }
 
+interface SegmentAnalytics {
+  since: string;
+  segmentCount: number;
+  totals: {
+    audioMins: number;
+    videoMins: number;
+    screenShareMins: number;
+    costPaise: number;
+    calls: number;
+  };
+}
+
 const paiseToINR = (paise: number) =>
   `₹${((paise ?? 0) / 100).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 
@@ -61,20 +73,23 @@ export default function AdminBillingPage() {
   const router = useRouter();
   const { isReady } = useRequireAuth();
 
-  const [summary, setSummary] = useState<UsageSummary | null>(null);
+const [summary, setSummary] = useState<UsageSummary | null>(null);
   const [rates, setRates] = useState<Rates | null>(null);
+  const [segAnalytics, setSegAnalytics] = useState<SegmentAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   const fetchAll = useCallback(async () => {
     try {
-      const [sum, rt] = await Promise.all([
+      const [sum, rt, segs] = await Promise.all([
         api.get('/billing/admin/usage-summary'),
         api.get('/billing/admin/rates'),
+        api.get('/billing/admin/segment-analytics'),
       ]);
       setSummary(sum.data);
       setRates(rt.data);
+      setSegAnalytics(segs.data);
     } catch (e: any) {
       if (e?.response?.status === 401 || e?.response?.status === 403) {
         logout();
@@ -181,6 +196,33 @@ export default function AdminBillingPage() {
         </div>
       </div>
 
+{/* Segment analytics */}
+      <div className="rounded-2xl border border-[#1A2642] p-6" style={{ background: '#0D1421' }}>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-sm font-semibold text-white">Segment analytics</p>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Per-participant-minute media segments rated this cycle.
+            </p>
+          </div>
+          <span className="text-xs text-slate-500">
+            {segAnalytics?.segmentCount ?? 0} segments
+          </span>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <SegStat label="Audio min" value={`${Math.round(segAnalytics?.totals.audioMins ?? 0)} min`} color="#818CF8" />
+          <SegStat label="Video min" value={`${Math.round(segAnalytics?.totals.videoMins ?? 0)} min`} color="#C084FC" />
+          <SegStat label="Screen-share min" value={`${Math.round(segAnalytics?.totals.screenShareMins ?? 0)} min`} color="#34D399" />
+          <SegStat label="Rated revenue" value={paiseToINR(segAnalytics?.totals.costPaise ?? 0)} color="#FBBF24" />
+        </div>
+        <p className="text-xs text-slate-600 mt-3">
+          Across {segAnalytics?.totals.calls ?? 0} calls since{' '}
+          {segAnalytics?.since ? new Date(segAnalytics.since).toLocaleDateString('en-IN') : '—'}.
+          Segment-based rating reflects actual media state (audio / video / screen) per
+          participant-minute rather than a whole-call approximation.
+        </p>
+      </div>
+
       {/* Editable rates */}
       <div className="rounded-2xl border border-[#1A2642] p-6" style={{ background: '#0D1421' }}>
         <div className="flex items-center justify-between mb-4">
@@ -244,8 +286,27 @@ function RateField({
           onChange={(e) => onChange(Number(e.target.value) || 0)}
           className="w-full rounded-lg border border-[#1A2642] bg-[#060B18] px-3 py-2 text-sm text-white focus:border-[#6366F1] outline-none"
         />
-        <span className="text-xs text-slate-600 whitespace-nowrap">{suffix}</span>
+<span className="text-xs text-slate-600 whitespace-nowrap">{suffix}</span>
       </div>
     </label>
+  );
+}
+
+function SegStat({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: string;
+  color: string;
+}) {
+  return (
+    <div className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0A0F1E' }}>
+      <p className="text-[11px] text-slate-500 mb-1" style={{ borderLeft: `2px solid ${color}`, paddingLeft: 8 }}>
+        {label}
+      </p>
+      <p className="text-lg font-bold text-white">{value}</p>
+    </div>
   );
 }
