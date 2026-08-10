@@ -13,7 +13,7 @@ export class PlaygroundService {
     private readonly prisma: PrismaService,
   ) {}
 
-  async createVideoCall(user: any) {
+async createDemoCall(user: any, type: 'AUDIO' | 'VIDEO' = 'VIDEO') {
     let project = await this.prisma.project.findFirst({
       where: { name: PLAYGROUND_PROJECT_NAME, ownerId: user.userId },
     });
@@ -33,31 +33,35 @@ export class PlaygroundService {
         projectId: project.id,
         callerId,
         receiverId,
-        type: CallType.VIDEO,
+        type: type === 'AUDIO' ? CallType.AUDIO : CallType.VIDEO,
       },
       {
         skipWebhook: true,
       },
     );
 
-    const frontend =
+const frontend =
       process.env.FRONTEND_URL ||
-      'http://localhost:3000';
+      'http://localhost:5173';
 
     return {
       success: true,
 
-      callId: result.call.id,
+      callId: result.callId,
 
       callerToken: result.callerToken,
 
       receiverToken: result.receiverToken,
 
       callerUrl:
-        `${frontend}/call?token=${result.callerToken}&callId=${result.call.id}`,
+        `${frontend}/call?token=${result.callerToken}&callId=${result.callId}`,
 
       receiverUrl:
-        `${frontend}/call?token=${result.receiverToken}&callId=${result.call.id}`,
+        `${frontend}/call?token=${result.receiverToken}&callId=${result.callId}`,
+
+      hostedUrl: result.hostedUrl,
+
+      participants: result.participants,
     };
   }
 }

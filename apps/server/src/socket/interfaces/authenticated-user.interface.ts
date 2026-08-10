@@ -6,4 +6,7 @@ export interface AuthenticatedUser {
   userId: string;
 
   role: 'CALLER' | 'RECEIVER';
+
+  /** External participant id (callerId / receiverId). */
+  participantId: string;
 }

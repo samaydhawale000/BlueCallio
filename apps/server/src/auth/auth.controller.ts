@@ -8,8 +8,7 @@ import {
 
 import { AuthService } from './auth.service';
 
-import { SignupDto } from './dto/signup.dto';
-import { LoginDto } from './dto/login.dto';
+import { GoogleDto } from './dto/google.dto';
 import { RefreshDto } from './dto/refresh.dto';
 
 import { JwtGuard } from './guards/jwt.guard';
@@ -20,23 +19,12 @@ export class AuthController {
     private readonly authService: AuthService,
   ) {}
 
-  @Post('signup')
-  signup(
-    @Body() body: SignupDto,
+  @Post('google')
+  google(
+    @Body() body: GoogleDto,
   ) {
-    return this.authService.signup(
-      body.email,
-      body.password,
-    );
-  }
-
-  @Post('login')
-  login(
-    @Body() body: LoginDto,
-  ) {
-    return this.authService.login(
-      body.email,
-      body.password,
+    return this.authService.loginWithGoogle(
+      body.idToken,
     );
   }
 

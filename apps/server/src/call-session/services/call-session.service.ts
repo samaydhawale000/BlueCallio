@@ -65,4 +65,51 @@ export class CallSessionService {
       },
     });
   }
+
+  /**
+   * Resolve a session by either the caller or receiver token.
+   * Used by the unified socket `authenticate` flow and by
+   * the join/leave endpoints.
+   */
+  async getByToken(
+    token: string,
+  ) {
+    return this.prisma.callSession.findFirst({
+      where: {
+        OR: [
+          { callerToken: token },
+          { receiverToken: token },
+        ],
+      },
+      include: {
+        call: {
+          include: {
+            project: true,
+          },
+        },
+      },
+    });
+  }
+
+  async resolveRole(
+    token: string,
+  ): Promise<'CALLER' | 'RECEIVER' | null> {
+    const session = await this.prisma.callSession.findFirst({
+      where: {
+        OR: [
+          { callerToken: token },
+          { receiverToken: token },
+        ],
+      },
+      select: {
+        callerToken: true,
+        receiverToken: true,
+      },
+    });
+
+    if (!session) return null;
+    if (session.callerToken === token) return 'CALLER';
+    if (session.receiverToken === token) return 'RECEIVER';
+    return null;
+  }
 }

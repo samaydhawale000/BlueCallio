@@ -38,10 +38,28 @@ export class CallController {
     return this.callService.rejectCall(id);
   }
 
+  @Post(':id/join')
+  @UseGuards(CallSessionGuard)
+  join(@Req() req: any, @Param('id') id: string) {
+    return this.callService.joinCall(id, req.callSession);
+  }
+
+  @Post(':id/leave')
+  @UseGuards(CallSessionGuard)
+  leave(@Req() req: any, @Param('id') id: string) {
+    return this.callService.leaveCall(id, req.callSession);
+  }
+
   @Post(':id/end')
   @UseGuards(CallSessionGuard)
   end(@Param('id') id: string) {
     return this.callService.endCall(id);
+  }
+
+  @Get(':id/details')
+  @UseGuards(CallSessionGuard)
+  getDetails(@Req() req: any, @Param('id') id: string) {
+    return this.callService.getCallDetails(id, req.callSession);
   }
 
   @Get(':id')

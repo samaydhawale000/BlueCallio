@@ -55,7 +55,7 @@ services:
     networks:
       - bluecall
     expose:
-      - "3000"
+      - "5173"
 
   # ── coturn TURN Server ──────────────────────────────────────────────────────
   coturn:

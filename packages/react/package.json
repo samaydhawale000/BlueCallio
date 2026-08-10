@@ -1,0 +1,42 @@
+{
+  "name": "@bluejoinet/react",
+  "version": "0.1.0",
+  "description": "React UI components and hooks for BlueJoinet — build a branded meeting experience without touching WebRTC",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "bluejoinet",
+    "react",
+    "video",
+    "webrtc",
+    "conferencing",
+    "components"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "dependencies": {
+    "@bluejoinet/sdk": "0.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "typescript": "^5.7.3"
+  }
+}
+

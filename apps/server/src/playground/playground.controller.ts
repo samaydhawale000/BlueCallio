@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, UseGuards, Req, Body } from '@nestjs/common';
 
 import { JwtGuard } from '../auth/guards/jwt.guard';
 
@@ -11,8 +11,8 @@ export class PlaygroundController {
     private readonly playgroundService: PlaygroundService,
   ) {}
 
-  @Post('video')
-  async createVideo(@Req() req: any) {
-    return this.playgroundService.createVideoCall(req.user);
+@Post('create')
+  async createDemo(@Req() req: any, @Body() body: { type?: 'AUDIO' | 'VIDEO' }) {
+    return this.playgroundService.createDemoCall(req.user, body?.type ?? 'VIDEO');
   }
 }

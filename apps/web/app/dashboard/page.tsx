@@ -1,9 +1,27 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import {
+  Plus,
+  KeyRound,
+  Play,
+  BookOpen,
+  Video,
+  Phone,
+  Monitor,
+ArrowUpRight,
+  Sparkles,
+  Wallet,
+  Code2,
+  Layout as LayoutIcon,
+  Server,
+  FolderKanban,
+  PhoneCall,
+} from 'lucide-react';
 import { useAuthStore } from '../store/auth.store';
+import { useRequireAuth } from '../hooks/useRequireAuth';
 import { api } from '../lib/api';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -27,9 +45,71 @@ interface Project {
   createdAt: string;
 }
 
+interface Call {
+  id: string;
+  projectId: string;
+  callerId: string;
+  receiverId: string;
+  type: 'AUDIO' | 'VIDEO';
+  status: string;
+  startedAt: string | null;
+  endedAt: string | null;
+  createdAt: string;
+  project?: { id: string; name: string };
+}
+
+interface Usage {
+  totalCalls: number;
+  activeCalls: number;
+  minutesUsed: number;
+}
+
+interface CurrentUsage {
+  usage: {
+    audioMinutes: number;
+    videoMinutes: number;
+    screenShareMinutes: number;
+    participants: number;
+  };
+  freeAllowance: { audioMinutes: number; videoMinutes: number };
+  cost: {
+    audioPaise: number;
+    videoPaise: number;
+    screenSharePaise: number;
+    totalPaise: number;
+  };
+estimatedMonthEndPaise: number;
+  isFreeTier?: boolean;
+  hasPaymentMethod?: boolean;
+  freeUsagePercent?: number;
+}
+
+const paiseToINR = (paise: number) => `₹${(paise / 100).toFixed(2)}`;
+
+const QUICK_ACTIONS = [
+  { label: 'Create Project', icon: Plus, href: '#', color: '#6366F1' },
+  { label: 'Generate API Key', icon: KeyRound, href: '#', color: '#8B5CF6' },
+  { label: 'Open Playground', icon: Play, href: '/dashboard/playground', color: '#10B981' },
+  { label: 'Documentation', icon: BookOpen, href: '/docs', color: '#F59E0B' },
+];
+
+const RESOURCES = [
+  { label: 'Quick Start', icon: Sparkles, href: '/docs' },
+  { label: 'React SDK', icon: Code2, href: '/docs' },
+  { label: 'Hosted UI', icon: LayoutIcon, href: '/docs' },
+  { label: 'REST API', icon: Server, href: '/docs' },
+];
+
+interface ChartPoint {
+  label: string;
+  minutes: number;
+  calls: number;
+}
+
 export default function DashboardPage() {
   const { token, logout } = useAuthStore();
   const router = useRouter();
+  const { isReady } = useRequireAuth();
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [projectKeys, setProjectKeys] = useState<Record<string, ApiKey[]>>({});
@@ -46,16 +126,18 @@ export default function DashboardPage() {
 
   const [copied, setCopied] = useState<string | null>(null);
 
+const [calls, setCalls] = useState<Call[]>([]);
+  const [usage, setUsage] = useState<Usage | null>(null);
+  const [currentUsage, setCurrentUsage] = useState<CurrentUsage | null>(null);
+  const [selectedCall, setSelectedCall] = useState<Call | null>(null);
+  const [chart, setChart] = useState<ChartPoint[]>([]);
+  const [userName, setUserName] = useState('there');
+
   const [webhookInputs, setWebhookInputs] = useState<Record<string, string>>({});
   const [savingWebhook, setSavingWebhook] = useState<string | null>(null);
   const [webhookSaved, setWebhookSaved] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!token) { router.push('/login'); return; }
-    fetchProjects();
-  }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  async function fetchProjects() {
+  const fetchProjects = useCallback(async () => {
     try {
       const res = await api.get('/projects');
       setProjects(res.data);
@@ -63,17 +145,44 @@ export default function DashboardPage() {
       for (const p of res.data) inputs[p.id] = p.webhookUrl ?? '';
       setWebhookInputs(inputs);
     } catch {
-      logout(); router.push('/login');
+      logout();
+      router.push('/login');
     } finally {
       setLoading(false);
     }
-  }
+  }, [logout, router]);
 
-  async function fetchKeys(projectId: string) {
+const fetchDashboardData = useCallback(async () => {
+    try {
+      const [callsRes, usageRes, currentRes, chartRes, meRes] = await Promise.all([
+        api.get('/dashboard/calls'),
+        api.get('/dashboard/usage'),
+        api.get('/billing/current-usage'),
+        api.get('/dashboard/usage/chart?days=7'),
+        api.get('/auth/me'),
+      ]);
+      setCalls(callsRes.data);
+      setUsage(usageRes.data);
+      setCurrentUsage(currentRes.data);
+      setChart(chartRes.data ?? []);
+      setUserName(meRes.data?.name || meRes.data?.email?.split('@')[0] || 'there');
+    } catch {
+      // Non-fatal
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isReady) return;
+    if (!token) { router.push('/login'); return; }
+    fetchProjects();
+    fetchDashboardData();
+  }, [isReady, token, fetchProjects, fetchDashboardData, router]);
+
+  const fetchKeys = useCallback(async (projectId: string) => {
     if (projectKeys[projectId]) return;
     const res = await api.get(`/api-keys/${projectId}`);
     setProjectKeys((prev) => ({ ...prev, [projectId]: res.data }));
-  }
+  }, [projectKeys]);
 
   async function toggleProject(id: string) {
     if (expandedId === id) { setExpandedId(null); return; }
@@ -123,9 +232,39 @@ export default function DashboardPage() {
     setTimeout(() => setCopied(null), 2000);
   }
 
+const minutesUsed = usage?.minutesUsed ?? 0;
+  const totalKeys = Object.values(projectKeys).flat().length;
+  const weekData = chart.length > 0 ? chart : [];
+  const maxWeek = Math.max(...weekData.map((d) => d.minutes), 1);
+
+  const recentActivity = calls.slice(0, 5).map((call) => {
+    const statusText =
+      call.status === 'ACCEPTED'
+        ? `Call ${call.type === 'VIDEO' ? 'video' : 'audio'} completed`
+        : call.status === 'RINGING' || call.status === 'INITIATED'
+          ? `Call ${call.type === 'VIDEO' ? 'video' : 'audio'} started`
+          : call.status === 'REJECTED'
+            ? `Call ${call.type === 'VIDEO' ? 'video' : 'audio'} rejected`
+            : call.status === 'MISSED'
+              ? `Call ${call.type === 'VIDEO' ? 'video' : 'audio'} missed`
+              : `Call ${call.type === 'VIDEO' ? 'video' : 'audio'} ${(call.status || '').toLowerCase()}`;
+    return {
+      id: call.id,
+      text: statusText,
+      time: relativeTime(call.createdAt),
+      color: call.status === 'ACCEPTED' ? '#10B981' : call.status === 'RINGING' || call.status === 'INITIATED' ? '#F59E0B' : '#F87171',
+    };
+  });
+  const audioMins = currentUsage?.usage?.audioMinutes ?? 0;
+  const videoMins = currentUsage?.usage?.videoMinutes ?? 0;
+  const screenMins = currentUsage?.usage?.screenShareMinutes ?? 0;
+  const totalBillable = audioMins + videoMins + screenMins;
+  const currentCost = currentUsage?.cost?.totalPaise ?? 0;
+  const monthEndCost = currentUsage?.estimatedMonthEndPaise ?? 0;
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#060B18' }}>
+      <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-3">
           <svg className="animate-spin h-6 w-6 text-indigo-500" viewBox="0 0 24 24" fill="none">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -138,50 +277,250 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#060B18' }}>
+    <div className="flex flex-col gap-8">
+      {/* ── Header row ── */}
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+<h1 className="text-2xl font-bold text-white">
+            Welcome back, <span className="gradient-text-hero capitalize">{userName}</span> 👋
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Your communication platform at a glance.
+          </p>
+        </div>
+        <Button onClick={() => { setShowNewProject(true); setNewProjectName(''); }}>
+          <Plus size={16} className="mr-1.5" /> Create Project
+        </Button>
+      </div>
 
-      {/* Nav */}
-      <header style={{ background: 'rgba(6,11,24,0.9)', borderBottom: '1px solid #1A2642', backdropFilter: 'blur(12px)' }} className="sticky top-0 z-40">
-        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="font-mono font-bold text-white tracking-tight text-sm">
-              BlueJoinet
-            </Link>
-            <span style={{ background: '#1A2642', width: 1, height: 18 }} />
-            <span className="text-sm text-slate-400">Dashboard</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard/playground">
-              <Button variant="secondary" size="sm">Playground</Button>
-            </Link>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => { logout(); router.push('/login'); }}
+      {/* ── Plan card + usage ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+{/* Plan / usage */}
+        <div
+          className="lg:col-span-2 rounded-2xl border border-[#1A2642] p-6"
+          style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.04))', borderColor: '#2A3D64' }}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-sm font-semibold text-white">Free Tier</p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Pay only for what you use · {currentUsage?.freeAllowance?.audioMinutes ?? 500} audio + {currentUsage?.freeAllowance?.videoMinutes ?? 200} video mins free
+              </p>
+            </div>
+            <Link
+              href="/dashboard/billing"
+              className="inline-flex items-center gap-1 text-xs font-medium text-violet-300 hover:text-violet-200 transition-colors"
             >
-              Logout
+              Billing &amp; Usage <ArrowUpRight size={14} />
+            </Link>
+          </div>
+
+{/* Per-type summary */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+            <MiniType label="Audio" mins={audioMins} costPaise={currentUsage?.cost?.audioPaise ?? 0} showCost={!currentUsage?.isFreeTier} />
+            <MiniType label="Video" mins={videoMins} costPaise={currentUsage?.cost?.videoPaise ?? 0} showCost={!currentUsage?.isFreeTier} />
+            <MiniType label="Screen Share" mins={screenMins} costPaise={currentUsage?.cost?.screenSharePaise ?? 0} showCost={!currentUsage?.isFreeTier} />
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between mt-2 gap-3">
+            <div className="flex items-center gap-6">
+              <div>
+                <p className="text-xs text-slate-500">Total minutes</p>
+                <p className="text-lg font-bold text-white">{totalBillable.toLocaleString()}</p>
+              </div>
+              {!currentUsage?.isFreeTier && (
+                <>
+                  <div>
+                    <p className="text-xs text-slate-500">Current cost</p>
+                    <p className="text-lg font-bold" style={{ color: '#34D399' }}>{paiseToINR(currentCost)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500">Est. month-end</p>
+                    <p className="text-lg font-bold text-white">{paiseToINR(monthEndCost)}</p>
+                  </div>
+                </>
+              )}
+            </div>
+            <div
+              className="text-xs font-mono px-3 py-1.5 rounded-full"
+              style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', color: '#34D399' }}
+            >
+              {usage?.activeCalls ?? 0} Active Calls
+            </div>
+          </div>
+        </div>
+
+        {/* Usage chart */}
+        <div
+          className="rounded-2xl border border-[#1A2642] p-6"
+          style={{ background: '#0D1421' }}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-sm font-semibold text-white">Minutes this week</p>
+            <span className="text-xs text-slate-500">{minutesUsed.toLocaleString()} total</span>
+          </div>
+<div className="flex items-end justify-between gap-2 h-32">
+            {weekData.length === 0 ? (
+              <div className="w-full flex items-center justify-center h-full text-xs text-slate-600">
+                No usage this week yet
+              </div>
+            ) : (
+              weekData.map((d) => (
+                <div key={d.label} className="flex flex-col items-center gap-2 flex-1">
+                  <div
+                    className="w-full rounded-t-md transition-all"
+                    style={{
+                      height: `${Math.max(8, (d.minutes / maxWeek) * 100)}%`,
+                      background: 'linear-gradient(180deg, #6366F1, rgba(99,102,241,0.3))',
+                    }}
+                  />
+                  <span className="text-[10px] text-slate-600">{d.label}</span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Stats row ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
+        <StatCard label="Projects" value={projects.length} color="#6366F1" />
+        <StatCard label="Active Calls" value={usage?.activeCalls ?? 0} color="#10B981" />
+        <StatCard label="Calls" value={usage?.totalCalls ?? 0} color="#F59E0B" />
+        <StatCard label="Minutes" value={usage?.minutesUsed ?? 0} color="#8B5CF6" />
+        <StatCard label="API Keys" value={totalKeys} color="#EC4899" />
+      </div>
+
+      {/* ── Recent Calls + Quick Actions ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Recent calls */}
+        <div
+          className="lg:col-span-2 rounded-2xl border border-[#1A2642]"
+          style={{ background: '#0D1421' }}
+        >
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#1A2642]">
+            <p className="font-semibold text-white">Recent Calls</p>
+            <Link
+              href="/dashboard/calls"
+              className="inline-flex items-center gap-1 text-xs text-violet-300 hover:text-violet-200 transition-colors"
+            >
+              View all <ArrowUpRight size={13} />
+            </Link>
+          </div>
+
+          {calls.length === 0 ? (
+            <div className="px-6 py-10 text-center">
+              <p className="text-sm font-medium text-white mb-1">No calls yet</p>
+              <p className="text-sm text-slate-500 mb-5">
+                Create your first communication session.
+              </p>
+              <div className="flex flex-col items-center gap-3">
+                <Link
+                  href="/dashboard/playground"
+                  className="inline-flex items-center gap-2 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition hover:opacity-90"
+                  style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}
+                >
+                  <Play size={15} /> Open Playground
+                </Link>
+                <span className="text-xs text-slate-600">or</span>
+                <Link href="/docs" className="text-xs text-violet-400 hover:text-violet-300 transition-colors">
+                  Read Quick Start documentation
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="divide-y divide-[#1A2642]">
+              {calls.slice(0, 5).map((call) => (
+                <button
+                  key={call.id}
+                  onClick={() => setSelectedCall(call)}
+                  className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-white/[0.02] transition-colors"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                      style={{
+                        background: call.type === 'VIDEO'
+                          ? 'rgba(139,92,246,0.12)'
+                          : 'rgba(99,102,241,0.12)',
+                        border: `1px solid ${call.type === 'VIDEO' ? 'rgba(139,92,246,0.25)' : 'rgba(99,102,241,0.25)'}`,
+                      }}
+                    >
+                      {call.type === 'VIDEO'
+                        ? <Video size={16} style={{ color: '#C084FC' }} />
+                        : <Phone size={16} style={{ color: '#818CF8' }} />}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-semibold text-white truncate">
+                          {call.type === 'VIDEO' ? 'Video Call' : 'Voice Call'}
+                        </p>
+                        <Badge variant={statusBadge(call.status)}>{statusLabel(call.status)}</Badge>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {relativeTime(call.createdAt)}
+                        {call.project?.name ? ` · ${call.project.name}` : ''}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-mono text-slate-500 shrink-0">
+                    {callDuration(call)}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Quick actions */}
+        <div
+          className="rounded-2xl border border-[#1A2642] p-6"
+          style={{ background: '#0D1421' }}
+        >
+          <p className="font-semibold text-white mb-4">Quick Actions</p>
+          <div className="flex flex-col gap-2.5">
+            {QUICK_ACTIONS.map((action) => (
+              <Link
+                key={action.label}
+                href={action.href}
+                onClick={(e) => {
+                  if (action.href === '#') {
+                    e.preventDefault();
+                    setShowNewProject(true);
+                  }
+                }}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#1A2642] hover:border-[#2A3D64] transition-colors"
+                style={{ background: 'rgba(255,255,255,0.02)' }}
+              >
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                  style={{ background: `${action.color}1A`, border: `1px solid ${action.color}33` }}
+                >
+                  <action.icon size={16} style={{ color: action.color }} />
+                </div>
+                <span className="text-sm text-slate-300">{action.label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Projects + Developer Resources ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Projects */}
+        <div
+          className="lg:col-span-2 rounded-2xl border border-[#1A2642]"
+          style={{ background: '#0D1421' }}
+        >
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#1A2642]">
+            <p className="font-semibold text-white">Projects</p>
+            <Button variant="secondary" size="sm" onClick={() => { setShowNewProject(true); setNewProjectName(''); }}>
+              <Plus size={14} className="mr-1" /> New Project
             </Button>
           </div>
-        </div>
-      </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-10">
-
-        {/* Header row */}
-        <div className="flex items-start justify-between mb-8 gap-4">
-          <div>
-            <h1 className="text-xl font-bold text-white">Projects</h1>
-            <p className="text-sm text-slate-500 mt-1">Manage your API keys and webhook settings.</p>
-          </div>
-          <Button onClick={() => { setShowNewProject(true); setNewProjectName(''); }}>
-            + New Project
-          </Button>
-        </div>
-
-        {/* New project form */}
-        {showNewProject && (
-          <Card className="mb-6">
-            <div className="flex gap-3">
+          {showNewProject && (
+            <div className="px-6 py-4 border-b border-[#1A2642] flex gap-3">
               <Input
                 placeholder="Project name"
                 value={newProjectName}
@@ -190,167 +529,256 @@ export default function DashboardPage() {
                 autoFocus
                 className="flex-1"
               />
-              <Button onClick={createProject} loading={creatingProject}>Create</Button>
-              <Button variant="ghost" onClick={() => setShowNewProject(false)}>Cancel</Button>
+              <Button onClick={createProject} loading={creatingProject} size="sm">Create</Button>
+              <Button variant="ghost" size="sm" onClick={() => setShowNewProject(false)}>Cancel</Button>
             </div>
-          </Card>
-        )}
+          )}
 
-        {/* Empty state */}
-        {projects.length === 0 ? (
-          <Card className="text-center py-16">
-            <div
-              className="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4"
-              style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)' }}
-            >
-              <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
+          {projects.length === 0 ? (
+            <div className="px-6 py-10 text-center">
+              <div
+                className="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4"
+                style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)' }}
+              >
+                <FolderKanban size={20} style={{ color: '#818CF8' }} />
+              </div>
+              <p className="text-sm font-medium text-white mb-1">No projects yet</p>
+              <p className="text-sm text-slate-500 mb-5">
+                Create a project to get your first API key.
+              </p>
+              <Button onClick={() => { setShowNewProject(true); setNewProjectName(''); }}>
+                <Plus size={15} className="mr-1.5" /> Create Project
+              </Button>
             </div>
-            <p className="text-slate-400 text-sm font-medium mb-1">No projects yet</p>
-            <p className="text-slate-600 text-xs">Create a project to get your first API key.</p>
-          </Card>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {projects.map((project) => (
-              <Card key={project.id} padding={false} glow={expandedId === project.id}>
-                {/* Project header */}
-                <button
-                  className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-white/[0.02] transition-colors"
-                  onClick={() => toggleProject(project.id)}
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-6">
+              {projects.map((project) => (
+                <div
+                  key={project.id}
+                  className="rounded-xl border border-[#1A2642] p-5 hover:border-[#2A3D64] transition-colors"
+                  style={{ background: 'rgba(255,255,255,0.02)' }}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-start justify-between gap-3 mb-3">
                     <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white shrink-0"
+                      className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold text-white shrink-0"
                       style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}
                     >
                       {project.name[0].toUpperCase()}
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold text-white">{project.name}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        {new Date(project.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
-                      </p>
-                    </div>
+                    <Badge variant="purple">Production</Badge>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {project.webhookUrl && <Badge variant="purple">webhook</Badge>}
-                    <svg
-                      className={`w-4 h-4 text-slate-500 transition-transform ${expandedId === project.id ? 'rotate-180' : ''}`}
-                      fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </button>
+                  <p className="text-sm font-semibold text-white mb-0.5">{project.name}</p>
+                  <p className="text-xs text-slate-500 mb-4">
+                    {projectKeys[project.id]?.length ?? 0} API Keys · Created{' '}
+                    {new Date(project.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </p>
+                  <button
+                    onClick={() => toggleProject(project.id)}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-violet-300 hover:text-violet-200 transition-colors"
+                  >
+                    {expandedId === project.id ? 'Hide details' : 'View'} <ArrowUpRight size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-                {/* Expanded panel */}
-                {expandedId === project.id && (
-                  <div style={{ borderTop: '1px solid #1A2642' }}>
-
-                    {/* API Keys */}
-                    <div className="px-5 py-5" style={{ borderBottom: '1px solid #1A2642' }}>
-                      <div className="flex items-center justify-between mb-4">
-                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">API Keys</p>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => { setShowNewKey(project.id); setNewKeyName(''); }}
-                        >
-                          + New Key
-                        </Button>
-                      </div>
-
-                      {showNewKey === project.id && (
-                        <div className="flex gap-2 mb-4">
-                          <Input
-                            placeholder="Key name (e.g. production)"
-                            value={newKeyName}
-                            onChange={(e) => setNewKeyName(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && createKey(project.id)}
-                            autoFocus
-                            className="flex-1"
-                          />
-                          <Button onClick={() => createKey(project.id)} loading={creatingKey} size="sm">Create</Button>
-                          <Button variant="ghost" size="sm" onClick={() => setShowNewKey(null)}>Cancel</Button>
-                        </div>
-                      )}
-
-                      {!projectKeys[project.id] ? (
-                        <p className="text-xs text-slate-600">Loading…</p>
-                      ) : projectKeys[project.id].length === 0 ? (
-                        <p className="text-xs text-slate-600">No API keys yet.</p>
-                      ) : (
-                        <div className="flex flex-col gap-2">
-                          {projectKeys[project.id].map((k) => (
-                            <div
-                              key={k.id}
-                              className="flex items-center justify-between px-4 py-3 rounded-lg"
-                              style={{ background: '#060B18', border: '1px solid #1A2642' }}
-                            >
-                              <div>
-                                <p className="text-sm font-medium text-white">{k.name}</p>
-                                <p className="font-mono text-xs text-slate-500 mt-0.5">
-                                  {k.key.slice(0, 18)}…{k.key.slice(-6)}
-                                </p>
-                              </div>
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                onClick={() => copyKey(k.id, k.key)}
-                              >
-                                {copied === k.id ? '✓ Copied' : 'Copy'}
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Webhook */}
-                    <div className="px-5 py-5">
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">Webhook</p>
-                      <p className="text-xs text-slate-500 mb-4">
-                        Receive HTTP POST events when calls are created, accepted, rejected, or ended.
-                      </p>
-                      <div className="flex gap-2 mb-4">
-                        <Input
-                          placeholder="https://your-server.com/webhook"
-                          value={webhookInputs[project.id] ?? ''}
-                          onChange={(e) => setWebhookInputs((prev) => ({ ...prev, [project.id]: e.target.value }))}
-                          className="flex-1 font-mono text-xs"
-                        />
-                        <Button
-                          variant={webhookSaved === project.id ? 'secondary' : 'primary'}
-                          size="sm"
-                          loading={savingWebhook === project.id}
-                          onClick={() => saveWebhook(project.id)}
-                        >
-                          {webhookSaved === project.id ? '✓ Saved' : 'Save'}
-                        </Button>
-                      </div>
-
-                      {project.webhookSecret && (
-                        <div
-                          className="rounded-lg px-4 py-3"
-                          style={{ background: '#060B18', border: '1px solid #1A2642' }}
-                        >
-                          <p className="text-xs text-slate-500 mb-1">Signing Secret</p>
-                          <p className="font-mono text-xs text-slate-300 break-all">{project.webhookSecret}</p>
-                          <p className="text-xs text-slate-600 mt-2">
-                            Verify with <code className="text-violet-400">X-BlueJoinet-Signature</code> header (HMAC-SHA256).
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                  </div>
-                )}
-              </Card>
+        {/* Developer resources */}
+        <div
+          className="rounded-2xl border border-[#1A2642] p-6"
+          style={{ background: '#0D1421' }}
+        >
+          <p className="font-semibold text-white mb-1">Developer Resources</p>
+          <p className="text-xs text-slate-500 mb-4">Everything you need, one click away.</p>
+          <div className="flex flex-col gap-2.5">
+            {RESOURCES.map((r) => (
+              <Link
+                key={r.label}
+                href={r.href}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#1A2642] hover:border-[#2A3D64] transition-colors"
+                style={{ background: 'rgba(255,255,255,0.02)' }}
+              >
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.12))',
+                    border: '1px solid rgba(99,102,241,0.2)',
+                  }}
+                >
+                  <r.icon size={15} style={{ color: '#A5B4FC' }} />
+                </div>
+                <span className="text-sm text-slate-300">{r.label}</span>
+                <ArrowUpRight size={14} className="ml-auto text-slate-600" />
+              </Link>
             ))}
           </div>
-        )}
-      </main>
+        </div>
+      </div>
+
+{/* ── Recent Activity ── */}
+      <div
+        className="rounded-2xl border border-[#1A2642]"
+        style={{ background: '#0D1421' }}
+      >
+        <div className="px-6 py-4 border-b border-[#1A2642]">
+          <p className="font-semibold text-white">Recent Activity</p>
+        </div>
+        <div className="divide-y divide-[#1A2642]">
+          {recentActivity.length === 0 ? (
+            <div className="px-6 py-8 text-center text-sm text-slate-500">
+              No activity yet. Create a project or place your first call.
+            </div>
+          ) : (
+            recentActivity.map((item) => (
+              <div key={item.id} className="flex items-center gap-3 px-6 py-4">
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                  style={{ background: `${item.color}1A`, border: `1px solid ${item.color}33` }}
+                >
+                  <PhoneCall size={15} style={{ color: item.color }} />
+                </div>
+                <p className="text-sm text-slate-300">{item.text}</p>
+                <span className="ml-auto text-xs text-slate-600">{item.time}</span>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Call details modal */}
+      {selectedCall && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-6"
+          style={{ background: 'rgba(0,0,0,0.7)' }}
+          onClick={() => setSelectedCall(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-xl p-6"
+            style={{ background: '#0D1421', border: '1px solid #2A3D64' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-5">
+              <p className="font-bold text-white">Call Details</p>
+              <button
+                onClick={() => setSelectedCall(null)}
+                className="text-slate-500 hover:text-white transition-colors text-sm"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="space-y-3 text-sm">
+              <Row label="Call ID" value={selectedCall.id} mono />
+              <Row label="Caller" value={selectedCall.callerId} />
+              <Row label="Receiver" value={selectedCall.receiverId} />
+              <Row label="Type" value={selectedCall.type} />
+              <Row label="Status" value={statusLabel(selectedCall.status)} />
+              <Row label="Created" value={new Date(selectedCall.createdAt).toLocaleString('en-US')} />
+              <Row
+                label="Started"
+                value={selectedCall.startedAt ? new Date(selectedCall.startedAt).toLocaleString('en-US') : '—'}
+              />
+              <Row
+                label="Ended"
+                value={selectedCall.endedAt ? new Date(selectedCall.endedAt).toLocaleString('en-US') : '—'}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
+}
+
+function MiniType({
+  label,
+  mins,
+  costPaise,
+  showCost,
+}: {
+  label: string;
+  mins: number;
+  costPaise: number;
+  showCost?: boolean;
+}) {
+  return (
+    <div className="rounded-xl border border-[#1A2642] px-4 py-3 text-center" style={{ background: '#0A0F1E' }}>
+      <p className="text-[11px] text-slate-500">{label}</p>
+      <p className="text-lg font-bold text-white mt-0.5">
+        {Math.round(mins).toLocaleString()}
+        <span className="text-xs font-normal text-slate-500"> min</span>
+      </p>
+      {showCost && <p className="text-[11px] font-semibold text-violet-300">{paiseToINR(costPaise)}</p>}
+    </div>
+  );
+}
+
+function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div
+      className="rounded-2xl border border-[#1A2642] p-5"
+      style={{ background: '#0D1421' }}
+    >
+      <p className="text-xs text-slate-500 mb-2">{label}</p>
+      <p className="text-2xl font-bold" style={{ color }}>{value.toLocaleString()}</p>
+    </div>
+  );
+}
+
+function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="flex items-start justify-between gap-4">
+      <span className="text-slate-500 shrink-0">{label}</span>
+      <span className={`text-slate-300 text-right break-all ${mono ? 'font-mono text-xs' : ''}`}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function statusLabel(status: string): string {
+  switch (status) {
+    case 'ACCEPTED': return 'Completed';
+    case 'RINGING':
+    case 'INITIATED': return 'Ringing';
+    case 'REJECTED': return 'Rejected';
+    case 'MISSED': return 'Missed';
+    case 'ENDED': return 'Ended';
+    default: return status;
+  }
+}
+
+function statusBadge(status: string): 'default' | 'purple' | 'success' | 'error' | 'warning' {
+  switch (status) {
+    case 'ACCEPTED': return 'success';
+    case 'RINGING':
+    case 'INITIATED': return 'warning';
+    case 'REJECTED':
+    case 'MISSED': return 'error';
+    case 'ENDED': return 'default';
+    default: return 'default';
+  }
+}
+
+function relativeTime(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return 'Yesterday';
+  return `${days}d ago`;
+}
+
+function callDuration(call: Call): string {
+  if (!call.startedAt) return '—';
+  const end = call.endedAt ? new Date(call.endedAt).getTime() : Date.now();
+  const secs = Math.floor((end - new Date(call.startedAt).getTime()) / 1000);
+  if (secs < 60) return `${secs}s`;
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return `${m}m ${s.toString().padStart(2, '0')}s`;
 }
