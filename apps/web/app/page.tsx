@@ -213,7 +213,6 @@ export default function LandingPage() {
          <section className="section-base relative pt-24 pb-32 px-6 overflow-hidden">
 <div className="absolute inset-0 pointer-events-none">
                <StripeGradient />
-               <div className="hero-grain" />
             </div>
 
             <div className="relative max-w-6xl mx-auto">
