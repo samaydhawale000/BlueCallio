@@ -208,16 +208,15 @@ const SUPPORT_ITEMS = [
 export default function LandingPage() {
    return (
       <div className="lp-root">
-
-{/* ── Hero ── */}
+         {/* ── Hero ── */}
          <section className="section-base relative pt-24 pb-32 px-6 overflow-hidden">
-<div className="absolute inset-0 pointer-events-none">
+            <div className="absolute inset-0 pointer-events-none">
                <StripeGradient />
             </div>
 
             <div className="relative max-w-6xl mx-auto">
                <div className="hero-badge inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono mb-8 border">
-<span className="hero-badge-dot w-1.5 h-1.5 rounded-full animate-pulse" />
+                  <span className="hero-badge-dot w-1.5 h-1.5 rounded-full animate-pulse" />
                   Start free &nbsp;·&nbsp; Pay only for what you use
                   &nbsp;·&nbsp; No hidden fees
                </div>
@@ -308,7 +307,7 @@ export default function LandingPage() {
                         The problem today
                      </p>
                      <div className="space-y-3">
-{[
+                        {[
                            "Monthly subscriptions you barely use",
                            "Confusing pricing with hidden fees",
                            "Complex SDKs that take weeks to integrate",
@@ -330,7 +329,7 @@ export default function LandingPage() {
                         The BlueJoinet way
                      </p>
                      <div className="space-y-3">
-{[
+                        {[
                            "Start free with 500 audio + 200 video minutes",
                            "Pay only for what you use — no monthly subscription",
                            "Integration in minutes with a simple REST API",
@@ -389,7 +388,7 @@ export default function LandingPage() {
                   Products
                </p>
                <h2 className="lp-h2 font-bold text-white mb-4">
-                   Three ways to integrate.
+                  Three ways to integrate.
                </h2>
                <p className="text-slate-400 mb-14 max-w-2xl">
                   Choose the integration style that fits your product. All three
@@ -406,13 +405,21 @@ export default function LandingPage() {
                         <div className="flex items-center justify-between mb-5">
                            <div
                               className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-                              style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.15))', border: '1px solid rgba(99,102,241,0.25)' }}
+                              style={{
+                                 background:
+                                    "linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.15))",
+                                 border: "1px solid rgba(99,102,241,0.25)",
+                              }}
                            >
                               {product.icon}
                            </div>
                            <span
                               className="text-[10px] font-mono px-2.5 py-1 rounded-full uppercase tracking-widest"
-                              style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.3)', color: '#A5B4FC' }}
+                              style={{
+                                 background: "rgba(99,102,241,0.1)",
+                                 border: "1px solid rgba(99,102,241,0.3)",
+                                 color: "#A5B4FC",
+                              }}
                            >
                               {product.tag}
                            </span>
@@ -431,7 +438,9 @@ export default function LandingPage() {
                         <div className="space-y-2 mb-6">
                            {product.features.map((f) => (
                               <div key={f} className="flex items-start gap-2">
-                                 <span className="check-indigo text-xs mt-0.5">✓</span>
+                                 <span className="check-indigo text-xs mt-0.5">
+                                    ✓
+                                 </span>
                                  <p className="text-sm text-slate-400">{f}</p>
                               </div>
                            ))}
@@ -439,7 +448,12 @@ export default function LandingPage() {
 
                         <div
                            className="rounded-lg px-3 py-2.5 mb-6 font-mono text-[11px] text-slate-500"
-                           style={{ background: '#060B18', border: '1px solid #1A2642', overflowX: 'auto', whiteSpace: 'nowrap' }}
+                           style={{
+                              background: "#060B18",
+                              border: "1px solid #1A2642",
+                              overflowX: "auto",
+                              whiteSpace: "nowrap",
+                           }}
                         >
                            {product.code}
                         </div>
@@ -452,10 +466,14 @@ export default function LandingPage() {
                            href="/docs"
                            className="block text-center text-sm font-medium text-white px-4 py-2.5 rounded-lg transition-all hover:opacity-90"
                            style={{
-                              background: product.name === 'React Components'
-                                 ? 'linear-gradient(135deg, #6366F1, #8B5CF6)'
-                                 : 'rgba(255,255,255,0.04)',
-                              border: product.name === 'React Components' ? 'none' : '1px solid #1A2642',
+                              background:
+                                 product.name === "React Components"
+                                    ? "linear-gradient(135deg, #6366F1, #8B5CF6)"
+                                    : "rgba(255,255,255,0.04)",
+                              border:
+                                 product.name === "React Components"
+                                    ? "none"
+                                    : "1px solid #1A2642",
                            }}
                         >
                            Learn more in docs →
@@ -551,7 +569,7 @@ export default function LandingPage() {
             </div>
          </section>
 
-        {/* ── Pricing ── */}
+         {/* ── Pricing ── */}
          <PricingSection />
 
          {/* ── Support ── */}
