@@ -90,19 +90,44 @@ export default function PaymentMethodCard({ paymentMethods, onChanged, showToast
     [onChanged, showToast],
   );
 
-  const attachCard = useCallback(
-    async (tokenId: string | undefined, card: {
+  /** Dev/mock mode only: no real Razorpay to verify a payment against. */
+  const attachMockCard = useCallback(
+    async (tokenId: string, card: {
       brand?: string | null;
       last4?: string | null;
       expMonth?: number | null;
       expYear?: number | null;
-    } | undefined) => {
+    }) => {
       setFlow('processing');
       try {
         await api.post('/billing/payment-method/attach', {
-          paymentMethodId: tokenId ?? 'pm_mock_card',
+          paymentMethodId: tokenId,
           tokenId,
           card,
+        });
+        await finishAdd(true);
+      } catch (e: any) {
+        await finishAdd(false, e?.response?.data?.message);
+      }
+    },
+    [finishAdd],
+  );
+
+  /**
+   * Real Razorpay mode: send the Checkout payment's proof (order id, payment
+   * id, signature) — NOT a client-side token. razorpay_payment_id is a
+   * payment id, not a card token; the server verifies the signature and asks
+   * Razorpay directly for the token it saved against the customer.
+   */
+  const attachVerifiedCard = useCallback(
+    async (proof: { orderId: string; paymentId: string; signature: string }) => {
+      setFlow('processing');
+      try {
+        await api.post('/billing/payment-method/attach', {
+          paymentMethodId: proof.paymentId,
+          orderId: proof.orderId,
+          paymentId: proof.paymentId,
+          signature: proof.signature,
         });
         await finishAdd(true);
       } catch (e: any) {
@@ -119,7 +144,7 @@ export default function PaymentMethodCard({ paymentMethods, onChanged, showToast
     if (!RAZORPAY_KEY_ID) {
       // Dev/demo mode: simulate the same state machine without a real gateway.
       await sleep(600);
-      await attachCard(`token_mock_${Date.now()}`, {
+      await attachMockCard(`token_mock_${Date.now()}`, {
         brand: 'visa',
         last4: '4242',
         expMonth: 12,
@@ -150,14 +175,20 @@ export default function PaymentMethodCard({ paymentMethods, onChanged, showToast
         name: 'BlueJoinet',
         description: 'Save your card for usage-based billing',
         handler: async (response: any) => {
-          const tokenId = response?.razorpay_payment_id
-            ? `token_${response.razorpay_payment_id}`
-            : undefined;
-          await attachCard(tokenId, {
-            brand: response?.card?.network ?? response?.card?.issuer ?? 'card',
-            last4: response?.card?.last4 ?? null,
-            expMonth: response?.card?.expirymonth != null ? Number(response.card.expirymonth) : null,
-            expYear: response?.card?.expiryyear != null ? Number(response.card.expiryyear) : null,
+          const paymentId = response?.razorpay_payment_id;
+          const signature = response?.razorpay_signature;
+          const responseOrderId = response?.razorpay_order_id ?? orderId;
+          if (!paymentId || !signature) {
+            await finishAdd(false, 'Razorpay did not return a valid payment confirmation.');
+            return;
+          }
+          // Send the payment's proof to the server — it verifies the
+          // signature and asks Razorpay directly for the saved card token.
+          // We never construct a token from the payment id ourselves.
+          await attachVerifiedCard({
+            orderId: responseOrderId,
+            paymentId,
+            signature,
           });
         },
         modal: {
@@ -178,7 +209,7 @@ export default function PaymentMethodCard({ paymentMethods, onChanged, showToast
     } catch (e: any) {
       await finishAdd(false, e?.response?.data?.message || 'Could not start card setup.');
     }
-  }, [attachCard, finishAdd, loadRazorpayScript]);
+  }, [attachMockCard, attachVerifiedCard, finishAdd, loadRazorpayScript]);
 
   const handleRemove = useCallback(
     async (id: string) => {

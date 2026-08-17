@@ -127,6 +127,28 @@ getInvoices(customerId: string): Promise<InvoiceResult[]>;
     tokenId: string,
   ): Promise<PaymentMethodResult | null>;
   deletePaymentMethod(customerId: string, tokenId: string): Promise<void>;
+  /**
+   * Verifies the HMAC signature Razorpay Checkout returns for a completed
+   * payment (order_id|payment_id signed with the key secret). This is the
+   * only way to know the `razorpay_payment_id` the frontend hands us was
+   * really issued by Razorpay for this order, rather than a client-supplied
+   * string — a payment id is not a card token and must never be trusted
+   * as one without this check plus resolveSavedCardToken below.
+   */
+  verifyCardSetupPayment(input: {
+    orderId: string;
+    paymentId: string;
+    signature: string;
+  }): Promise<{ verified: boolean }>;
+  /**
+   * Resolves the real saved-card token created by a verified card-setup
+   * payment, by asking Razorpay directly (never derived from the payment id
+   * itself). Throws if the payment didn't succeed or no token exists yet.
+   */
+  resolveSavedCardToken(
+    customerId: string,
+    paymentId: string,
+  ): Promise<PaymentMethodResult>;
   createPortalSession(customerId: string): Promise<string>;
   createTopUpSession(input: {
     customerId: string;

@@ -68,23 +68,23 @@ options?: {
   },
 ) {
 // Resolve the project owner and enforce the usage-based free allowance.
-    // Screen share is always billable (no free allowance), so it is never blocked.
+    // Screen share is always billable (no free allowance), so it is never
+    // blocked. Uses the same UsageBillingService.canStartCall rule as
+    // BillingGuard (free allowance first, then a saved payment method) so
+    // calls created outside the guarded HTTP path (e.g. the playground)
+    // can't diverge from calls created through the API.
     if (!options?.skipUsageCheck) {
       const project = await this.prisma.project.findUnique({
         where: { id: data.projectId },
         select: { ownerId: true },
       });
       if (project) {
-        const status =
-          await this.usageBilling.getFreeAllowanceStatus(project.ownerId);
-        const mediaExhausted =
-          data.type === CallType.AUDIO
-            ? status.audioExhausted
-            : status.videoExhausted;
-        if (mediaExhausted) {
-          throw new BadRequestException(
-            `Your free ${data.type === CallType.AUDIO ? 'audio' : 'video'} allowance is used up. Add a payment method to continue making calls.`,
-          );
+        const eligibility = await this.usageBilling.canStartCall(
+          project.ownerId,
+          data.type,
+        );
+        if (!eligibility.allowed) {
+          throw new BadRequestException(eligibility.reason);
         }
       }
     }
@@ -258,9 +258,22 @@ async endCall(callId: string) {
     if (!call) throw new NotFoundException('Call not found');
 
     const endedAt = new Date();
-    const updated = await this.prisma.call.update({
-      where: { id: callId },
+
+    // Atomically claim the ENDED transition — only the caller that actually
+    // flips status away from ENDED records usage / fires webhooks. A second
+    // "end" for the same call (double click, network retry, reconnect) finds
+    // count === 0 and is a no-op: one call must produce exactly one billable
+    // usage record (the CallUsage.callId unique constraint is the hard
+    // backstop if two requests somehow race past this check).
+    const claimed = await this.prisma.call.updateMany({
+      where: { id: callId, status: { not: CallStatus.ENDED } },
       data: { status: CallStatus.ENDED, endedAt },
+    });
+    if (claimed.count === 0) {
+      return this.prisma.call.findUniqueOrThrow({ where: { id: callId } });
+    }
+    const updated = await this.prisma.call.findUniqueOrThrow({
+      where: { id: callId },
     });
 
     await this.prisma.callEvent.create({

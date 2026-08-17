@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 
 import { ApiKeyGuard } from '../../common/guards/api-key.guard';
+import { BillingGuard } from '../../common/guards/billing.guard';
 import { CallSessionGuard } from '../../common/guards/call-session.guard';
 import { CallService } from '../services/call.service';
 import { CreateCallDto } from '../dto/create-call.dto';
@@ -18,7 +19,7 @@ export class CallController {
   constructor(private callService: CallService) {}
 
   @Post()
-  @UseGuards(ApiKeyGuard)
+  @UseGuards(ApiKeyGuard, BillingGuard)
   create(@Req() req: any, @Body() body: CreateCallDto) {
     return this.callService.createCall({
       ...body,

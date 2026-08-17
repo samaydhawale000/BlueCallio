@@ -2,13 +2,24 @@ import { Injectable, Logger } from '@nestjs/common';
 import { CallEvent, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
+export interface ParticipantMediaState {
+  participantId: string;
+  audio: boolean;
+  video: boolean;
+  screenShare: boolean;
+}
+
 export interface Segment {
   startedAt: Date;
   endedAt: Date;
   participantCount: number;
+  // Aggregate "does ANY participant have this on" — display-only. Billing
+  // must be derived from `participants`, not these flags (see rating-engine).
   audio: boolean;
   video: boolean;
   screenShare: boolean;
+  // Per-participant media state during this segment — the actual billing basis.
+  participants: ParticipantMediaState[];
 }
 
 interface EventInput {
@@ -62,6 +73,7 @@ export class UsageSegmentService {
       audio: boolean;
       video: boolean;
       screenShare: boolean;
+      participants: ParticipantMediaState[];
     } | null = null;
 
     const close = (until: Date) => {
@@ -74,8 +86,19 @@ export class UsageSegmentService {
         audio: current.audio,
         video: current.video,
         screenShare: current.screenShare,
+        participants: current.participants,
       });
     };
+
+    // Deep-copy the live per-participant state so later mutations of `states`
+    // never retroactively change a segment that already closed over it.
+    const snapshotParticipants = (): ParticipantMediaState[] =>
+      Array.from(states.entries()).map(([participantId, s]) => ({
+        participantId,
+        audio: s.audio,
+        video: s.video,
+        screenShare: s.screenShare,
+      }));
 
     const computeTotals = () => {
       let count = 0;
@@ -101,6 +124,7 @@ export class UsageSegmentService {
         audio: totals.anyAudio,
         video: totals.anyVideo,
         screenShare: totals.anyScreen,
+        participants: snapshotParticipants(),
       };
     };
 
@@ -233,6 +257,7 @@ export class UsageSegmentService {
           audio: s.audio,
           video: s.video,
           screenShare: s.screenShare,
+          participants: s.participants as unknown as Prisma.InputJsonValue,
         })),
       });
     }

@@ -174,10 +174,12 @@ billingCycleStart DateTime
   participants      Int      @default(0)
   apiRequests       Int      @default(0)
 
-  // ── Usage-based billing (participant minutes by media type) ──
-  audioMinutes      Int      @default(0)
-  videoMinutes      Int      @default(0)
-  screenShareMinutes Int     @default(0)
+  // ── Usage-based billing (fractional participant-minutes by media type) ──
+  // Stored as Float (not rounded) so free-allowance exhaustion and billing
+  // stay accurate to the second; round only when displaying to users.
+  audioMinutes      Float    @default(0)
+  videoMinutes      Float    @default(0)
+  screenShareMinutes Float   @default(0)
   // Estimated cost in paise for the current cycle (computed from line items)
   usageCostPaise    Int      @default(0)
 
@@ -209,9 +211,9 @@ model CallUsage {
   usageId           String
   usage             Usage    @relation(fields: [usageId], references: [id], onDelete: Cascade)
   callId            String
-  audioMinutes      Int      @default(0)
-  videoMinutes      Int      @default(0)
-  screenShareMinutes Int     @default(0)
+  audioMinutes      Float    @default(0)
+  videoMinutes      Float    @default(0)
+  screenShareMinutes Float   @default(0)
   participants      Int      @default(0)
   costPaise         Int      @default(0)
   startedAt         DateTime?
@@ -219,6 +221,11 @@ model CallUsage {
   createdAt         DateTime @default(now())
 
   @@index([usageId])
+  // TODO(billing): promote to @@unique([callId]) once the pre-existing
+  // duplicate CallUsage rows in this DB are cleaned up manually — Postgres
+  // will refuse to add a unique constraint while duplicates exist. Until
+  // then, idempotency relies on CallService.endCall's atomic status-transition
+  // claim plus UsageBillingService.recordCallUsage's existence check.
   @@index([callId])
 }
 
@@ -392,9 +399,20 @@ model UsageSegment {
   startedAt    DateTime
   endedAt      DateTime
   participantCount Int  @default(0)
+  // Aggregate "does ANY participant have this on" flags — display-only
+  // (timeline badges). Billing must NOT be derived from these; see `participants`.
   audio        Boolean  @default(false)
   video        Boolean  @default(false)
   screenShare  Boolean  @default(false)
+  // Per-participant media state snapshot for this segment:
+  // [{ participantId, audio, video, screenShare }, ...]. This is the actual
+  // billing basis — each participant is rated individually so e.g. one
+  // participant having video on doesn't charge video minutes for everyone.
+  participants Json     @default("[]")
+  // Rated fractional participant-minutes for this segment (not rounded).
+  audioMinutes Float    @default(0)
+  videoMinutes Float    @default(0)
+  screenShareMinutes Float @default(0)
   // Rated cost in paise for this segment (after free-allowance application).
   costPaise    Int      @default(0)
   createdAt    DateTime @default(now())

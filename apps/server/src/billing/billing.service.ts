@@ -286,14 +286,25 @@ async getBillingOverview(userId: string) {
   }
 
   /**
-   * Persist the saved-card token + card metadata returned by the Razorpay
-   * Checkout handler onto the user record for future auto-charges.
+   * Persist the saved-card token + card metadata for future auto-charges.
+   *
+   * When Razorpay is configured, the token is never taken from the client —
+   * a `razorpay_payment_id` is not a card token. Instead we verify the
+   * Checkout payment signature server-side, then ask Razorpay for the real
+   * token it created for this customer (see resolveSavedCardToken). Only in
+   * mock/dev mode (no Razorpay credentials) do we fall back to trusting the
+   * client-simulated token, since there is no real gateway to verify against.
    */
   async attachPaymentMethod(
     userId: string,
     paymentMethodId: string,
-    tokenId?: string | null,
-    card?: {
+    payment?: {
+      tokenId?: string | null;
+      orderId?: string | null;
+      paymentId?: string | null;
+      signature?: string | null;
+    } | null,
+    fallbackCard?: {
       brand?: string | null;
       last4?: string | null;
       expMonth?: number | null;
@@ -301,6 +312,43 @@ async getBillingOverview(userId: string) {
     } | null,
   ) {
     const customerId = await this.ensureRazorpayCustomer(userId);
+
+    let tokenId: string | null | undefined;
+    let card = fallbackCard;
+
+    if (this.payments.isConfigured()) {
+      if (!payment?.orderId || !payment?.paymentId || !payment?.signature) {
+        throw new BadRequestException(
+          'Missing Razorpay payment verification details.',
+        );
+      }
+      const { verified } = await this.payments.verifyCardSetupPayment({
+        orderId: payment.orderId,
+        paymentId: payment.paymentId,
+        signature: payment.signature,
+      });
+      if (!verified) {
+        throw new BadRequestException(
+          'Could not verify the Razorpay payment signature.',
+        );
+      }
+      const resolved = await this.payments.resolveSavedCardToken(
+        customerId,
+        payment.paymentId,
+      );
+      tokenId = resolved.id;
+      card = {
+        brand: resolved.brand,
+        last4: resolved.last4,
+        expMonth: resolved.expMonth,
+        expYear: resolved.expYear,
+      };
+    } else {
+      // Mock/dev mode: no real gateway to verify against — trust the
+      // client-simulated token so local dev/demo still works end to end.
+      tokenId = payment?.tokenId;
+    }
+
     await this.payments.attachPaymentMethod({
       customerId,
       paymentMethodId,

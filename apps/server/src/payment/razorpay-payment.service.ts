@@ -273,6 +273,55 @@ export class RazorpayPaymentService implements PaymentService {
     await this.razorpay.customers.deleteToken(customerId, tokenId);
   }
 
+  async verifyCardSetupPayment(input: {
+    orderId: string;
+    paymentId: string;
+    signature: string;
+  }): Promise<{ verified: boolean }> {
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keySecret) return { verified: false };
+    const expected = crypto
+      .createHmac('sha256', keySecret)
+      .update(`${input.orderId}|${input.paymentId}`)
+      .digest('hex');
+    return { verified: expected === input.signature };
+  }
+
+  /**
+   * Resolves the card token the `token.request = true` Checkout flow saved
+   * against this customer as a side effect of the given (already verified)
+   * payment. We deliberately do NOT derive the token from the payment id —
+   * a razorpay_payment_id is not a card token — instead we ask Razorpay for
+   * the customer's saved tokens directly via the same fetchTokens API
+   * getPaymentMethods() uses, and confirm the payment actually succeeded
+   * first so a failed/pending payment can never attach a stale token.
+   */
+  async resolveSavedCardToken(
+    customerId: string,
+    paymentId: string,
+  ): Promise<PaymentMethodResult> {
+    this.assertConfigured();
+    const payment = await this.razorpay.payments.fetch(paymentId);
+    if (!payment || !['captured', 'authorized'].includes(payment.status)) {
+      throw new Error(
+        `Card setup payment was not successful (status: ${payment?.status ?? 'unknown'}).`,
+      );
+    }
+    if (payment.customer_id && payment.customer_id !== customerId) {
+      throw new Error('Payment does not belong to this customer.');
+    }
+
+    const tokens = await this.getPaymentMethods(customerId);
+    if (!tokens.length) {
+      throw new Error(
+        'Razorpay has not saved a card token for this customer yet.',
+      );
+    }
+    // fetchTokens returns the customer's saved tokens; the one just created
+    // by this Checkout session is the most recent.
+    return tokens[0];
+  }
+
   async createPortalSession(_customerId: string): Promise<string> {
     const base = process.env.APP_URL || 'http://localhost:3000';
     return `${base}/dashboard/billing`;

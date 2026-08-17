@@ -78,7 +78,13 @@ export class BillingController {
     @Req() req: any,
     @Body() dto: {
       paymentMethodId: string;
+      // Mock/dev mode only (no real Razorpay to verify against).
       tokenId?: string | null;
+      // Real Razorpay mode: proof of a completed Checkout payment, verified
+      // server-side before we trust anything from it.
+      orderId?: string | null;
+      paymentId?: string | null;
+      signature?: string | null;
       card?: {
         brand?: string | null;
         last4?: string | null;
@@ -90,7 +96,12 @@ export class BillingController {
     return this.billingService.attachPaymentMethod(
       req.user.userId,
       dto.paymentMethodId,
-      dto.tokenId,
+      {
+        tokenId: dto.tokenId,
+        orderId: dto.orderId,
+        paymentId: dto.paymentId,
+        signature: dto.signature,
+      },
       dto.card,
     );
   }
