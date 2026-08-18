@@ -5,9 +5,11 @@ import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { AdminGuard } from './guards/admin.guard';
 import { SocketModule } from '../socket/socket.module';
+import { TurnModule } from '../turn/turn.module';
+import { BillingModule } from '../billing/billing.module';
 
 @Module({
-  imports: [JwtModule.register({}), SocketModule],
+  imports: [JwtModule.register({}), SocketModule, TurnModule, BillingModule],
   controllers: [AdminController],
   providers: [AdminService, AdminGuard],
 })

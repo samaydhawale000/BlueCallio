@@ -6,9 +6,8 @@ import { api } from '../../lib/api';
 type HealthData = {
   node: { status: string; uptime: number };
   database: { status: string };
-  turn: { status: string };
+  turn: { status: string; configured: boolean; credentialGeneration: string };
   websocket: { clients: number; inCall?: number; rooms?: number };
-  cpu: { usage: number };
   memory: { usage: number; total: number };
 };
 
@@ -52,7 +51,14 @@ export default function AdminHealthPage() {
   const components = [
     { name: 'Node Server', status: health.node.status, icon: '🟢' },
     { name: 'Database', status: health.database.status, icon: '🛢️' },
-    { name: 'TURN Server', status: health.turn.status, icon: '🔄' },
+    {
+      name: 'TURN Server',
+      status: health.turn.status,
+      icon: '🔄',
+      detail: health.turn.configured
+        ? `Credential generation: ${health.turn.credentialGeneration}`
+        : 'Not configured',
+    },
   ];
 
   return (
@@ -94,13 +100,16 @@ export default function AdminHealthPage() {
             >
               {c.status}
             </span>
+            {c.detail && <p className="text-[11px] text-slate-500 mt-1.5">{c.detail}</p>}
           </div>
         ))}
       </div>
 
-{/* Metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        <MetricCard label="CPU Usage" value={`${health.cpu.usage}%`} />
+      {/* Metrics — CPU/network intentionally omitted here; process.cpuUsage()
+          isn't a real utilization percentage, so it's tracked at the VPS
+          monitoring layer instead of shown as a misleading number. */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <MetricCard label="Node Uptime" value={`${Math.round(health.node.uptime / 60)} min`} />
         <MetricCard label="Memory" value={`${health.memory.usage} / ${health.memory.total} MB`} />
         <MetricCard label="WebSocket Clients" value={String(health.websocket.clients)} />
         <MetricCard label="Participants In Call" value={String(health.websocket.inCall ?? 0)} />

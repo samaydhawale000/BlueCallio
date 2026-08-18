@@ -32,7 +32,7 @@ interface Project {
 interface ApiKey {
   id: string;
   name: string;
-  key: string;
+  keyPrefix: string;
   isActive: boolean;
   createdAt: string;
 }
@@ -56,6 +56,8 @@ export default function ProjectsPage() {
   const [newKeyName, setNewKeyName] = useState('');
   const [creatingKey, setCreatingKey] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  // Raw key is only present in the create response — shown once, then discarded.
+  const [revealedKey, setRevealedKey] = useState<{ id: string; key: string } | null>(null);
 
   const [webhookInputs, setWebhookInputs] = useState<Record<string, string>>({});
   const [savingWebhook, setSavingWebhook] = useState<string | null>(null);
@@ -112,7 +114,9 @@ export default function ProjectsPage() {
     setCreatingKey(true);
     try {
       const res = await api.post('/api-keys', { projectId, name: newKeyName.trim() });
-      setProjectKeys((prev) => ({ ...prev, [projectId]: [res.data, ...(prev[projectId] ?? [])] }));
+      const { key: rawKey, ...masked } = res.data;
+      setProjectKeys((prev) => ({ ...prev, [projectId]: [masked, ...(prev[projectId] ?? [])] }));
+      setRevealedKey({ id: masked.id, key: rawKey });
       setNewKeyName('');
       setShowNewKey(null);
     } finally { setCreatingKey(false); }
@@ -131,9 +135,10 @@ export default function ProjectsPage() {
     } finally { setSavingWebhook(null); }
   }
 
-  async function copyKey(id: string, key: string) {
-    await navigator.clipboard.writeText(key);
-    setCopied(id);
+  async function copyRevealedKey() {
+    if (!revealedKey) return;
+    await navigator.clipboard.writeText(revealedKey.key);
+    setCopied(revealedKey.id);
     setTimeout(() => setCopied(null), 2000);
   }
 
@@ -279,6 +284,35 @@ export default function ProjectsPage() {
                       </div>
                     )}
 
+                    {revealedKey && projectKeys[project.id]?.some((k) => k.id === revealedKey.id) && (
+                      <div
+                        className="rounded-xl border p-4 mb-3"
+                        style={{ borderColor: 'rgba(52,211,153,0.35)', background: 'rgba(16,185,129,0.06)' }}
+                      >
+                        <p className="text-xs font-semibold text-white mb-1">Your new API key</p>
+                        <p className="text-[11px] text-amber-400 mb-2">
+                          Copy it now — you won&apos;t be able to view it again.
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <code className="flex-1 min-w-0 text-xs font-mono text-slate-100 bg-[#0A0F1E] border border-[#1A2642] rounded-lg px-3 py-2 break-all">
+                            {revealedKey.key}
+                          </code>
+                          <button
+                            onClick={copyRevealedKey}
+                            className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition-colors border border-[#1A2642]"
+                            title="Copy"
+                          >
+                            {copied === revealedKey.id
+                              ? <Check size={15} style={{ color: '#34D399' }} />
+                              : <Copy size={15} />}
+                          </button>
+                        </div>
+                        <Button variant="ghost" size="sm" className="mt-2" onClick={() => setRevealedKey(null)}>
+                          I&apos;ve saved it
+                        </Button>
+                      </div>
+                    )}
+
                     {!projectKeys[project.id]?.length ? (
                       <p className="text-sm text-slate-500">No API keys yet.</p>
                     ) : (
@@ -294,18 +328,9 @@ export default function ProjectsPage() {
                                 </Badge>
                               </div>
                               <p className="text-xs font-mono text-slate-500 truncate">
-                                {maskKey(key.key)}
+                                {key.keyPrefix}••••••••••••••••••••
                               </p>
                             </div>
-                            <button
-                              onClick={() => copyKey(key.id, key.key)}
-                              className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
-                              title="Copy"
-                            >
-                              {copied === key.id
-                                ? <Check size={15} style={{ color: '#34D399' }} />
-                                : <Copy size={15} />}
-                            </button>
                           </div>
                         ))}
                       </div>
@@ -362,9 +387,4 @@ export default function ProjectsPage() {
       </div>
     </div>
   );
-}
-
-function maskKey(key: string): string {
-  if (key.length <= 12) return key;
-  return `${key.slice(0, 12)}…${key.slice(-4)}`;
 }

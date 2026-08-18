@@ -88,6 +88,12 @@ model User {
   cardExpMonth       Int?
   cardExpYear        Int?
 
+  // Customer-configurable monthly spending cap (paise) for paid usage, on
+  // top of the free allowance. Null = no cap. Protects both the customer
+  // (e.g. a leaked API key running up a bill) and us (unbounded exposure on
+  // a card that later fails to charge).
+  spendingLimitPaise Int?
+
   lastActiveAt DateTime?
 
   createdAt    DateTime @default(now())
@@ -147,7 +153,9 @@ model Payment {
   id                    String   @id @default(uuid())
   subscriptionId        String
   subscription          Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-  razorpayPaymentId     String?
+  // Unique so a retried Razorpay webhook can never credit the same payment
+  // twice — BillingService checks this before insert; this is the backstop.
+  razorpayPaymentId     String?  @unique
   razorpayOrderId       String?
   amount                Int      @default(0)
   currency              String   @default("INR")
@@ -300,6 +308,22 @@ model AuditLog {
   @@index([createdAt])
 }
 
+// Outbound webhook delivery attempts (retry/backoff + dead-letter tracking).
+model WebhookDelivery {
+  id        String   @id @default(uuid())
+  callId    String
+  event     String
+  url       String
+  status    String   @default("pending") // pending | delivered | failed
+  attempts  Int      @default(0)
+  lastError String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([callId])
+  @@index([status])
+}
+
 // Server-wide platform settings (maintenance mode, announcements, etc.).
 model PlatformSetting {
   id        String   @id @default(uuid())
@@ -347,7 +371,14 @@ model Project {
 model ApiKey {
   id String @id @default(uuid())
 
-  key String @unique
+  // SHA-256 hex digest of the raw key — the raw key is shown to the user
+  // exactly once at creation and never stored or returned again. Auth looks
+  // up by this hash, not by the plaintext key.
+  keyHash String @unique
+
+  // First ~12 chars of the raw key (e.g. "bj_live_a1b2"), stored only for
+  // masked display in the dashboard ("bj_live_a1b2••••••••").
+  keyPrefix String
 
   name String
 

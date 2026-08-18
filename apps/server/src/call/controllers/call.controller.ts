@@ -7,6 +7,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 
 import { ApiKeyGuard } from '../../common/guards/api-key.guard';
 import { BillingGuard } from '../../common/guards/billing.guard';
@@ -18,6 +19,8 @@ import { CreateCallDto } from '../dto/create-call.dto';
 export class CallController {
   constructor(private callService: CallService) {}
 
+  // Prevents an abused/leaked API key from mass-creating call sessions.
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @Post()
   @UseGuards(ApiKeyGuard, BillingGuard)
   create(@Req() req: any, @Body() body: CreateCallDto) {

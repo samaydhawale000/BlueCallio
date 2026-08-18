@@ -43,6 +43,9 @@ interface CurrentUsage {
   };
   estimatedMonthEndPaise: number;
   nextBillingDate: string;
+  isFreeTier?: boolean;
+  hasPaymentMethod?: boolean;
+  freeUsagePercent?: number;
 }
 
 interface UsageInvoice {
@@ -85,6 +88,7 @@ export default function BillingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState | null>(null);
+  const [spendingLimitPaise, setSpendingLimitPaise] = useState<number | null>(null);
 
   const showToast = useCallback((type: 'success' | 'error', message: string) => {
     setToast({ id: Date.now(), type, message });
@@ -92,14 +96,16 @@ export default function BillingPage() {
 
   const fetchAll = useCallback(async () => {
     try {
-      const [usageRes, invoiceRes, pmRes] = await Promise.all([
+      const [usageRes, invoiceRes, pmRes, limitRes] = await Promise.all([
         api.get('/billing/current-usage'),
         api.get('/billing/usage-invoices'),
         api.get('/billing/payment-methods'),
+        api.get('/billing/spending-limit'),
       ]);
       setUsage(usageRes.data);
       setInvoices(invoiceRes.data ?? []);
       setPaymentMethods(pmRes.data ?? []);
+      setSpendingLimitPaise(limitRes.data?.spendingLimitPaise ?? null);
       setError(null);
     } catch (e: any) {
       if (e?.response?.status === 401) {
@@ -169,6 +175,13 @@ const u = usage?.usage;
           {error}
         </div>
       )}
+
+      <UsageAlertBanner
+        freeUsagePercent={usage?.freeUsagePercent}
+        hasPaymentMethod={hasDefaultCard}
+        audioRemaining={Math.max(0, (free?.audioMinutes ?? 0) - (u?.audioMinutes ?? 0))}
+        videoRemaining={Math.max(0, (free?.videoMinutes ?? 0) - (u?.videoMinutes ?? 0))}
+      />
 
       {/* ── Current balance / usage ── */}
       <div
@@ -275,6 +288,16 @@ const u = usage?.usage;
       <PaymentMethodCard
         paymentMethods={paymentMethods}
         onChanged={fetchAll}
+        showToast={showToast}
+      />
+
+      {/* ── Spending protection ── */}
+      <SpendingLimitCard
+        spendingLimitPaise={spendingLimitPaise}
+        onSaved={(paise) => {
+          setSpendingLimitPaise(paise);
+          showToast('success', paise == null ? 'Spending limit removed.' : 'Spending limit updated.');
+        }}
         showToast={showToast}
       />
 
@@ -452,6 +475,131 @@ function InfoCard({
         <p className="text-sm font-semibold text-white">{title}</p>
       </div>
       <p className="text-xs text-slate-500 leading-relaxed">{body}</p>
+    </div>
+  );
+}
+
+/**
+ * Warns the customer before they're surprised by a bill: nudges at 50/75%,
+ * escalates at 90%, and calls out clearly once the free allowance is fully
+ * used (with a CTA to add a card if they haven't already).
+ */
+function UsageAlertBanner({
+  freeUsagePercent,
+  hasPaymentMethod,
+  audioRemaining,
+  videoRemaining,
+}: {
+  freeUsagePercent?: number;
+  hasPaymentMethod: boolean;
+  audioRemaining: number;
+  videoRemaining: number;
+}) {
+  const pct = freeUsagePercent ?? 0;
+  if (pct < 50) return null;
+
+  const tier =
+    pct >= 100
+      ? { color: '#F87171', border: 'rgba(248,113,113,0.35)', bg: 'rgba(239,68,68,0.06)' }
+      : pct >= 90
+        ? { color: '#FBBF24', border: 'rgba(251,191,36,0.35)', bg: 'rgba(251,191,36,0.06)' }
+        : { color: '#818CF8', border: 'rgba(99,102,241,0.3)', bg: 'rgba(99,102,241,0.05)' };
+
+  const message =
+    pct >= 100
+      ? hasPaymentMethod
+        ? "You've used your full free allowance — you're now on paid usage."
+        : "You've used your full free allowance. Add a payment method to keep making calls."
+      : `You've used ${pct}% of your free allowance. ${audioRemaining.toFixed(0)} audio + ${videoRemaining.toFixed(0)} video participant-minutes remaining.`;
+
+  return (
+    <div
+      className="flex items-center gap-3 rounded-xl border px-4 py-3"
+      style={{ borderColor: tier.border, background: tier.bg }}
+    >
+      <AlertTriangle size={16} style={{ color: tier.color }} className="shrink-0" />
+      <p className="text-sm flex-1" style={{ color: tier.color }}>{message}</p>
+    </div>
+  );
+}
+
+/**
+ * Lets the customer cap their own monthly paid usage so a leaked API key or
+ * runaway integration can't run up a surprise bill. Enforced server-side in
+ * UsageBillingService.canStartCall — this is just the control surface.
+ */
+function SpendingLimitCard({
+  spendingLimitPaise,
+  onSaved,
+  showToast,
+}: {
+  spendingLimitPaise: number | null;
+  onSaved: (paise: number | null) => void;
+  showToast: (type: 'success' | 'error', message: string) => void;
+}) {
+  const [input, setInput] = useState(spendingLimitPaise != null ? String(spendingLimitPaise / 100) : '');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setInput(spendingLimitPaise != null ? String(spendingLimitPaise / 100) : '');
+  }, [spendingLimitPaise]);
+
+  const save = async (paise: number | null) => {
+    setSaving(true);
+    try {
+      await api.post('/billing/spending-limit', { spendingLimitPaise: paise });
+      onSaved(paise);
+    } catch (e: any) {
+      showToast('error', e?.response?.data?.message || 'Could not update your spending limit.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="rounded-xl border border-[#1A2642] p-5" style={{ background: '#0D1421' }}>
+      <div className="flex items-center gap-2 mb-1">
+        <ShieldCheck size={16} style={{ color: '#34D399' }} />
+        <p className="text-sm font-semibold text-white">Monthly spending limit</p>
+      </div>
+      <p className="text-xs text-slate-500 mb-3">
+        Cap how much paid usage (beyond your free allowance) can be billed each month. New calls are blocked once you hit it — active calls are never interrupted.
+      </p>
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-1.5 rounded-lg border border-[#1A2642] px-3 py-2" style={{ background: '#0A0F1E' }}>
+          <span className="text-slate-500 text-sm">₹</span>
+          <input
+            type="number"
+            min={0}
+            step="1"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="No limit"
+            className="w-28 bg-transparent text-sm text-slate-100 outline-none"
+          />
+        </div>
+        <button
+          onClick={() => {
+            const value = parseFloat(input);
+            if (!input.trim() || Number.isNaN(value) || value < 0) return;
+            save(Math.round(value * 100));
+          }}
+          disabled={saving}
+          className="text-sm font-medium px-3 py-2 rounded-lg text-white transition-colors disabled:opacity-50"
+          style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}
+        >
+          Save
+        </button>
+        {spendingLimitPaise != null && (
+          <button
+            onClick={() => { setInput(''); save(null); }}
+            disabled={saving}
+            className="text-sm text-slate-400 hover:text-white transition-colors disabled:opacity-50"
+          >
+            Remove limit
+          </button>
+        )}
+      </div>
     </div>
   );
 }

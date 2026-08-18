@@ -8,5 +8,6 @@ import { CallSessionGuard } from '../common/guards/call-session.guard';
   imports: [CallSessionModule],
   controllers: [TurnController],
   providers: [TurnService, CallSessionGuard],
+  exports: [TurnService],
 })
 export class TurnModule {}

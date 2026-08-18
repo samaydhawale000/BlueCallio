@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 export interface UsageSnapshot {
@@ -378,12 +378,65 @@ cost: {
     const exhausted = type === 'AUDIO' ? status.audioExhausted : status.videoExhausted;
     if (!exhausted) return { allowed: true };
 
-    if (await this.hasPaymentMethod(ownerId)) return { allowed: true };
+    if (!(await this.hasPaymentMethod(ownerId))) {
+      return {
+        allowed: false,
+        reason: `Your free ${type.toLowerCase()} allowance is used up. Add a payment method to continue making calls.`,
+      };
+    }
 
-    return {
-      allowed: false,
-      reason: `Your free ${type.toLowerCase()} allowance is used up. Add a payment method to continue making calls.`,
-    };
+    // Paid usage from here on — enforce the customer's own spending cap (if
+    // they set one). Protects both them (a leaked API key running up a
+    // surprise bill) and us (unbounded exposure if a card later fails).
+    return this.checkSpendingLimit(ownerId);
+  }
+
+  /**
+   * Whether the owner's current-cycle billed cost is still under their
+   * self-set monthly spending cap. No cap set → always allowed.
+   */
+  async checkSpendingLimit(
+    ownerId: string,
+  ): Promise<{ allowed: boolean; reason?: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: ownerId },
+      select: { spendingLimitPaise: true },
+    });
+    if (!user?.spendingLimitPaise) return { allowed: true };
+
+    const usage = await this.getOrCreateUsage(ownerId);
+    if (usage.usageCostPaise >= user.spendingLimitPaise) {
+      return {
+        allowed: false,
+        reason: `You've reached your monthly spending limit of ₹${(user.spendingLimitPaise / 100).toFixed(2)}. Raise or remove it in Billing settings to continue making calls.`,
+      };
+    }
+    return { allowed: true };
+  }
+
+  /** Get the customer's self-set monthly spending cap (paise), if any. */
+  async getSpendingLimit(userId: string): Promise<{ spendingLimitPaise: number | null }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { spendingLimitPaise: true },
+    });
+    return { spendingLimitPaise: user?.spendingLimitPaise ?? null };
+  }
+
+  /** Set (or clear, with null) the customer's monthly spending cap (paise). */
+  async setSpendingLimit(
+    userId: string,
+    spendingLimitPaise: number | null,
+  ): Promise<{ spendingLimitPaise: number | null }> {
+    if (spendingLimitPaise != null && (!Number.isFinite(spendingLimitPaise) || spendingLimitPaise < 0)) {
+      throw new BadRequestException('spendingLimitPaise must be a non-negative number or null.');
+    }
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: { spendingLimitPaise },
+      select: { spendingLimitPaise: true },
+    });
+    return { spendingLimitPaise: updated.spendingLimitPaise };
   }
 
 /**

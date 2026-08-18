@@ -9,6 +9,19 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PAYMENT_SERVICE } from '../payment/payment.service';
 import type { PaymentService } from '../payment/payment.service';
 
+/**
+ * BlueJoinet v1 billing = usage-based (see UsageBillingService,
+ * RatingEngineService, UsageSegmentService — that is the active model
+ * calls are actually metered and charged against, enforced via
+ * UsageBillingService.canStartCall).
+ *
+ * This service also still carries the PRE-usage-based Plan/Subscription
+ * model (monthly plans, checkout, top-up, cancel/resume) from before the
+ * pivot. It is NOT on the call-billing path — CallService never calls into
+ * it — and is kept only for: (a) any customer still on a legacy active
+ * subscription, and (b) the admin plan-management screen. Sections below
+ * are marked "LEGACY" accordingly; don't extend that model for new work.
+ */
 @Injectable()
 export class BillingService {
   private readonly logger = new Logger(BillingService.name);
@@ -18,7 +31,7 @@ export class BillingService {
     @Inject(PAYMENT_SERVICE) private payments: PaymentService,
   ) {}
 
-  // ── Plans ────────────────────────────────────────────
+  // ── LEGACY: Plans ────────────────────────────────────
   async getPlans() {
     return this.prisma.plan.findMany({
       where: { status: true },
@@ -40,7 +53,12 @@ export class BillingService {
     return this.prisma.plan.findUnique({ where: { slug } });
   }
 
-  // ── Subscriptions ────────────────────────────────────
+  // ── Subscriptions (SHARED — not pure legacy) ────────
+  // getCurrentSubscription/getOrCreateFreeSubscription are still live
+  // dependencies of the current usage-based flow below (ensureRazorpayCustomer,
+  // getPaymentMethods, removePaymentMethod, setDefaultPaymentMethod all read
+  // through the Subscription row for its razorpayCustomerId). Only the
+  // plan-price/checkout/cancel/resume methods further down are dead legacy.
   async getCurrentSubscription(userId: string) {
     return this.prisma.subscription.findFirst({
       where: { companyId: userId },
@@ -379,7 +397,7 @@ async getBillingOverview(userId: string) {
     return { attached: true, customerId };
   }
 
-  // ── Checkout / upgrade ───────────────────────────────
+  // ── LEGACY: Checkout / upgrade (plan-based) ─────────
   async createCheckout(userId: string, planSlug: string) {
     const plan = await this.getPlanBySlug(planSlug);
     if (!plan) throw new NotFoundException('Plan not found');
@@ -530,7 +548,8 @@ const priceId = plan.razorpayPlanId;
     return updated;
   }
 
-  // ── Usage ────────────────────────────────────────────
+  // ── LEGACY: Usage (plan minutesUsed tracking — superseded
+  // by UsageBillingService's audio/video/screenShare participant-minutes) ──
   async getUsageForUser(userId: string, sub?: any) {
     const subscription = sub ?? (await this.getCurrentSubscription(userId));
     if (!subscription) return null;
@@ -703,7 +722,7 @@ async getRevenue() {
     };
   }
 
-  // ── Mock upgrade (no Razorpay configured) ──────────
+  // ── LEGACY: Mock upgrade (no Razorpay configured) ──
   private async mockUpgrade(userId: string, plan: any) {
     const sub = await this.getOrCreateFreeSubscription(userId);
     const now = new Date();
@@ -731,97 +750,154 @@ async getRevenue() {
     return { plan: plan.name, status: updated.status, isMock: true };
   }
 
-  // ── Webhook ──────────────────────────────────────────
+  // ── Webhook (Razorpay) ──────────────────────────────
+  // NOTE: this previously assumed Stripe's webhook shape (`event.type`,
+  // `event.data.object`, invoice/session field names) even though it's only
+  // ever called from the Razorpay webhook endpoint — meaning no real
+  // Razorpay webhook (payment success/failure, subscription change) was
+  // ever actually processed; the switch never matched. Razorpay's shape is
+  // `event.event` (event name) + `event.payload.<entity>.entity`.
   async handleWebhookEvent(event: Record<string, any>) {
-    const type = event.type;
-    this.logger.log(`Handling webhook: ${type}`);
+    const type = event.event;
+    this.logger.log(`Handling Razorpay webhook: ${type}`);
     switch (type) {
-      case 'checkout.session.completed':
-        await this.handleCheckoutCompleted(event.data?.object);
+      case 'payment.captured':
+        await this.handlePaymentCaptured(event.payload?.payment?.entity);
         break;
-      case 'invoice.payment_succeeded':
-        await this.handlePaymentSucceeded(event.data?.object);
+      case 'payment.failed':
+        await this.handlePaymentFailedEvent(event.payload?.payment?.entity);
         break;
-      case 'invoice.payment_failed':
-        await this.handlePaymentFailed(event.data?.object);
+      case 'subscription.charged':
+        await this.handleSubscriptionCharged(
+          event.payload?.subscription?.entity,
+          event.payload?.payment?.entity,
+        );
         break;
-      case 'customer.subscription.updated':
-        await this.handleSubscriptionUpdated(event.data?.object);
+      case 'subscription.cancelled':
+      case 'subscription.completed':
+        await this.handleSubscriptionStatusEvent(event.payload?.subscription?.entity);
         break;
       default:
+        this.logger.debug(`Unhandled Razorpay webhook event: ${type}`);
         break;
     }
   }
 
-private async handleCheckoutCompleted(session: any) {
-    const userId = session?.metadata?.userId;
-    const planSlug = session?.metadata?.planSlug;
-    const topUpMinutes = Number(session?.metadata?.minutes || 0);
+  /**
+   * A captured (successful) payment — covers both plan checkout and minute
+   * top-ups, since both go through a Razorpay Order carrying `notes`
+   * (userId + planSlug, or userId + minutes) that Razorpay copies onto the
+   * resulting payment entity.
+   *
+   * Idempotent: Razorpay retries webhook delivery, so this must never credit
+   * the same payment twice. Guarded by an existence check + a DB unique
+   * constraint on Payment.razorpayPaymentId as the hard backstop.
+   */
+  private async handlePaymentCaptured(payment: any) {
+    if (!payment?.id) return;
 
-    // Top-up (one-time payment) checkout: credit purchased minutes.
-if (topUpMinutes > 0 && userId) {
-      const sub = await this.getOrCreateFreeSubscription(userId);
+    const already = await this.prisma.payment.findFirst({
+      where: { razorpayPaymentId: payment.id },
+    });
+    if (already) {
+      this.logger.warn(`Payment ${payment.id} already recorded — skipping duplicate webhook.`);
+      return;
+    }
+
+    const userId = payment.notes?.userId;
+    if (!userId) {
+      this.logger.warn(`payment.captured for ${payment.id} has no userId in notes — skipping.`);
+      return;
+    }
+
+    const sub = await this.getOrCreateFreeSubscription(userId);
+
+    try {
+      await this.prisma.payment.create({
+        data: {
+          subscriptionId: sub.id,
+          razorpayPaymentId: payment.id,
+          razorpayOrderId: payment.order_id ?? null,
+          amount: payment.amount ?? 0,
+          currency: (payment.currency || 'INR').toUpperCase(),
+          paymentStatus: 'PAID',
+          paymentMethod: payment.method ?? null,
+          paidAt: new Date(),
+        },
+      });
+    } catch (e: any) {
+      if (e?.code === 'P2002') {
+        this.logger.warn(`Payment ${payment.id} already recorded (race) — skipping duplicate credit.`);
+        return;
+      }
+      throw e;
+    }
+
+    const topUpMinutes = Number(payment.notes?.minutes || 0);
+    if (topUpMinutes > 0) {
       await this.creditPurchasedMinutes(userId, sub, topUpMinutes);
       await this.logAudit(userId, 'PAYMENT_RECEIVED', {
         minutes: topUpMinutes,
         type: 'topup',
+        razorpayPaymentId: payment.id,
       });
       return;
     }
 
-    if (!userId || !planSlug) return;
-    const plan = await this.prisma.plan.findUnique({ where: { slug: planSlug } });
-    if (!plan) return;
-    const sub = await this.getCurrentSubscription(userId);
-    if (sub) {
-      await this.prisma.subscription.update({
-        where: { id: sub.id },
+    const planSlug = payment.notes?.planSlug;
+    if (planSlug) {
+      const plan = await this.prisma.plan.findUnique({ where: { slug: planSlug } });
+      if (plan) {
+        await this.prisma.subscription.update({
+          where: { id: sub.id },
+          data: {
+            planId: plan.id,
+            status: 'ACTIVE',
+            dunningAttempts: 0,
+            paymentFailedAt: null,
+            gracePeriodEndsAt: null,
+          },
+        });
+        await this.logAudit(userId, 'SUBSCRIPTION_CREATED', { plan: planSlug, razorpayPaymentId: payment.id });
+        return;
+      }
+    }
+
+    await this.logAudit(userId, 'PAYMENT_RECEIVED', { amount: payment.amount, razorpayPaymentId: payment.id });
+  }
+
+  private async handlePaymentFailedEvent(payment: any) {
+    if (!payment?.id) return;
+
+    const userId = payment.notes?.userId;
+    if (!userId) {
+      this.logger.warn(`payment.failed for ${payment.id} has no userId in notes — skipping.`);
+      return;
+    }
+
+    const already = await this.prisma.payment.findFirst({
+      where: { razorpayPaymentId: payment.id },
+    });
+    if (already) return;
+
+    const sub = await this.getOrCreateFreeSubscription(userId);
+
+    try {
+      await this.prisma.payment.create({
         data: {
-          planId: plan.id,
-          razorpayCustomerId: session.customer,
-          status: 'ACTIVE',
-          dunningAttempts: 0,
-          paymentFailedAt: null,
-          gracePeriodEndsAt: null,
+          subscriptionId: sub.id,
+          razorpayPaymentId: payment.id,
+          razorpayOrderId: payment.order_id ?? null,
+          amount: payment.amount ?? 0,
+          currency: (payment.currency || 'INR').toUpperCase(),
+          paymentStatus: 'FAILED',
         },
       });
+    } catch (e: any) {
+      if (e?.code === 'P2002') return;
+      throw e;
     }
-    await this.logAudit(userId, 'SUBSCRIPTION_CREATED', { plan: planSlug });
-  }
 
-  private async handlePaymentSucceeded(invoice: any) {
-    const sub = await this.prisma.subscription.findFirst({
-      where: { id: invoice.subscription },
-    });
-    if (!sub) return;
-    await this.prisma.payment.create({
-      data: {
-        subscriptionId: sub.id,
-        razorpayPaymentId: invoice.payment_id,
-        razorpayOrderId: invoice.order_id,
-        amount: invoice.amount,
-        currency: (invoice.currency || 'INR').toUpperCase(),
-        paymentStatus: 'PAID',
-        paidAt: new Date(),
-      },
-    });
-    await this.logAudit(sub.companyId, 'PAYMENT_RECEIVED', { amount: invoice.amount });
-  }
-
-  private async handlePaymentFailed(invoice: any) {
-    const sub = await this.prisma.subscription.findFirst({
-      where: { id: invoice.subscription },
-    });
-    if (!sub) return;
-    await this.prisma.payment.create({
-      data: {
-        subscriptionId: sub.id,
-        razorpayOrderId: invoice.order_id,
-        amount: invoice.amount,
-        currency: (invoice.currency || 'INR').toUpperCase(),
-        paymentStatus: 'FAILED',
-      },
-    });
     // Increment dunning attempt and extend grace period (7 days from now).
     const grace = new Date();
     grace.setDate(grace.getDate() + 7);
@@ -835,38 +911,87 @@ if (topUpMinutes > 0 && userId) {
       },
     });
     await this.logAudit(sub.companyId, 'PAYMENT_FAILED', {
-      amount: invoice.amount,
-      attempts: (sub.dunningAttempts ?? 0) + 1,
+      amount: payment.amount,
+      razorpayPaymentId: payment.id,
     });
   }
 
-  private async handleSubscriptionUpdated(subscription: any) {
+  /** Legacy plan-subscription recurring charge (see razorpay-payment.service.ts — subscriptions are retired for new signups, kept for any still-active legacy rows). */
+  private async handleSubscriptionCharged(subscription: any, payment: any) {
+    if (!subscription?.id) return;
     const sub = await this.prisma.subscription.findFirst({
-      where: { id: subscription.id },
+      where: { razorpaySubscriptionId: subscription.id },
     });
     if (!sub) return;
+
     await this.prisma.subscription.update({
       where: { id: sub.id },
       data: {
-        status: this.mapRazorpayStatus(subscription.status),
-        currentPeriodStart: subscription.current_period_start
-          ? new Date(subscription.current_period_start * 1000)
+        status: 'ACTIVE',
+        dunningAttempts: 0,
+        paymentFailedAt: null,
+        gracePeriodEndsAt: null,
+        currentPeriodStart: subscription.current_start
+          ? new Date(subscription.current_start * 1000)
           : undefined,
-        currentPeriodEnd: subscription.current_period_end
-          ? new Date(subscription.current_period_end * 1000)
+        currentPeriodEnd: subscription.current_end
+          ? new Date(subscription.current_end * 1000)
           : undefined,
-        cancelAtPeriodEnd: subscription.cancel_at_period_end ?? false,
       },
     });
+
+    if (payment?.id) {
+      const already = await this.prisma.payment.findFirst({ where: { razorpayPaymentId: payment.id } });
+      if (!already) {
+        try {
+          await this.prisma.payment.create({
+            data: {
+              subscriptionId: sub.id,
+              razorpayPaymentId: payment.id,
+              amount: payment.amount ?? 0,
+              currency: (payment.currency || 'INR').toUpperCase(),
+              paymentStatus: 'PAID',
+              paidAt: new Date(),
+            },
+          });
+        } catch (e: any) {
+          if (e?.code !== 'P2002') throw e;
+        }
+      }
+    }
+    await this.logAudit(sub.companyId, 'PAYMENT_RECEIVED', { subscriptionId: sub.id, event: 'subscription.charged' });
+  }
+
+  /** Legacy plan-subscription cancel/complete (see note on handleSubscriptionCharged). */
+  private async handleSubscriptionStatusEvent(subscription: any) {
+    if (!subscription?.id) return;
+    const sub = await this.prisma.subscription.findFirst({
+      where: { razorpaySubscriptionId: subscription.id },
+    });
+    if (!sub) return;
+
+    const cancelled = subscription.status === 'cancelled' || subscription.status === 'completed';
+    await this.prisma.subscription.update({
+      where: { id: sub.id },
+      data: {
+        status: cancelled ? 'CANCELED' : this.mapRazorpayStatus(subscription.status),
+        cancelAtPeriodEnd: cancelled,
+      },
+    });
+    await this.logAudit(
+      sub.companyId,
+      cancelled ? 'SUBSCRIPTION_CANCELED' : 'SUBSCRIPTION_RESUMED',
+      { subscriptionId: sub.id },
+    );
   }
 
   private mapRazorpayStatus(status: string): any {
     switch (status) {
       case 'active': return 'ACTIVE';
-      case 'trialing': return 'TRIALING';
+      case 'authenticated': return 'TRIALING';
       case 'past_due': return 'PAST_DUE';
       case 'cancelled': return 'CANCELED';
-      case 'completed': return 'COMPLETED';
+      case 'completed': return 'CANCELED';
       case 'halted': return 'PAST_DUE';
       default: return 'ACTIVE';
     }

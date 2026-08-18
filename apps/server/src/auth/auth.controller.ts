@@ -5,6 +5,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 
 import { AuthService } from './auth.service';
 
@@ -19,6 +20,9 @@ export class AuthController {
     private readonly authService: AuthService,
   ) {}
 
+  // Stricter than the global default — this is the credential-stuffing /
+  // token-guessing surface.
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('google')
   google(
     @Body() body: GoogleDto,
@@ -28,6 +32,7 @@ export class AuthController {
     );
   }
 
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @Post('refresh')
   refresh(
     @Body() body: RefreshDto,

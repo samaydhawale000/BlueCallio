@@ -8,6 +8,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 
 import { JwtGuard } from '../../auth/guards/jwt.guard';
 
@@ -21,6 +22,7 @@ export class ProjectController {
     private projectService: ProjectService,
   ) {}
 
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @UseGuards(JwtGuard)
   @Post()
   create(

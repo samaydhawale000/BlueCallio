@@ -4,6 +4,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { createHash } from 'crypto';
 
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -32,10 +33,13 @@ export class ApiKeyGuard
       );
     }
 
+    // Only the hash is ever stored — never look up by (or store) plaintext.
+    const keyHash = createHash('sha256').update(String(apiKey)).digest('hex');
+
     const key =
       await this.prisma.apiKey.findFirst({
         where: {
-          key: String(apiKey),
+          keyHash,
           isActive: true,
         },
         include: {

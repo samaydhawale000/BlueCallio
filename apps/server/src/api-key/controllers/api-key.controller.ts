@@ -9,6 +9,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 
 import { JwtGuard } from '../../auth/guards/jwt.guard';
 
@@ -23,6 +24,7 @@ export class ApiKeyController {
     private apiKeyService: ApiKeyService,
   ) {}
 
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post()
   create(
     @Req() req: any,

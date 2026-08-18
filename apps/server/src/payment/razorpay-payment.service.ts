@@ -41,10 +41,27 @@ export class RazorpayPaymentService implements PaymentService {
   constructor() {
     const keyId = process.env.RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+
     if (keyId && keySecret) {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const Razorpay = require('razorpay');
       this.razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
+      if (process.env.NODE_ENV === 'production' && !webhookSecret) {
+        // Payments can be taken but incoming webhooks (payment confirmation,
+        // failures, refunds) could never be verified — that's a silent
+        // integrity hole, not something to boot into.
+        throw new Error(
+          'RAZORPAY_WEBHOOK_SECRET is not set. Refusing to start in production without it.',
+        );
+      }
+    } else if (process.env.NODE_ENV === 'production') {
+      // Fail closed: a production deploy must never silently fall back to
+      // mock billing just because credentials weren't set. That would let a
+      // real customer interact with a fake payment flow.
+      throw new Error(
+        'RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET are not set. Refusing to start in production without real payment credentials.',
+      );
     } else {
       this.razorpay = null;
       this.logger.warn(

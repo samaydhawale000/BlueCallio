@@ -11,6 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import type { RawBodyRequest } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { AdminGuard } from '../admin/guards/admin.guard';
 import { BillingService } from './billing.service';
@@ -66,12 +67,14 @@ export class BillingController {
   }
 
   // ── Add Payment Method (usage-based, no upfront charge) ──
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('payment-method/setup')
   @UseGuards(JwtGuard)
   async paymentMethodSetup(@Req() req: any) {
     return this.billingService.createPaymentSetup(req.user.userId);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('payment-method/attach')
   @UseGuards(JwtGuard)
   async paymentMethodAttach(
@@ -118,6 +121,19 @@ export class BillingController {
     return this.billingService.setDefaultPaymentMethod(req.user.userId, dto.id);
   }
 
+  // ── Spending protection ─────────────────────────────
+  @Get('spending-limit')
+  @UseGuards(JwtGuard)
+  async getSpendingLimit(@Req() req: any) {
+    return this.usageBilling.getSpendingLimit(req.user.userId);
+  }
+
+  @Post('spending-limit')
+  @UseGuards(JwtGuard)
+  async setSpendingLimit(@Req() req: any, @Body() dto: { spendingLimitPaise: number | null }) {
+    return this.usageBilling.setSpendingLimit(req.user.userId, dto.spendingLimitPaise);
+  }
+
   // ── Usage-based invoices ────────────────────────────
   @Get('usage-invoices')
   @UseGuards(JwtGuard)
@@ -142,12 +158,14 @@ export class BillingController {
     return this.billingService.createPortalSession(req.user.userId);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('checkout')
   @UseGuards(JwtGuard)
   async checkout(@Req() req: any, @Body() dto: CheckoutDto) {
     return this.billingService.createCheckout(req.user.userId, dto.planSlug);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('topup')
   @UseGuards(JwtGuard)
   async topup(@Req() req: any, @Body() dto: TopUpDto) {

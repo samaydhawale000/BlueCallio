@@ -1,12 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CallGateway } from '../socket/gateways/call.gateway';
+import { TurnService } from '../turn/turn.service';
+import { UsageBillingService } from '../billing/usage-billing.service';
 
 @Injectable()
 export class AdminService {
   constructor(
     private prisma: PrismaService,
     private callGateway: CallGateway,
+    private turnService: TurnService,
+    private usageBilling: UsageBillingService,
   ) {}
 
   // ── Overview ──────────────────────────────────────────
@@ -39,6 +43,9 @@ const [totalUsers, paidUsers, totalProjects, activeCalls] =
       }),
     ]);
 
+    // "Platform minutes": wall-clock call duration (start→end), NOT the same
+    // thing as billing. Kept separate from participantMinutesMonth below,
+    // which is the actual per-participant-minute billing basis.
     const minutesToday = Math.round(
       callsEndedToday.reduce((sum, c) => sum + this.diffMinutes(c.startedAt!, c.endedAt!), 0),
     );
@@ -46,7 +53,20 @@ const [totalUsers, paidUsers, totalProjects, activeCalls] =
       callsEndedMonth.reduce((sum, c) => sum + this.diffMinutes(c.startedAt!, c.endedAt!), 0),
     );
 
-    const activeParticipants = activeCalls * 2;
+    // Real concurrent participant count from the socket gateway, not a
+    // guessed "2 per call" — a call can have 1 participant waiting or more
+    // than 2 once group calls/screen share are involved.
+    const activeParticipants = this.callGateway.getMetrics().inCall;
+
+    // Real billing numbers (participant-minutes + rated revenue), sourced
+    // from the same rating engine that actually bills customers — distinct
+    // from the platform-minutes figures above.
+    const billingSummary = await this.usageBilling.summarizeAdminUsage(startOfMonth);
+    const participantMinutesMonth =
+      billingSummary.lineItems.audioMinutes +
+      billingSummary.lineItems.videoMinutes +
+      billingSummary.lineItems.screenShareMinutes;
+    const billableRevenuePaise = billingSummary.lineItems.costPaise;
 
     return {
       stats: {
@@ -58,6 +78,8 @@ const [totalUsers, paidUsers, totalProjects, activeCalls] =
         activeParticipants,
         minutesToday,
         minutesMonth,
+        participantMinutesMonth,
+        billableRevenuePaise,
       },
       charts: await this.getCharts(),
     };
@@ -257,15 +279,30 @@ async getLiveCalls() {
       dbOk = false;
     }
 
-const memory = process.memoryUsage();
+    const memory = process.memoryUsage();
     const ws = this.callGateway.getMetrics();
+    // Real check: is TURN configured, and does credential generation
+    // actually work — not a hardcoded "healthy". This does not verify the
+    // TURN server is reachable over the network.
+    const turn = this.turnService.getHealthStatus();
 
     return {
       node: { status: 'healthy', uptime: process.uptime() },
       database: { status: dbOk ? 'healthy' : 'unhealthy' },
-      turn: { status: 'healthy' },
+      turn: {
+        status: !turn.configured
+          ? 'not_configured'
+          : turn.credentialGeneration === 'ok'
+            ? 'healthy'
+            : 'unhealthy',
+        configured: turn.configured,
+        credentialGeneration: turn.credentialGeneration,
+      },
       websocket: { clients: ws.clients, inCall: ws.inCall, rooms: ws.rooms },
-      cpu: { usage: this.getCpuPercent() },
+      // No real CPU/network metrics here — those need to come from the VPS
+      // monitoring layer. `process.cpuUsage()` is cumulative CPU-seconds
+      // since process start, not a percentage of anything, so it isn't
+      // reported here rather than showing a number that looks like one.
       memory: {
         usage: Math.round(memory.heapUsed / 1024 / 1024),
         total: Math.round(memory.heapTotal / 1024 / 1024),
@@ -277,10 +314,23 @@ const memory = process.memoryUsage();
   async getAlerts() {
     const memPct = Math.round((process.memoryUsage().heapUsed / process.memoryUsage().heapTotal) * 100);
     const alerts: { id: string; type: string; severity: string; message: string }[] = [];
-
-    if (this.getCpuPercent() > 80) {
-      alerts.push({ id: 'cpu', type: 'CPU > 80%', severity: 'warning', message: `CPU usage is ${this.getCpuPercent()}%` });
+    const turn = this.turnService.getHealthStatus();
+    if (!turn.configured) {
+      alerts.push({
+        id: 'turn',
+        type: 'TURN not configured',
+        severity: 'warning',
+        message: 'TURN_SECRET is not set — calls behind restrictive NATs/firewalls may fail to connect.',
+      });
+    } else if (turn.credentialGeneration !== 'ok') {
+      alerts.push({
+        id: 'turn',
+        type: 'TURN credential generation failing',
+        severity: 'critical',
+        message: 'TURN is configured but credential generation is failing — check TURN_SECRET/TURN_SERVER.',
+      });
     }
+
     if (memPct > 80) {
       alerts.push({ id: 'memory', type: 'Memory > 80%', severity: 'warning', message: `Memory usage is ${memPct}%` });
     }
@@ -372,10 +422,6 @@ async getSettings() {
     const d = new Date();
     d.setDate(d.getDate() - n);
     return d;
-  }
-
-  private getCpuPercent(): number {
-    return Math.round(process.cpuUsage().user / 1000 / 1000) % 100;
   }
 
   private groupByDay(dates: Date[], days: number) {

@@ -7,6 +7,7 @@ import {
 } from '@nestjs/core';
 
 import { AppModule } from './app.module';
+import { corsOriginCallback } from './common/config/cors';
 
 async function bootstrap() {
 const app =
@@ -22,9 +23,9 @@ const app =
   );
 
   app.enableCors({
-  origin: true,
-  credentials: true,
-});
+    origin: corsOriginCallback,
+    credentials: true,
+  });
 
   await app.listen(
     process.env.PORT || 3005,

@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
 import { PrismaModule } from './prisma/prisma.module';
 import { TestController } from './test.controller';
@@ -22,6 +24,16 @@ import { AdminModule } from './admin/admin.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    // Global default rate limit (per IP): 100 requests / 60s. Sensitive
+    // routes (auth, calls, api-keys, billing) apply a stricter @Throttle()
+    // override on top of this — see their controllers.
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: 60_000,
+        limit: 100,
+      },
+    ]),
     PrismaModule,
     AuthModule,
     ProjectModule,
@@ -37,5 +49,11 @@ DashboardModule,
     AdminModule
   ],
   controllers: [TestController],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}
