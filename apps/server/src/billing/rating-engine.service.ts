@@ -1,6 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { UsageSegmentService, Segment } from './usage-segment.service';
+import {
+  UsageSegmentService,
+  Segment,
+  ParticipantMediaState,
+} from './usage-segment.service';
 import { UsageBillingService } from './usage-billing.service';
 
 export interface RatedSegment extends Segment {
@@ -47,6 +52,13 @@ export class RatingEngineService {
 
   /**
    * Rate a single segment into participant-minutes + cost (paise).
+   *
+   * Rated PER PARTICIPANT, not per segment aggregate: a segment's `audio`/
+   * `video`/`screenShare` flags only mean "at least one participant has this
+   * on" and must never be used to compute money (that would charge every
+   * participant in the segment for media only one of them was using). The
+   * actual billing basis is `seg.participants` — each participant's own
+   * audio/video/screenShare state during this time window.
    */
   private async rateSegment(seg: Segment): Promise<RatedSegment> {
     const rates = await this.usageBilling.getRates();
@@ -54,16 +66,18 @@ export class RatingEngineService {
       0,
       (seg.endedAt.getTime() - seg.startedAt.getTime()) / 1000,
     );
-    const minutes = (seconds / 60) * seg.participantCount;
+    const perParticipantMinutes = seconds / 60;
 
     let audioMins = 0;
     let videoMins = 0;
     let screenShareMins = 0;
 
-    if (seg.audio) audioMins = minutes;
-    if (seg.video) videoMins = minutes;
-    // Screen-share is an add-on to video (never charged alone).
-    if (seg.video && seg.screenShare) screenShareMins = minutes;
+    for (const p of seg.participants) {
+      if (p.audio) audioMins += perParticipantMinutes;
+      if (p.video) videoMins += perParticipantMinutes;
+      // Screen-share is an add-on to video (never charged alone), per participant.
+      if (p.video && p.screenShare) screenShareMins += perParticipantMinutes;
+    }
 
     const costPaise = Math.round(
       audioMins * rates.audioPaise +
@@ -74,7 +88,7 @@ export class RatingEngineService {
     return {
       ...seg,
       seconds,
-      minutes,
+      minutes: perParticipantMinutes * seg.participantCount,
       audioMins,
       videoMins,
       screenShareMins,
@@ -84,6 +98,9 @@ export class RatingEngineService {
 
   /**
    * Rate all segments for a call. Returns the rated timeline + totals.
+   * Totals are kept as fractional participant-minutes (not rounded) so
+   * free-allowance exhaustion and cumulative billing stay accurate; round
+   * only for display.
    */
   async rateCall(callId: string): Promise<RatedCall> {
     const segs = await this.segments.getSegmentsForCall(callId);
@@ -101,6 +118,7 @@ export class RatingEngineService {
         audio: seg.audio,
         video: seg.video,
         screenShare: seg.screenShare,
+        participants: (seg.participants as unknown as ParticipantMediaState[]) ?? [],
       });
       rated.push(r);
       audioMins += r.audioMins;
@@ -113,22 +131,29 @@ export class RatingEngineService {
       callId,
       segments: rated,
       totals: {
-        audioMins: Math.round(audioMins),
-        videoMins: Math.round(videoMins),
-        screenShareMins: Math.round(screenShareMins),
+        audioMins,
+        videoMins,
+        screenShareMins,
         costPaise,
       },
     };
   }
 
   /**
-   * Rate a list of persisted/aggregated usage segments (admin analytics).
-   * Returns totals only.
+   * Sum already-rated, persisted usage segments (admin analytics). Each
+   * segment's audioMinutes/videoMinutes/screenShareMinutes/costPaise were
+   * computed once, per-participant, by persistRatedCosts — this just totals
+   * them rather than re-deriving money from the aggregate audio/video flags.
    */
   async rateSegments(
-    segs: { startedAt: Date; endedAt: Date; participantCount: number; audio: boolean; video: boolean; screenShare: boolean; callId?: string }[],
+    segs: {
+      audioMinutes: number;
+      videoMinutes: number;
+      screenShareMinutes: number;
+      costPaise: number;
+      callId?: string;
+    }[],
   ): Promise<{ audioMins: number; videoMins: number; screenShareMins: number; costPaise: number; calls: number }> {
-    const rates = await this.usageBilling.getRates();
     let audioMins = 0;
     let videoMins = 0;
     let screenShareMins = 0;
@@ -136,33 +161,19 @@ export class RatingEngineService {
     const calls = new Set<string>();
 
     for (const seg of segs) {
-      const seconds = Math.max(
-        0,
-        (seg.endedAt.getTime() - seg.startedAt.getTime()) / 1000,
-      );
-      const minutes = (seconds / 60) * (seg.participantCount || 1);
-      if (seg.audio) audioMins += minutes;
-      if (seg.video) videoMins += minutes;
-      if (seg.video && seg.screenShare) screenShareMins += minutes;
-      costPaise += Math.round(
-        (seg.audio ? minutes * rates.audioPaise : 0) +
-          (seg.video ? minutes * rates.videoPaise : 0) +
-          (seg.video && seg.screenShare ? minutes * rates.screenSharePaise : 0),
-      );
+      audioMins += seg.audioMinutes;
+      videoMins += seg.videoMinutes;
+      screenShareMins += seg.screenShareMinutes;
+      costPaise += seg.costPaise;
       if (seg.callId) calls.add(seg.callId);
     }
 
-    return {
-      audioMins: Math.round(audioMins),
-      videoMins: Math.round(videoMins),
-      screenShareMins: Math.round(screenShareMins),
-      costPaise,
-      calls: calls.size,
-    };
+    return { audioMins, videoMins, screenShareMins, costPaise, calls: calls.size };
   }
 
   /**
-   * Persist rated cost back onto segments (so invoicing can read it directly).
+   * Persist rated cost + minute breakdown back onto segments (so invoicing
+   * and admin analytics can read already-rated numbers directly).
    */
   async persistRatedCosts(callId: string): Promise<RatedCall> {
     const rated = await this.rateCall(callId);
@@ -173,7 +184,12 @@ export class RatingEngineService {
           startedAt: seg.startedAt,
           endedAt: seg.endedAt,
         },
-        data: { costPaise: seg.costPaise },
+        data: {
+          costPaise: seg.costPaise,
+          audioMinutes: seg.audioMins,
+          videoMinutes: seg.videoMins,
+          screenShareMinutes: seg.screenShareMins,
+        },
       });
     }
     return rated;

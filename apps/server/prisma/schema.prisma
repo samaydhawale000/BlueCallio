@@ -88,6 +88,12 @@ model User {
   cardExpMonth       Int?
   cardExpYear        Int?
 
+  // Customer-configurable monthly spending cap (paise) for paid usage, on
+  // top of the free allowance. Null = no cap. Protects both the customer
+  // (e.g. a leaked API key running up a bill) and us (unbounded exposure on
+  // a card that later fails to charge).
+  spendingLimitPaise Int?
+
   lastActiveAt DateTime?
 
   createdAt    DateTime @default(now())
@@ -147,7 +153,9 @@ model Payment {
   id                    String   @id @default(uuid())
   subscriptionId        String
   subscription          Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-  razorpayPaymentId     String?
+  // Unique so a retried Razorpay webhook can never credit the same payment
+  // twice — BillingService checks this before insert; this is the backstop.
+  razorpayPaymentId     String?  @unique
   razorpayOrderId       String?
   amount                Int      @default(0)
   currency              String   @default("INR")
@@ -174,10 +182,12 @@ billingCycleStart DateTime
   participants      Int      @default(0)
   apiRequests       Int      @default(0)
 
-  // ── Usage-based billing (participant minutes by media type) ──
-  audioMinutes      Int      @default(0)
-  videoMinutes      Int      @default(0)
-  screenShareMinutes Int     @default(0)
+  // ── Usage-based billing (fractional participant-minutes by media type) ──
+  // Stored as Float (not rounded) so free-allowance exhaustion and billing
+  // stay accurate to the second; round only when displaying to users.
+  audioMinutes      Float    @default(0)
+  videoMinutes      Float    @default(0)
+  screenShareMinutes Float   @default(0)
   // Estimated cost in paise for the current cycle (computed from line items)
   usageCostPaise    Int      @default(0)
 
@@ -209,9 +219,9 @@ model CallUsage {
   usageId           String
   usage             Usage    @relation(fields: [usageId], references: [id], onDelete: Cascade)
   callId            String
-  audioMinutes      Int      @default(0)
-  videoMinutes      Int      @default(0)
-  screenShareMinutes Int     @default(0)
+  audioMinutes      Float    @default(0)
+  videoMinutes      Float    @default(0)
+  screenShareMinutes Float   @default(0)
   participants      Int      @default(0)
   costPaise         Int      @default(0)
   startedAt         DateTime?
@@ -219,6 +229,11 @@ model CallUsage {
   createdAt         DateTime @default(now())
 
   @@index([usageId])
+  // TODO(billing): promote to @@unique([callId]) once the pre-existing
+  // duplicate CallUsage rows in this DB are cleaned up manually — Postgres
+  // will refuse to add a unique constraint while duplicates exist. Until
+  // then, idempotency relies on CallService.endCall's atomic status-transition
+  // claim plus UsageBillingService.recordCallUsage's existence check.
   @@index([callId])
 }
 
@@ -293,6 +308,22 @@ model AuditLog {
   @@index([createdAt])
 }
 
+// Outbound webhook delivery attempts (retry/backoff + dead-letter tracking).
+model WebhookDelivery {
+  id        String   @id @default(uuid())
+  callId    String
+  event     String
+  url       String
+  status    String   @default("pending") // pending | delivered | failed
+  attempts  Int      @default(0)
+  lastError String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([callId])
+  @@index([status])
+}
+
 // Server-wide platform settings (maintenance mode, announcements, etc.).
 model PlatformSetting {
   id        String   @id @default(uuid())
@@ -340,7 +371,14 @@ model Project {
 model ApiKey {
   id String @id @default(uuid())
 
-  key String @unique
+  // SHA-256 hex digest of the raw key — the raw key is shown to the user
+  // exactly once at creation and never stored or returned again. Auth looks
+  // up by this hash, not by the plaintext key.
+  keyHash String @unique
+
+  // First ~12 chars of the raw key (e.g. "bj_live_a1b2"), stored only for
+  // masked display in the dashboard ("bj_live_a1b2••••••••").
+  keyPrefix String
 
   name String
 
@@ -392,9 +430,20 @@ model UsageSegment {
   startedAt    DateTime
   endedAt      DateTime
   participantCount Int  @default(0)
+  // Aggregate "does ANY participant have this on" flags — display-only
+  // (timeline badges). Billing must NOT be derived from these; see `participants`.
   audio        Boolean  @default(false)
   video        Boolean  @default(false)
   screenShare  Boolean  @default(false)
+  // Per-participant media state snapshot for this segment:
+  // [{ participantId, audio, video, screenShare }, ...]. This is the actual
+  // billing basis — each participant is rated individually so e.g. one
+  // participant having video on doesn't charge video minutes for everyone.
+  participants Json     @default("[]")
+  // Rated fractional participant-minutes for this segment (not rounded).
+  audioMinutes Float    @default(0)
+  videoMinutes Float    @default(0)
+  screenShareMinutes Float @default(0)
   // Rated cost in paise for this segment (after free-allowance application).
   costPaise    Int      @default(0)
   createdAt    DateTime @default(now())

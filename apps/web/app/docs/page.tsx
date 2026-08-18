@@ -165,7 +165,7 @@ export default function DocsPage() {
         </aside>
 
         {/* content */}
-        <main className="flex-1 min-w-0 px-6 lg:px-10 py-10 max-w-3xl">
+        <main className="flex-1 min-w-0 px-6 lg:px-10 py-10 max-w-6xl">
 
           {/* ── Quick Start ───────────────────────────── */}
           <Section id="quickstart">

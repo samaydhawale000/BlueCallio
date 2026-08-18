@@ -41,10 +41,27 @@ export class RazorpayPaymentService implements PaymentService {
   constructor() {
     const keyId = process.env.RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+
     if (keyId && keySecret) {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const Razorpay = require('razorpay');
       this.razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
+      if (process.env.NODE_ENV === 'production' && !webhookSecret) {
+        // Payments can be taken but incoming webhooks (payment confirmation,
+        // failures, refunds) could never be verified — that's a silent
+        // integrity hole, not something to boot into.
+        throw new Error(
+          'RAZORPAY_WEBHOOK_SECRET is not set. Refusing to start in production without it.',
+        );
+      }
+    } else if (process.env.NODE_ENV === 'production') {
+      // Fail closed: a production deploy must never silently fall back to
+      // mock billing just because credentials weren't set. That would let a
+      // real customer interact with a fake payment flow.
+      throw new Error(
+        'RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET are not set. Refusing to start in production without real payment credentials.',
+      );
     } else {
       this.razorpay = null;
       this.logger.warn(
@@ -271,6 +288,55 @@ export class RazorpayPaymentService implements PaymentService {
   async deletePaymentMethod(customerId: string, tokenId: string): Promise<void> {
     this.assertConfigured();
     await this.razorpay.customers.deleteToken(customerId, tokenId);
+  }
+
+  async verifyCardSetupPayment(input: {
+    orderId: string;
+    paymentId: string;
+    signature: string;
+  }): Promise<{ verified: boolean }> {
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keySecret) return { verified: false };
+    const expected = crypto
+      .createHmac('sha256', keySecret)
+      .update(`${input.orderId}|${input.paymentId}`)
+      .digest('hex');
+    return { verified: expected === input.signature };
+  }
+
+  /**
+   * Resolves the card token the `token.request = true` Checkout flow saved
+   * against this customer as a side effect of the given (already verified)
+   * payment. We deliberately do NOT derive the token from the payment id —
+   * a razorpay_payment_id is not a card token — instead we ask Razorpay for
+   * the customer's saved tokens directly via the same fetchTokens API
+   * getPaymentMethods() uses, and confirm the payment actually succeeded
+   * first so a failed/pending payment can never attach a stale token.
+   */
+  async resolveSavedCardToken(
+    customerId: string,
+    paymentId: string,
+  ): Promise<PaymentMethodResult> {
+    this.assertConfigured();
+    const payment = await this.razorpay.payments.fetch(paymentId);
+    if (!payment || !['captured', 'authorized'].includes(payment.status)) {
+      throw new Error(
+        `Card setup payment was not successful (status: ${payment?.status ?? 'unknown'}).`,
+      );
+    }
+    if (payment.customer_id && payment.customer_id !== customerId) {
+      throw new Error('Payment does not belong to this customer.');
+    }
+
+    const tokens = await this.getPaymentMethods(customerId);
+    if (!tokens.length) {
+      throw new Error(
+        'Razorpay has not saved a card token for this customer yet.',
+      );
+    }
+    // fetchTokens returns the customer's saved tokens; the one just created
+    // by this Checkout session is the most recent.
+    return tokens[0];
   }
 
   async createPortalSession(_customerId: string): Promise<string> {

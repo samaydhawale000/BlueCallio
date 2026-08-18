@@ -13,10 +13,12 @@ import { CallRoomService } from '../services/call-room.service';
 
 import { CallSessionService } from '../../call-session/services/call-session.service';
 import { UsageSegmentService } from '../../billing/usage-segment.service';
+import { corsOriginCallback } from '../../common/config/cors';
 
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: corsOriginCallback,
+    credentials: true,
   },
 })
 export class CallGateway implements OnGatewayConnection, OnGatewayDisconnect {

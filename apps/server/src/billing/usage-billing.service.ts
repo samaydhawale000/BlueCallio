@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 export interface UsageSnapshot {
@@ -132,6 +132,20 @@ export class UsageBillingService {
    * @param callId   the call id
    * @param data     minutes + participants per media type
    */
+  /**
+   * Records a completed call's usage exactly once. Callers (CallService.
+   * endCall) are expected to have already claimed an atomic status
+   * transition so this only runs once per call in practice; this existence
+   * check is a second layer so a duplicate call here (e.g. a retried job)
+   * is a no-op rather than double-billing. NOTE: this check-then-act is not
+   * itself race-proof — the durable fix is a DB unique constraint on
+   * CallUsage.callId (see schema.prisma TODO), blocked for now by
+   * pre-existing duplicate rows that need manual cleanup first.
+   *
+   * Minutes are kept as fractional participant-minutes (not rounded) so
+   * free-allowance exhaustion and cumulative billing stay accurate; round
+   * only when displaying to users.
+   */
   async recordCallUsage(
     userId: string,
     callId: string,
@@ -145,6 +159,15 @@ export class UsageBillingService {
     },
   ) {
     const usage = await this.getOrCreateUsage(userId);
+
+    const existing = await this.prisma.callUsage.findFirst({ where: { callId } });
+    if (existing) {
+      this.logger.warn(
+        `Usage for call ${callId} was already recorded — skipping duplicate billing.`,
+      );
+      return usage;
+    }
+
     const cost = await this.computeCost({
       audioMinutes: data.audioMinutes,
       videoMinutes: data.videoMinutes,
@@ -154,39 +177,36 @@ export class UsageBillingService {
       callsCompleted: 1,
     });
 
-    const updated = await this.prisma.usage.update({
-      where: { id: usage.id },
-      data: {
-        audioMinutes: { increment: Math.round(data.audioMinutes) },
-        videoMinutes: { increment: Math.round(data.videoMinutes) },
-        screenShareMinutes: {
-          increment: Math.round(data.screenShareMinutes),
+    const [updated] = await this.prisma.$transaction([
+      this.prisma.usage.update({
+        where: { id: usage.id },
+        data: {
+          audioMinutes: { increment: data.audioMinutes },
+          videoMinutes: { increment: data.videoMinutes },
+          screenShareMinutes: { increment: data.screenShareMinutes },
+          participants: { increment: data.participants },
+          callsCompleted: { increment: 1 },
+          usageCostPaise: { increment: cost.totalPaise },
         },
-        participants: { increment: data.participants },
-        callsCompleted: { increment: 1 },
-        usageCostPaise: { increment: cost.totalPaise },
-      },
-    });
-
-    // Write a per-call line item for analytics + invoicing.
-    await this.prisma.callUsage.create({
-      data: {
-        usageId: usage.id,
-        callId,
-        audioMinutes: Math.round(data.audioMinutes),
-        videoMinutes: Math.round(data.videoMinutes),
-        screenShareMinutes: Math.round(data.screenShareMinutes),
-        participants: data.participants,
-        costPaise: cost.totalPaise,
-        startedAt: data.startedAt ?? null,
-        endedAt: data.endedAt ?? new Date(),
-      },
-    });
+      }),
+      this.prisma.callUsage.create({
+        data: {
+          usageId: usage.id,
+          callId,
+          audioMinutes: data.audioMinutes,
+          videoMinutes: data.videoMinutes,
+          screenShareMinutes: data.screenShareMinutes,
+          participants: data.participants,
+          costPaise: cost.totalPaise,
+          startedAt: data.startedAt ?? null,
+          endedAt: data.endedAt ?? new Date(),
+        },
+      }),
+    ]);
 
     this.logger.log(
       `Recorded call ${callId} for user ${userId}: ${data.audioMinutes}a/${data.videoMinutes}v/${data.screenShareMinutes}ss mins, ${cost.totalPaise} paise`,
     );
-
     return updated;
   }
 
@@ -321,6 +341,102 @@ cost: {
       audioExhausted: usage.audioMinutes >= rates.freeAudioMins,
       videoExhausted: usage.videoMinutes >= rates.freeVideoMins,
     };
+  }
+
+  /**
+   * Whether the project owner has a billing relationship that can cover
+   * paid usage once the free allowance runs out: a saved Razorpay card, or
+   * (legacy) an active subscription.
+   */
+  async hasPaymentMethod(ownerId: string): Promise<boolean> {
+    const sub = await this.prisma.subscription.findFirst({
+      where: { companyId: ownerId },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (sub && sub.status === 'ACTIVE') return true;
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: ownerId },
+      select: { razorpayCustomerId: true, razorpayTokenId: true },
+    });
+    return !!user?.razorpayCustomerId && !!user?.razorpayTokenId;
+  }
+
+  /**
+   * The single source of truth for "can this project owner start a new call
+   * of this type right now": free allowance first, then a saved payment
+   * method for paid usage. Screen-share is always allowed (always billable,
+   * no free allowance). Used by both BillingGuard (HTTP calls) and
+   * CallService (calls started outside the guarded HTTP path, e.g. the
+   * playground) so the two never diverge.
+   */
+  async canStartCall(
+    ownerId: string,
+    type: 'AUDIO' | 'VIDEO',
+  ): Promise<{ allowed: boolean; reason?: string }> {
+    const status = await this.getFreeAllowanceStatus(ownerId);
+    const exhausted = type === 'AUDIO' ? status.audioExhausted : status.videoExhausted;
+    if (!exhausted) return { allowed: true };
+
+    if (!(await this.hasPaymentMethod(ownerId))) {
+      return {
+        allowed: false,
+        reason: `Your free ${type.toLowerCase()} allowance is used up. Add a payment method to continue making calls.`,
+      };
+    }
+
+    // Paid usage from here on — enforce the customer's own spending cap (if
+    // they set one). Protects both them (a leaked API key running up a
+    // surprise bill) and us (unbounded exposure if a card later fails).
+    return this.checkSpendingLimit(ownerId);
+  }
+
+  /**
+   * Whether the owner's current-cycle billed cost is still under their
+   * self-set monthly spending cap. No cap set → always allowed.
+   */
+  async checkSpendingLimit(
+    ownerId: string,
+  ): Promise<{ allowed: boolean; reason?: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: ownerId },
+      select: { spendingLimitPaise: true },
+    });
+    if (!user?.spendingLimitPaise) return { allowed: true };
+
+    const usage = await this.getOrCreateUsage(ownerId);
+    if (usage.usageCostPaise >= user.spendingLimitPaise) {
+      return {
+        allowed: false,
+        reason: `You've reached your monthly spending limit of ₹${(user.spendingLimitPaise / 100).toFixed(2)}. Raise or remove it in Billing settings to continue making calls.`,
+      };
+    }
+    return { allowed: true };
+  }
+
+  /** Get the customer's self-set monthly spending cap (paise), if any. */
+  async getSpendingLimit(userId: string): Promise<{ spendingLimitPaise: number | null }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { spendingLimitPaise: true },
+    });
+    return { spendingLimitPaise: user?.spendingLimitPaise ?? null };
+  }
+
+  /** Set (or clear, with null) the customer's monthly spending cap (paise). */
+  async setSpendingLimit(
+    userId: string,
+    spendingLimitPaise: number | null,
+  ): Promise<{ spendingLimitPaise: number | null }> {
+    if (spendingLimitPaise != null && (!Number.isFinite(spendingLimitPaise) || spendingLimitPaise < 0)) {
+      throw new BadRequestException('spendingLimitPaise must be a non-negative number or null.');
+    }
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: { spendingLimitPaise },
+      select: { spendingLimitPaise: true },
+    });
+    return { spendingLimitPaise: updated.spendingLimitPaise };
   }
 
 /**

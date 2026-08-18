@@ -14,6 +14,8 @@ type OverviewData = {
     activeParticipants: number;
     minutesToday: number;
     minutesMonth: number;
+    participantMinutesMonth: number;
+    billableRevenuePaise: number;
   };
   charts: {
     calls: { label: string; value: number }[];
@@ -22,6 +24,12 @@ type OverviewData = {
   };
 };
 
+const paiseToINR = (paise: number) => `₹${(paise / 100).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+
+// "Platform minutes" (call wall-clock duration) and "participant-minutes"
+// (the actual billing basis) are deliberately shown as separate cards —
+// mixing them makes the numbers on this page disagree with what customers
+// are actually billed.
 const STAT_CARDS = (s: OverviewData['stats']) => [
   { label: 'Total Companies', value: s.totalCompanies, icon: '🏢' },
   { label: 'Free Users', value: s.freeUsers, icon: '🟢' },
@@ -29,8 +37,10 @@ const STAT_CARDS = (s: OverviewData['stats']) => [
   { label: 'Total Projects', value: s.totalProjects, icon: '📁' },
   { label: 'Active Calls', value: s.activeCalls, icon: '📞' },
   { label: 'Active Participants', value: s.activeParticipants, icon: '👥' },
-  { label: 'Minutes Today', value: s.minutesToday, icon: '⏱️' },
-  { label: 'Minutes This Month', value: s.minutesMonth, icon: '📅' },
+  { label: 'Platform Minutes Today', value: s.minutesToday, icon: '⏱️' },
+  { label: 'Platform Minutes This Month', value: s.minutesMonth, icon: '📅' },
+  { label: 'Participant-Minutes This Month', value: Math.round(s.participantMinutesMonth), icon: '📊' },
+  { label: 'Billable Revenue This Month', value: paiseToINR(s.billableRevenuePaise), icon: '💰' },
 ];
 
 function BarChart({

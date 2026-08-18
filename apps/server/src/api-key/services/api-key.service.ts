@@ -1,8 +1,22 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 
-import { randomBytes } from 'crypto';
+import { randomBytes, createHash } from 'crypto';
 
 import { PrismaService } from '../../prisma/prisma.service';
+
+// Fields safe to return from listing endpoints — never the hash, and never
+// the raw key (which only ever exists in the createApiKey() response, once).
+const MASKED_SELECT = {
+  id: true,
+  keyPrefix: true,
+  name: true,
+  isActive: true,
+  createdAt: true,
+} as const;
+
+function hashKey(rawKey: string): string {
+  return createHash('sha256').update(rawKey).digest('hex');
+}
 
 @Injectable()
 export class ApiKeyService {
@@ -10,21 +24,30 @@ export class ApiKeyService {
     private prisma: PrismaService,
   ) {}
 
+  /**
+   * Creates a key and returns the raw value exactly once — callers must
+   * show it to the user immediately ("you won't be able to view this key
+   * again") since only its hash is persisted from here on.
+   */
   async createApiKey(
     projectId: string,
     name: string,
   ) {
-    const apiKey =
+    const rawKey =
       'bj_live_' +
       randomBytes(32).toString('hex');
 
-    return this.prisma.apiKey.create({
+    const created = await this.prisma.apiKey.create({
       data: {
-        key: apiKey,
+        keyHash: hashKey(rawKey),
+        keyPrefix: rawKey.slice(0, 12),
         name,
         projectId,
       },
+      select: MASKED_SELECT,
     });
+
+    return { ...created, key: rawKey };
   }
 
   async getProjectKeys(
@@ -34,6 +57,7 @@ export class ApiKeyService {
       where: {
         projectId,
       },
+      select: MASKED_SELECT,
       orderBy: {
         createdAt: 'desc',
       },
@@ -53,11 +77,7 @@ export class ApiKeyService {
         },
       },
       select: {
-        id: true,
-        key: true,
-        name: true,
-        isActive: true,
-        createdAt: true,
+        ...MASKED_SELECT,
         project: {
           select: { id: true, name: true },
         },
@@ -88,13 +108,7 @@ export class ApiKeyService {
         ...(typeof data.isActive === 'boolean' ? { isActive: data.isActive } : {}),
         ...(typeof data.name === 'string' ? { name: data.name } : {}),
       },
-      select: {
-        id: true,
-        key: true,
-        name: true,
-        isActive: true,
-        createdAt: true,
-      },
+      select: MASKED_SELECT,
     });
   }
 

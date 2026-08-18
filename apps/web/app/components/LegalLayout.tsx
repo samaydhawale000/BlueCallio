@@ -16,7 +16,7 @@ export default function LegalLayout({
       style={{ background: "#060B18", color: "#F1F5F9", minHeight: "100vh" }}
     >
       {/* Hero */}
-      <div className="max-w-4xl mx-auto px-6 pt-28 pb-8">
+      <div className="max-w-6xl mx-auto px-6 pt-28 pb-8">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono mb-4 border" style={{ background: 'rgba(99,102,241,0.1)', borderColor: 'rgba(99,102,241,0.3)', color: '#A5B4FC' }}>
           <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
           Legal
@@ -33,7 +33,7 @@ export default function LegalLayout({
       </div>
 
       {/* Body */}
-      <div className="max-w-4xl mx-auto px-6 pb-24">
+      <div className="max-w-6xl mx-auto px-6 pb-24">
         <div
           className="rounded-2xl border border-[#1A2642] px-7 sm:px-10 py-9"
           style={{ background: "#0D1421" }}
