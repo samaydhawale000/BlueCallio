@@ -1,24 +1,27 @@
 'use client';
 
 import { useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Blocks, Monitor, Atom } from 'lucide-react';
 import { GoogleSignInButton } from '../components/ui/GoogleSignInButton';
 import { useAuthStore } from '../store/auth.store';
+import logo from '../assets/images/logo.png';
 
 const ARCHITECTURE = [
   {
-    icon: '🖥',
+    icon: Monitor,
     label: 'Hosted UI',
     desc: 'Ready-made meeting pages',
   },
   {
-    icon: '⚛️',
+    icon: Atom,
     label: 'React Components',
     desc: 'Custom UI, zero WebRTC',
   },
   {
-    icon: '🧩',
+    icon: Blocks,
     label: 'Headless SDK',
     desc: 'Full control over calls',
   },
@@ -68,12 +71,8 @@ export default function LoginPage() {
           <div className="relative flex items-center gap-3">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
-              style={{
-                background: 'linear-gradient(135deg, #6366F1, #8B5CF6)',
-                boxShadow: '0 0 24px rgba(99,102,241,0.4)',
-              }}
             >
-              🎥
+              <Image src={logo} alt="BlueJoinet" width={40} height={40} className="h-8 w-8 object-contain" />
             </div>
             <div>
               <p className="font-mono font-bold text-white text-lg tracking-tight">
@@ -129,7 +128,7 @@ export default function LoginPage() {
                         border: '1px solid rgba(99,102,241,0.25)',
                       }}
                     >
-                      {item.icon}
+                    <item.icon size={18} strokeWidth={1.8} />
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-white">{item.label}</p>
@@ -189,13 +188,8 @@ export default function LoginPage() {
               <div className="flex flex-col items-center gap-2 text-center mb-6">
                 <div
                   className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-1"
-                  style={{
-                    background:
-                      'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.15))',
-                    border: '1px solid rgba(99,102,241,0.25)',
-                  }}
                 >
-                  🔐
+                  <Image src={logo} alt="BlueJoinet" width={48} height={48} className="h-9 w-9 object-contain" />
                 </div>
                 <h2 className="text-lg font-bold text-white">Welcome back</h2>
                 <p className="text-sm text-slate-400">

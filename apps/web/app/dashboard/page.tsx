@@ -19,6 +19,7 @@ ArrowUpRight,
   Server,
   FolderKanban,
   PhoneCall,
+  Hand,
 } from 'lucide-react';
 import { useAuthStore } from '../store/auth.store';
 import { useRequireAuth } from '../hooks/useRequireAuth';
@@ -282,7 +283,7 @@ const minutesUsed = usage?.minutesUsed ?? 0;
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
 <h1 className="text-2xl font-bold text-white">
-            Welcome back, <span className="gradient-text-hero capitalize">{userName}</span> 👋
+            Welcome back, <span className="gradient-text-hero capitalize">{userName}</span> <Hand size={20} className="inline-block align-text-bottom text-indigo-300" />
           </h1>
           <p className="text-sm text-slate-500 mt-1">
             Your communication platform at a glance.

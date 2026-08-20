@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { Building2, CreditCard, Mic, Monitor, Video, CircleCheck } from 'lucide-react';
 import { api } from '../lib/api';
 
 interface BillingRates {
@@ -84,14 +85,14 @@ export default function PricingSection() {
   const RATES = [
     {
       media: 'Audio',
-      icon: '🎤',
+      icon: Mic,
       price: audio,
       unit: '/ participant-minute',
       note: `Free tier: first ${freeAudio} audio min/month included.`,
     },
     {
       media: 'Video',
-      icon: '🎥',
+      icon: Video,
       price: video,
       unit: '/ participant-minute',
       note: `Free tier: first ${freeVideo} video min/month included.`,
@@ -99,7 +100,7 @@ export default function PricingSection() {
     },
     {
       media: 'Screen Share',
-      icon: '🖥',
+      icon: Monitor,
       price: `+${screen}`,
       unit: '/ participant-minute',
       note: 'Added on top of video. Screen share is always billable.',
@@ -140,7 +141,7 @@ export default function PricingSection() {
                 Free tier
               </div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">🟢</span>
+                <CircleCheck size={18} className="text-emerald-400" />
                 <p className="font-semibold text-white">Start Free</p>
               </div>
               <p className="text-slate-500 text-xs mb-4 leading-relaxed">
@@ -183,7 +184,7 @@ export default function PricingSection() {
                         borderColor: r.highlight ? '#2A3D64' : '#1A2642',
                       }}
                     >
-                      <div className="text-xl mb-2">{r.icon}</div>
+                      <div className="mb-2 flex justify-center text-indigo-300"><r.icon size={22} /></div>
                       <p className="text-xs text-slate-500">{r.media}</p>
                       <p className="price-text font-bold text-white text-xl mt-1">{r.price}</p>
                       <p className="text-[10px] text-slate-600">{r.unit}</p>
@@ -192,7 +193,7 @@ export default function PricingSection() {
                   ))}
                 </div>
                 <p className="text-xs text-slate-500 leading-relaxed px-1">
-                  💳 Add a payment method in the dashboard — you'll only be charged for minutes beyond the
+                  <CreditCard size={14} className="mr-1 inline-block align-text-bottom" /> Add a payment method in the dashboard — you'll only be charged for minutes beyond the
                   free allowance. GST of {gst}% applies on billable usage.
                 </p>
               </div>
@@ -201,7 +202,7 @@ export default function PricingSection() {
               <div className="rounded-xl border border-[#2A3D64] p-6 flex flex-col sm:flex-row sm:items-center gap-6" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.03))' }}>
                 <div className="sm:w-2/5">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-2xl">🏢</span>
+                    <Building2 size={22} className="text-indigo-300" />
                     <p className="font-bold text-white text-lg">Enterprise</p>
                   </div>
                   <p className="text-slate-400 text-sm mb-3 leading-relaxed">

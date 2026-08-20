@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
+import { Bell, CircleAlert, CircleCheck, Database, RefreshCw } from 'lucide-react';
 
 type HealthData = {
   node: { status: string; uptime: number };
@@ -49,12 +50,12 @@ export default function AdminHealthPage() {
   }
 
   const components = [
-    { name: 'Node Server', status: health.node.status, icon: '🟢' },
-    { name: 'Database', status: health.database.status, icon: '🛢️' },
+    { name: 'Node Server', status: health.node.status, icon: CircleCheck },
+    { name: 'Database', status: health.database.status, icon: Database },
     {
       name: 'TURN Server',
       status: health.turn.status,
-      icon: '🔄',
+      icon: RefreshCw,
       detail: health.turn.configured
         ? `Credential generation: ${health.turn.credentialGeneration}`
         : 'Not configured',
@@ -70,14 +71,14 @@ export default function AdminHealthPage() {
 
       {/* Alerts */}
       <div className="rounded-xl border border-[#1A2642] p-5" style={{ background: '#0D1421' }}>
-        <p className="text-sm font-semibold text-white mb-3">🔔 Alerts</p>
+        <p className="flex items-center gap-2 text-sm font-semibold text-white mb-3"><Bell size={16} /> Alerts</p>
         {alerts.length === 0 ? (
           <p className="text-sm text-emerald-400">All systems operational. No active alerts.</p>
         ) : (
           <div className="space-y-2">
             {alerts.map((a) => (
               <div key={a.id} className="flex items-center gap-2 text-sm text-amber-400">
-                <span>⚠️</span>
+                <CircleAlert size={16} />
                 <span>{a.message}</span>
               </div>
             ))}
@@ -89,7 +90,7 @@ export default function AdminHealthPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {components.map((c) => (
           <div key={c.name} className="rounded-xl border border-[#1A2642] p-5" style={{ background: '#0D1421' }}>
-            <div className="text-2xl mb-2">{c.icon}</div>
+            <div className="mb-2 text-indigo-300"><c.icon size={22} /></div>
             <p className="text-white font-medium">{c.name}</p>
             <span
               className={`inline-block mt-2 px-2.5 py-0.5 rounded-full text-[11px] font-mono border ${

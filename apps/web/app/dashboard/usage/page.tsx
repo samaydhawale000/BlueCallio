@@ -12,6 +12,7 @@ import {
   Wallet,
   ArrowUpRight,
   Receipt,
+  Mic,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/auth.store';
 import { useRequireAuth } from '../../hooks/useRequireAuth';
@@ -516,10 +517,10 @@ const durSec = Math.max(
             (new Date(s.endedAt).getTime() - new Date(s.startedAt).getTime()) / 1000,
           );
           const badges = [
-            s.audio && '🎧 Audio',
-            s.video && '📹 Video',
-            s.video && s.screenShare && '🖥 Screen',
-          ].filter(Boolean);
+            s.audio && { label: 'Audio', Icon: Mic },
+            s.video && { label: 'Video', Icon: Video },
+            s.video && s.screenShare && { label: 'Screen', Icon: Monitor },
+          ].filter(Boolean) as { label: string; Icon: typeof Mic }[];
           return (
             <div
               key={s.id ?? i}
@@ -530,13 +531,13 @@ const durSec = Math.max(
                   <span className="text-[10px] font-mono text-slate-600">{fmtTime(s.startedAt)}</span>
                   <span className="text-slate-600">→</span>
                   <span className="text-[10px] font-mono text-slate-600">{fmtTime(s.endedAt)}</span>
-                  {badges.map((b) => (
+                  {badges.map(({ label, Icon }) => (
                     <span
-                      key={b}
+                      key={label}
                       className="text-[10px] px-1.5 py-0.5 rounded-full"
                       style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '#C7D2FE' }}
                     >
-                      {b}
+                      <Icon size={11} className="mr-1 inline-block" />{label}
                     </span>
                   ))}
                 </div>

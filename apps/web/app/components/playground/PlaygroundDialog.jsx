@@ -17,6 +17,8 @@ import {
   Mic,
   MonitorPlay,
   Rocket,
+  PartyPopper,
+  Users,
 } from "lucide-react";
 
 const STEPS = [
@@ -216,7 +218,7 @@ const connected = callStatus === "ACCEPTED";
                     >
 <div className="text-center mb-6">
                         <h3 className="text-2xl font-bold text-white">
-                          You're connected 🎉
+                          <span className="inline-flex items-center gap-2">You're connected <PartyPopper size={22} /></span>
                         </h3>
                         <p className="text-slate-400 mt-1.5">
                           Two devices are now on the same call.
@@ -235,7 +237,7 @@ const connected = callStatus === "ACCEPTED";
                           {isAudio ? "Audio Call Active" : "Video Call Active"}
                         </div>
                         <p className="text-white text-sm mb-4">
-                          🟢 2 Participants
+                          <span className="inline-flex items-center gap-1.5"><Users size={16} className="text-emerald-400" /> 2 Participants</span>
                         </p>
                         <div className="flex flex-wrap justify-center gap-3 text-sm">
                           <span className="inline-flex items-center gap-1.5 text-emerald-400">
@@ -262,25 +264,25 @@ const connected = callStatus === "ACCEPTED";
                           {isAudio ? (
                             <>
                               <div className="flex items-center gap-2">
-                                🎙️ Mute / unmute
+                                <Mic size={16} /> Mute / unmute
                               </div>
                               <div className="flex items-center gap-2">
-                                📱 Join from another device
+                                <Smartphone size={16} /> Join from another device
                               </div>
                             </>
                           ) : (
                             <>
                               <div className="flex items-center gap-2">
-                                🎥 Turn camera on/off
+                                <Video size={16} /> Turn camera on/off
                               </div>
                               <div className="flex items-center gap-2">
-                                🎙️ Mute / unmute
+                                <Mic size={16} /> Mute / unmute
                               </div>
                               <div className="flex items-center gap-2">
-                                🖥️ Share your screen
+                                <MonitorPlay size={16} /> Share your screen
                               </div>
                               <div className="flex items-center gap-2">
-                                📱 Join from another device
+                                <Smartphone size={16} /> Join from another device
                               </div>
                             </>
                           )}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { Building2, CalendarDays, ChartColumn, CircleCheck, Clock3, CreditCard, FileText, FolderKanban, HandCoins, HeartPulse, PhoneCall, Users } from 'lucide-react';
 import { api } from '../lib/api';
 
 type OverviewData = {
@@ -31,16 +32,16 @@ const paiseToINR = (paise: number) => `₹${(paise / 100).toLocaleString('en-IN'
 // mixing them makes the numbers on this page disagree with what customers
 // are actually billed.
 const STAT_CARDS = (s: OverviewData['stats']) => [
-  { label: 'Total Companies', value: s.totalCompanies, icon: '🏢' },
-  { label: 'Free Users', value: s.freeUsers, icon: '🟢' },
-  { label: 'Paid Users', value: s.paidUsers, icon: '💳' },
-  { label: 'Total Projects', value: s.totalProjects, icon: '📁' },
-  { label: 'Active Calls', value: s.activeCalls, icon: '📞' },
-  { label: 'Active Participants', value: s.activeParticipants, icon: '👥' },
-  { label: 'Platform Minutes Today', value: s.minutesToday, icon: '⏱️' },
-  { label: 'Platform Minutes This Month', value: s.minutesMonth, icon: '📅' },
-  { label: 'Participant-Minutes This Month', value: Math.round(s.participantMinutesMonth), icon: '📊' },
-  { label: 'Billable Revenue This Month', value: paiseToINR(s.billableRevenuePaise), icon: '💰' },
+  { label: 'Total Companies', value: s.totalCompanies, icon: Building2 },
+  { label: 'Free Users', value: s.freeUsers, icon: CircleCheck },
+  { label: 'Paid Users', value: s.paidUsers, icon: CreditCard },
+  { label: 'Total Projects', value: s.totalProjects, icon: FolderKanban },
+  { label: 'Active Calls', value: s.activeCalls, icon: PhoneCall },
+  { label: 'Active Participants', value: s.activeParticipants, icon: Users },
+  { label: 'Platform Minutes Today', value: s.minutesToday, icon: Clock3 },
+  { label: 'Platform Minutes This Month', value: s.minutesMonth, icon: CalendarDays },
+  { label: 'Participant-Minutes This Month', value: Math.round(s.participantMinutesMonth), icon: ChartColumn },
+  { label: 'Billable Revenue This Month', value: paiseToINR(s.billableRevenuePaise), icon: HandCoins },
 ];
 
 function BarChart({
@@ -128,7 +129,7 @@ export default function AdminDashboardPage() {
             className="rounded-xl border border-[#1A2642] p-4"
             style={{ background: '#0D1421' }}
           >
-            <div className="text-xl mb-2">{c.icon}</div>
+            <div className="mb-2 text-indigo-300"><c.icon size={20} /></div>
             <div className="text-2xl font-bold text-white">{c.value}</div>
             <div className="text-xs text-slate-500 mt-1">{c.label}</div>
           </div>
@@ -154,10 +155,10 @@ export default function AdminDashboardPage() {
       {/* Quick links */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { href: '/admin/customers', label: 'Customers', icon: '👥' },
-          { href: '/admin/calls', label: 'Live Calls', icon: '📞' },
-          { href: '/admin/health', label: 'System Health', icon: '🩺' },
-          { href: '/admin/audit-logs', label: 'Audit Logs', icon: '📝' },
+          { href: '/admin/customers', label: 'Customers', icon: Users },
+          { href: '/admin/calls', label: 'Live Calls', icon: PhoneCall },
+          { href: '/admin/health', label: 'System Health', icon: HeartPulse },
+          { href: '/admin/audit-logs', label: 'Audit Logs', icon: FileText },
         ].map((l) => (
           <Link
             key={l.href}
@@ -165,7 +166,7 @@ export default function AdminDashboardPage() {
             className="rounded-xl border border-[#1A2642] p-5 text-center hover:border-[#2A3D64] transition-all"
             style={{ background: '#0D1421' }}
           >
-            <div className="text-2xl mb-2">{l.icon}</div>
+            <div className="mb-2 flex justify-center text-indigo-300"><l.icon size={22} /></div>
             <p className="text-sm font-medium text-white">{l.label}</p>
             <p className="text-xs text-slate-500 mt-1">View →</p>
           </Link>
