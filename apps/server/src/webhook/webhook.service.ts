@@ -6,6 +6,8 @@ export type WebhookEvent =
   | 'call.created'
   | 'call.accepted'
   | 'call.rejected'
+  | 'call.cancelled'
+  | 'call.busy'
   | 'call.ended'
   | 'call.missed';
 

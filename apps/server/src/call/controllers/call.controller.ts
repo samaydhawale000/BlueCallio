@@ -32,14 +32,22 @@ export class CallController {
 
   @Post(':id/accept')
   @UseGuards(CallSessionGuard)
-  accept(@Param('id') id: string) {
-    return this.callService.acceptCall(id);
+  accept(@Req() req: any, @Param('id') id: string) {
+    return this.callService.acceptCall(id, req.callSession);
   }
 
   @Post(':id/reject')
   @UseGuards(CallSessionGuard)
-  reject(@Param('id') id: string) {
-    return this.callService.rejectCall(id);
+  reject(@Req() req: any, @Param('id') id: string) {
+    return this.callService.rejectCall(id, req.callSession);
+  }
+
+  // Distinct from /reject: the CALLER ending a still-ringing call, vs the
+  // RECEIVER declining it.
+  @Post(':id/cancel')
+  @UseGuards(CallSessionGuard)
+  cancel(@Req() req: any, @Param('id') id: string) {
+    return this.callService.cancelCall(id, req.callSession);
   }
 
   @Post(':id/join')

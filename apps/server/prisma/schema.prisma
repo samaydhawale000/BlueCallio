@@ -18,6 +18,12 @@ enum CallStatus {
   RINGING
   ACCEPTED
   REJECTED
+  // Caller ended the call while it was still ringing (distinct from the
+  // receiver declining it — REJECTED).
+  CANCELLED
+  // Receiver already had a different active call in progress; this call was
+  // never actually rung.
+  BUSY
   MISSED
   ENDED
 }
@@ -401,6 +407,14 @@ model Call {
   callerId String
 
   receiverId String
+
+  // Display identity passed by the integrating app at call creation — the
+  // customer's backend owns its own users; BlueJoinet only transports/shows
+  // what it's given for the call UI (incoming-call screen, etc.).
+  callerName    String?
+  callerAvatar  String?
+  receiverName  String?
+  receiverAvatar String?
 
   type CallType
 

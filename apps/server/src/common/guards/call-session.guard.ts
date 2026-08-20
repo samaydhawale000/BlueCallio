@@ -21,15 +21,20 @@ export class CallSessionGuard implements CanActivate {
 
     const token = authHeader.slice(7);
 
-    const session =
-      (await this.callSessionService.getByCallerToken(token)) ??
-      (await this.callSessionService.getByReceiverToken(token));
+    const session = await this.callSessionService.getByToken(token);
 
     if (!session) {
       throw new UnauthorizedException('Invalid or expired session token');
     }
 
-    request.callSession = session;
+    // The session row always carries BOTH tokens regardless of which one
+    // was presented — resolve the actual role from the token that matched,
+    // rather than assuming CALLER whenever a callerToken field is present
+    // (it always is, on every session row).
+    const role: 'CALLER' | 'RECEIVER' =
+      session.callerToken === token ? 'CALLER' : 'RECEIVER';
+
+    request.callSession = { ...session, role };
     return true;
   }
 }

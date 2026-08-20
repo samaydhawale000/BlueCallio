@@ -40,30 +40,10 @@ export class CallSessionService {
     });
   }
 
-  async getByCallerToken(
-    token: string,
-  ) {
-    return this.prisma.callSession.findFirst({
-      where: {
-        callerToken: token,
-      },
-      include: {
-        call: true,
-      },
-    });
-  }
-
-  async getByReceiverToken(
-    token: string,
-  ) {
-    return this.prisma.callSession.findFirst({
-      where: {
-        receiverToken: token,
-      },
-      include: {
-        call: true,
-      },
-    });
+  /** Fetch the session for a call (used to look up existing tokens/URLs
+   * for a call that already exists, e.g. duplicate-call-attempt handling). */
+  async getByCallId(callId: string) {
+    return this.prisma.callSession.findUnique({ where: { callId } });
   }
 
   /**
@@ -91,25 +71,4 @@ export class CallSessionService {
     });
   }
 
-  async resolveRole(
-    token: string,
-  ): Promise<'CALLER' | 'RECEIVER' | null> {
-    const session = await this.prisma.callSession.findFirst({
-      where: {
-        OR: [
-          { callerToken: token },
-          { receiverToken: token },
-        ],
-      },
-      select: {
-        callerToken: true,
-        receiverToken: true,
-      },
-    });
-
-    if (!session) return null;
-    if (session.callerToken === token) return 'CALLER';
-    if (session.receiverToken === token) return 'RECEIVER';
-    return null;
-  }
 }

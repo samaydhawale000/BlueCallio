@@ -136,68 +136,70 @@ handleConnection(client: Socket) {
       token: string;
     },
   ) {
-    const caller = await this.callSessionService.getByCallerToken(body.token);
+    const session = await this.callSessionService.getByToken(body.token);
+    if (!session) return { success: false };
 
-    if (caller) {
-      this.authenticatedSockets.set(body.token, {
-        socketId: client.id,
-        callId: caller.call.id,
-        role: 'CALLER',
-        token: body.token,
-        participantId: caller.call.callerId,
+    const role: 'CALLER' | 'RECEIVER' =
+      session.callerToken === body.token ? 'CALLER' : 'RECEIVER';
+    const participantId =
+      role === 'CALLER' ? session.call.callerId : session.call.receiverId;
+
+    // Multi-tab: the same call-session token connecting from a second
+    // socket (another tab/window) replaces the first, rather than leaving
+    // two live sockets both claiming to be "the" caller/receiver for
+    // signaling and room participation.
+    const existing = this.authenticatedSockets.get(body.token);
+    if (existing && existing.socketId !== client.id) {
+      this.server.to(existing.socketId).emit('session-replaced', {
+        callId: existing.callId,
       });
-
-      client.emit('connected', {
-        callId: caller.call.id,
-        participantId: caller.call.callerId,
-        role: 'CALLER',
-      });
-
-      return { success: true, role: 'CALLER' };
+      this.roomService.leaveRoom(existing.callId, existing.socketId);
+      this.roomService.removeParticipant(existing.socketId);
+      this.server.sockets.sockets.get(existing.socketId)?.disconnect(true);
     }
 
-    const receiver = await this.callSessionService.getByReceiverToken(
-      body.token,
-    );
+    this.authenticatedSockets.set(body.token, {
+      socketId: client.id,
+      callId: session.call.id,
+      role,
+      token: body.token,
+      participantId,
+    });
 
-    if (receiver) {
-      this.authenticatedSockets.set(body.token, {
-        socketId: client.id,
-        callId: receiver.call.id,
-        role: 'RECEIVER',
-        token: body.token,
-        participantId: receiver.call.receiverId,
-      });
+    client.emit('connected', {
+      callId: session.call.id,
+      participantId,
+      role,
+    });
 
-      client.emit('connected', {
-        callId: receiver.call.id,
-        participantId: receiver.call.receiverId,
-        role: 'RECEIVER',
-      });
-
+    if (role === 'RECEIVER') {
       // If the call has already left the RINGING state (e.g. auto-missed
       // while the receiver was connecting), do not show a stale incoming
       // screen with dead Accept/Decline buttons. Emit the terminal state
       // so the UI reflects reality.
-      const status = receiver.call.status;
+      const status = session.call.status;
       if (status === 'MISSED') {
-        client.emit('call-missed', { callId: receiver.call.id });
+        client.emit('call-missed', { callId: session.call.id });
       } else if (status === 'ENDED') {
-        client.emit('call-ended', { callId: receiver.call.id });
+        client.emit('call-ended', { callId: session.call.id });
       } else if (status === 'REJECTED') {
-        client.emit('call-rejected', { callId: receiver.call.id });
+        client.emit('call-rejected', { callId: session.call.id });
+      } else if (status === 'CANCELLED') {
+        client.emit('call-cancelled', { callId: session.call.id });
+      } else if (status === 'BUSY') {
+        client.emit('call-busy', { callId: session.call.id });
       } else {
         client.emit('incoming-call', {
-          callId: receiver.call.id,
-          callerId: receiver.call.callerId,
-          type: receiver.call.type,
+          callId: session.call.id,
+          callerId: session.call.callerId,
+          callerName: session.call.callerName,
+          callerAvatar: session.call.callerAvatar,
+          type: session.call.type,
         });
       }
-
-      return { success: true, role: 'RECEIVER' };
     }
 
-    return { success: false };
+    return { success: true, role };
   }
 
   @SubscribeMessage('offer')
