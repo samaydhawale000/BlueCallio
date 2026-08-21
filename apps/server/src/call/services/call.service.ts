@@ -414,13 +414,18 @@ async endCall(callId: string) {
             callId,
             event: 'CALL_STARTED',
             participantId: call.callerId,
-            metadata: { at: call.startedAt.toISOString() },
+            metadata: { at: call.startedAt.toISOString(), callType: call.type },
           },
         });
         // Backdate the event timestamp so the first segment starts then.
         await this.prisma.callEvent.updateMany({
           where: { callId, event: 'CALL_STARTED' },
           data: { createdAt: call.startedAt },
+        });
+      } else {
+        await this.prisma.callEvent.updateMany({
+          where: { callId, event: 'CALL_STARTED' },
+          data: { metadata: { callType: call.type } },
         });
       }
 

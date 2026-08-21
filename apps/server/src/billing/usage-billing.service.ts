@@ -318,13 +318,70 @@ cost: {
   /**
    * Per-call line items for a user's current cycle (call analytics).
    */
-  async getCallUsage(userId: string) {
+  async getCallUsage(userId: string, pageValue?: string) {
+    const page = Math.max(1, parseInt(pageValue ?? '', 10) || 1);
+    const pageSize = Math.min(
+      100,
+      Number(process.env.PAGE_SIZE) || 10,
+    );
     const usage = await this.getOrCreateUsage(userId);
-    return this.prisma.callUsage.findMany({
+    const rates = await this.getRates();
+    // Apply the monthly audio/video allowance to calls in the order they
+    // occurred. `CallUsage.costPaise` is the raw rated amount retained for
+    // internal analytics; customers must see the amount actually chargeable
+    // after their free allowance has been consumed.
+    let remainingAudioMinutes = rates.freeAudioMins;
+    let remainingVideoMinutes = rates.freeVideoMins;
+
+    const calls = await this.prisma.callUsage.findMany({
       where: { usageId: usage.id },
-      orderBy: { createdAt: 'desc' },
-      take: 100,
+      orderBy: { createdAt: 'asc' },
     });
+
+    const ratedCalls = calls
+      .map((call) => {
+        const billableAudioMinutes = Math.max(
+          0,
+          call.audioMinutes - remainingAudioMinutes,
+        );
+        const billableVideoMinutes = Math.max(
+          0,
+          call.videoMinutes - remainingVideoMinutes,
+        );
+
+        remainingAudioMinutes = Math.max(
+          0,
+          remainingAudioMinutes - call.audioMinutes,
+        );
+        remainingVideoMinutes = Math.max(
+          0,
+          remainingVideoMinutes - call.videoMinutes,
+        );
+
+        // Screen sharing has no free allowance; it is an add-on to video.
+        const billedCostPaise = Math.round(
+          billableAudioMinutes * rates.audioPaise +
+            billableVideoMinutes * rates.videoPaise +
+            call.screenShareMinutes * rates.screenSharePaise,
+        );
+
+        return {
+          ...call,
+          billedCostPaise,
+          billableAudioMinutes,
+          billableVideoMinutes,
+        };
+      })
+      .reverse();
+
+    const total = ratedCalls.length;
+    return {
+      data: ratedCalls.slice((page - 1) * pageSize, page * pageSize),
+      total,
+      page,
+      pageSize,
+      pageCount: Math.max(1, Math.ceil(total / pageSize)),
+    };
   }
 
   /**

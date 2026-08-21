@@ -113,22 +113,22 @@ const connected = callStatus === "ACCEPTED";
           />
 
           {/* Modal wrapper */}
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-6 overflow-y-auto">
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.96, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 30 }}
               transition={{ duration: 0.22 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-2xl my-6"
+              className="w-full max-w-2xl max-h-[calc(100dvh-1.5rem)]"
             >
               <div
-                className="rounded-3xl border overflow-hidden flex flex-col max-h-[92vh]"
+                className="rounded-3xl border overflow-hidden flex flex-col max-h-[calc(100dvh-1.5rem)]"
                 style={{ background: "#0B1220", borderColor: "#223250" }}
               >
                 {/* HEADER */}
                 <div
-                  className="flex justify-between items-start px-7 sm:px-8 py-6 shrink-0"
+                  className="flex justify-between items-start px-5 sm:px-8 py-4 sm:py-6 shrink-0"
                   style={{
                     background: "linear-gradient(135deg,#5B5DDB,#895DF6)",
                   }}
@@ -151,7 +151,7 @@ const connected = callStatus === "ACCEPTED";
                 </div>
 
                 {/* BODY */}
-                <div className="overflow-y-auto px-7 sm:px-8 py-7">
+                <div className="min-h-0 overflow-y-auto overscroll-contain px-5 sm:px-8 py-5 sm:py-7">
                   {/* Progress steps */}
                   <div className="mb-8">
                     <div className="flex items-center">

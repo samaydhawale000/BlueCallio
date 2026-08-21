@@ -14,19 +14,65 @@ export class DashboardService {
     return projects.map((p) => p.id);
   }
 
-  async getCalls(userId: string, projectId?: string) {
-    const projectIds = projectId
-      ? [projectId]
+  async getCalls(
+    userId: string,
+    options: {
+      projectId?: string;
+      page?: string;
+      search?: string;
+      status?: string;
+    } = {},
+  ) {
+    const page = Math.max(1, parseInt(options.page ?? '', 10) || 1);
+    const pageSize = Math.min(
+      100,
+      Number(process.env.PAGE_SIZE) || 10,
+    );
+    const projectIds = options.projectId
+      ? [options.projectId]
       : await this.userProjectIds(userId);
 
-    if (projectIds.length === 0) return [];
+    if (projectIds.length === 0) {
+      return { data: [], total: 0, page, pageSize, pageCount: 1 };
+    }
 
-    return this.prisma.call.findMany({
-      where: { projectId: { in: projectIds } },
-      include: { project: { select: { id: true, name: true } } },
-      orderBy: { createdAt: 'desc' },
-      take: 200,
-    });
+    const search = options.search?.trim();
+    const status = Object.values(CallStatus).includes(options.status as CallStatus)
+      ? (options.status as CallStatus)
+      : undefined;
+    const where = {
+      projectId: { in: projectIds },
+      ...(status ? { status } : {}),
+      ...(search
+        ? {
+            OR: [
+              { id: { contains: search, mode: 'insensitive' as const } },
+              { callerId: { contains: search, mode: 'insensitive' as const } },
+              { receiverId: { contains: search, mode: 'insensitive' as const } },
+              { project: { name: { contains: search, mode: 'insensitive' as const } } },
+            ],
+          }
+        : {}),
+    };
+
+    const [total, data] = await Promise.all([
+      this.prisma.call.count({ where }),
+      this.prisma.call.findMany({
+        where,
+        include: { project: { select: { id: true, name: true } } },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      pageSize,
+      pageCount: Math.max(1, Math.ceil(total / pageSize)),
+    };
   }
 
   async getCallDetails(userId: string, callId: string) {

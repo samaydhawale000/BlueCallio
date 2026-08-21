@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Patch,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 
@@ -21,8 +22,8 @@ export class AdminController {
   }
 
   @Get('customers')
-  getCustomers() {
-    return this.adminService.getCustomers();
+  getCustomers(@Query('page') page?: string) {
+    return this.adminService.getCustomers(page);
   }
 
   @Patch('customers/:id/status')
@@ -42,8 +43,8 @@ export class AdminController {
   }
 
   @Get('calls')
-  getLiveCalls() {
-    return this.adminService.getLiveCalls();
+  getLiveCalls(@Query('page') page?: string) {
+    return this.adminService.getLiveCalls(page);
   }
 
   @Patch('calls/:id/end')
@@ -67,8 +68,8 @@ export class AdminController {
   }
 
   @Get('audit-logs')
-  getAuditLogs() {
-    return this.adminService.getAuditLogs();
+  getAuditLogs(@Query('page') page?: string) {
+    return this.adminService.getAuditLogs(page);
   }
 
   @Get('settings')

@@ -287,6 +287,7 @@ const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
+  const remoteStreamRef = useRef<MediaStream | null>(null);
 const screenStreamRef = useRef<MediaStream | null>(null);
   const stateRef = useRef<CallState>('connecting');
   const callTypeRef = useRef<'AUDIO' | 'VIDEO'>('VIDEO');
@@ -295,8 +296,19 @@ const screenStreamRef = useRef<MediaStream | null>(null);
   const reconnectFailTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const negotiatingRef = useRef(false);
   const statsIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lifecycleEndedRef = useRef(false);
   const prevStatsRef = useRef<{ lost: number; received: number } | null>(null);
   const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
+
+  // The local video element is mounted only after the call enters the
+  // in-call state, so attachMedia can run before its ref exists.
+  useEffect(() => {
+    const video = localVideoRef.current;
+    const stream = localStreamRef.current;
+    if (!video || !stream || screenStreamRef.current) return;
+    video.srcObject = stream;
+    video.play().catch(() => {});
+  }, [state, callType, isVideoOff, isScreenSharing]);
 
 const duration = useDurationTimer(state === 'in-call');
   const isDark = branding.theme === 'DARK';
@@ -417,9 +429,22 @@ if (res.ok) {
     pcRef.current = pc;
 
     pc.ontrack = (event) => {
-      const s = event.streams[0];
-      setRemoteStream(s);
-      setHasRemoteVideo(s.getVideoTracks().some((t) => t.enabled));
+      // Some browsers omit event.streams for individual tracks. Keep one
+      // stable stream and append those tracks, rather than treating a valid
+      // remote video track as "no video" and rendering the camera-off view.
+      const stream = event.streams[0] ?? remoteStreamRef.current ?? new MediaStream();
+      if (!event.streams[0] && !stream.getTracks().some((track) => track.id === event.track.id)) {
+        stream.addTrack(event.track);
+      }
+      remoteStreamRef.current = stream;
+      setRemoteStream(stream);
+
+      const refreshRemoteVideo = () => {
+        setHasRemoteVideo(stream.getVideoTracks().some((track) => track.readyState === 'live'));
+      };
+      refreshRemoteVideo();
+      event.track.onunmute = refreshRemoteVideo;
+      event.track.onended = refreshRemoteVideo;
     };
 
     pc.onicecandidate = (event) => {
@@ -559,6 +584,7 @@ const initMedia = useCallback(
     pcRef.current?.close();
     pcRef.current = null;
     localStreamRef.current = null;
+    remoteStreamRef.current = null;
     screenStreamRef.current = null;
     pendingCandidatesRef.current = [];
     stopStatsPolling();
@@ -786,12 +812,16 @@ socket.on('offer', async ({ offer }: { offer: RTCSessionDescriptionInit }) => {
 useEffect(() => {
     if (remoteVideoRef.current && remoteStream) {
       remoteVideoRef.current.srcObject = remoteStream;
+      // `autoPlay` is not consistently enough after React mounts this video
+      // element conditionally. A direct play attempt keeps remote camera video
+      // from remaining black despite a live incoming track.
+      remoteVideoRef.current.play().catch(() => {});
     }
     if (remoteAudioRef.current && remoteStream) {
       remoteAudioRef.current.srcObject = remoteStream;
       remoteAudioRef.current.play().catch(() => {});
     }
-  }, [remoteStream]);
+  }, [callType, remoteMedia.camera, remoteStream]);
 
   // Apply theme background.
   useEffect(() => {
@@ -811,7 +841,7 @@ useEffect(() => {
     return res;
   }
 
-async function acceptCall() {
+  async function acceptCall() {
     if (!incomingData) return;
     try {
       // Create the peer connection synchronously so the caller's offer is
@@ -820,6 +850,13 @@ async function acceptCall() {
       setCallType(incomingData.type);
       callTypeRef.current = incomingData.type;
       const pc = pcRef.current ?? createPeer();
+
+      // Attach media before changing the call state. The caller receives the
+      // accepted event immediately and may offer straight away; preparing
+      // tracks first ensures this answer includes the receiver's camera.
+      await attachMedia(pc, incomingData.type === 'VIDEO')
+        .catch(() => attachMedia(pc, false))
+        .catch((err) => setMediaError(classifyMediaError(err)));
 
       // Accept + join the call server-side so the caller is notified.
       await sessionPost(`/calls/${incomingData.callId}/accept`);
@@ -831,12 +868,6 @@ async function acceptCall() {
       socket.emit('join-call', { callId: incomingData.callId });
       socket.emit('call.started', { callId: incomingData.callId });
 
-      // Attach local media in the background (bounded by a timeout, so a
-      // pending/blocked permission prompt can never stall the call). Video
-      // best-effort, falling back to audio-only.
-      attachMedia(pc, incomingData.type === 'VIDEO')
-        .catch(() => attachMedia(pc, false))
-        .catch((err) => setMediaError(classifyMediaError(err)));
     } catch (err) {
       console.error('Failed to accept call', err);
       setState('error');
@@ -855,6 +886,7 @@ async function acceptCall() {
   // only the receiver can do).
   async function cancelCall() {
     if (!urlCallId) return;
+    lifecycleEndedRef.current = true;
     await sessionPost(`/calls/${urlCallId}/cancel`).catch((err) => {
       console.error('Failed to cancel call', err);
     });
@@ -864,6 +896,7 @@ async function acceptCall() {
 
   async function endCall() {
     if (!urlCallId) return;
+    lifecycleEndedRef.current = true;
     socket.emit('call.ended', { callId: urlCallId });
     socket.emit('call-ended');
     await sessionPost(`/calls/${urlCallId}/leave`).catch(() => {});
@@ -871,6 +904,24 @@ async function acceptCall() {
     cleanup();
     setState('ended');
   }
+
+  useEffect(() => {
+    if (!token || !urlCallId) return;
+
+    const endCallOnPageExit = () => {
+      if (lifecycleEndedRef.current || stateRef.current !== 'in-call') return;
+      lifecycleEndedRef.current = true;
+      socket.emit('call.ended', { callId: urlCallId });
+      void fetch(`${apiUrl}/calls/${urlCallId}/end`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        keepalive: true,
+      }).catch(() => {});
+    };
+
+    window.addEventListener('pagehide', endCallOnPageExit);
+    return () => window.removeEventListener('pagehide', endCallOnPageExit);
+  }, [apiUrl, token, urlCallId]);
 
   function toggleMute() {
     const track = localStreamRef.current?.getAudioTracks()[0];
@@ -1171,12 +1222,12 @@ if (state === 'rejected') {
   // ── In-call ──────────────────────────────────────────────
   return (
     <div
-      className="min-h-screen flex flex-col"
+      className="h-[100dvh] max-h-[100dvh] overflow-hidden flex flex-col"
       style={{ background: shellBg }}
     >
       {/* Header strip */}
       <div
-        className="flex items-center justify-between px-5 py-3"
+        className="flex shrink-0 items-center justify-between px-5 py-3"
         style={{ borderBottom: `1px solid ${borderColor}` }}
       >
         <span className="flex items-center gap-2 font-mono text-xs tracking-wider" style={{ color: isDark ? '#64748B' : '#94A3B8' }}>
@@ -1589,4 +1640,3 @@ export default function CallPage() {
     </Suspense>
   );
 }
-

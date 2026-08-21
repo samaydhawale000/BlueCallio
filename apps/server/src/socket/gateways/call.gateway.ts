@@ -365,8 +365,6 @@ const participant = this.getParticipantBySocketId(client.id);
     if (!participant) return { success: false, error: 'Not authenticated' };
     this.server.to(body.callId).emit('call.ended', { callId: body.callId });
 
-    await this.safeRecordEvent(body.callId, 'CALL_ENDED', participant.participantId);
-
     return { success: true };
   }
 

@@ -19,6 +19,7 @@ import { useAuthStore } from '../../store/auth.store';
 import { useRequireAuth } from '../../hooks/useRequireAuth';
 import { api } from '../../lib/api';
 import { Badge } from '../../components/ui/Badge';
+import { Pagination } from '../../components/ui/Pagination';
 import PaymentMethodCard, { PaymentMethod } from './PaymentMethodCard';
 import BillingTimeline from './BillingTimeline';
 import { ToastHost, ToastState } from './Toast';
@@ -89,6 +90,10 @@ export default function BillingPage() {
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState | null>(null);
   const [spendingLimitPaise, setSpendingLimitPaise] = useState<number | null>(null);
+  const [invoicePage, setInvoicePage] = useState(1);
+  const [invoicePageSize, setInvoicePageSize] = useState(10);
+  const [invoiceTotal, setInvoiceTotal] = useState(0);
+  const [invoicePageCount, setInvoicePageCount] = useState(1);
 
   const showToast = useCallback((type: 'success' | 'error', message: string) => {
     setToast({ id: Date.now(), type, message });
@@ -98,12 +103,15 @@ export default function BillingPage() {
     try {
       const [usageRes, invoiceRes, pmRes, limitRes] = await Promise.all([
         api.get('/billing/current-usage'),
-        api.get('/billing/usage-invoices'),
+        api.get(`/billing/usage-invoices?page=${invoicePage}`),
         api.get('/billing/payment-methods'),
         api.get('/billing/spending-limit'),
       ]);
       setUsage(usageRes.data);
-      setInvoices(invoiceRes.data ?? []);
+      setInvoices(invoiceRes.data.data ?? []);
+      setInvoiceTotal(invoiceRes.data.total ?? 0);
+      setInvoicePageCount(invoiceRes.data.pageCount ?? 1);
+      setInvoicePageSize(invoiceRes.data.pageSize ?? 10);
       setPaymentMethods(pmRes.data ?? []);
       setSpendingLimitPaise(limitRes.data?.spendingLimitPaise ?? null);
       setError(null);
@@ -117,7 +125,7 @@ export default function BillingPage() {
     } finally {
       setLoading(false);
     }
-  }, [logout, router]);
+  }, [invoicePage, logout, router]);
 
   useEffect(() => {
     if (!isReady) return;
@@ -349,6 +357,13 @@ const u = usage?.usage;
                 ))}
               </tbody>
             </table>
+            <Pagination
+              page={invoicePage}
+              pageCount={invoicePageCount}
+              totalItems={invoiceTotal}
+              pageSize={invoicePageSize}
+              onPageChange={setInvoicePage}
+            />
           </div>
         )}
       </div>
@@ -510,7 +525,7 @@ function UsageAlertBanner({
       ? hasPaymentMethod
         ? "You've used your full free allowance — you're now on paid usage."
         : "You've used your full free allowance. Add a payment method to keep making calls."
-      : `You've used ${pct}% of your free allowance. ${audioRemaining.toFixed(0)} audio + ${videoRemaining.toFixed(0)} video participant-minutes remaining.`;
+      : `You've used ${pct}% of your free allowance. ${audioRemaining.toFixed(2)} audio + ${videoRemaining.toFixed(2)} video participant-minutes remaining.`;
 
   return (
     <div

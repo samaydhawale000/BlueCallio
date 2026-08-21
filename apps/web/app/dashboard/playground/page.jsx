@@ -72,8 +72,8 @@ const { data } = await api.post("/playground/create", { type });
 
 return (
     <>
-      <div className="flex flex-col gap-8">
-        <main className="max-w-3xl">
+      <div className="flex w-full flex-col gap-8">
+        <main className="w-full max-w-3xl">
 
           <Hero />
 

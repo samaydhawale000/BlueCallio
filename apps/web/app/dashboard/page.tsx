@@ -162,7 +162,7 @@ const fetchDashboardData = useCallback(async () => {
         api.get('/dashboard/usage/chart?days=7'),
         api.get('/auth/me'),
       ]);
-      setCalls(callsRes.data);
+      setCalls(callsRes.data.data ?? []);
       setUsage(usageRes.data);
       setCurrentUsage(currentRes.data);
       setChart(chartRes.data ?? []);
@@ -327,7 +327,7 @@ const minutesUsed = usage?.minutesUsed ?? 0;
             <div className="flex items-center gap-6">
               <div>
                 <p className="text-xs text-slate-500">Total minutes</p>
-                <p className="text-lg font-bold text-white">{totalBillable.toLocaleString()}</p>
+                <p className="text-lg font-bold text-white">{totalBillable.toFixed(2)}</p>
               </div>
               {!currentUsage?.isFreeTier && (
                 <>
@@ -358,23 +358,25 @@ const minutesUsed = usage?.minutesUsed ?? 0;
         >
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm font-semibold text-white">Minutes this week</p>
-            <span className="text-xs text-slate-500">{minutesUsed.toLocaleString()} total</span>
+            <span className="text-xs text-slate-500">{minutesUsed.toFixed(2)} total</span>
           </div>
-<div className="flex items-end justify-between gap-2 h-32">
+          <div className="flex h-32 items-end justify-between gap-2">
             {weekData.length === 0 ? (
-              <div className="w-full flex items-center justify-center h-full text-xs text-slate-600">
+              <div className="flex h-full w-full items-center justify-center text-xs text-slate-600">
                 No usage this week yet
               </div>
             ) : (
               weekData.map((d) => (
-                <div key={d.label} className="flex flex-col items-center gap-2 flex-1">
-                  <div
-                    className="w-full rounded-t-md transition-all"
-                    style={{
-                      height: `${Math.max(8, (d.minutes / maxWeek) * 100)}%`,
-                      background: 'linear-gradient(180deg, #6366F1, rgba(99,102,241,0.3))',
-                    }}
-                  />
+                <div key={d.label} className="flex h-full flex-1 min-w-0 flex-col items-center justify-end gap-2">
+                  <div className="flex h-full w-full items-end">
+                    <div
+                      className="min-h-[4px] w-full rounded-t-md transition-all"
+                      style={{
+                        height: `${Math.max(8, (d.minutes / maxWeek) * 100)}%`,
+                        background: 'linear-gradient(180deg, #6366F1, rgba(99,102,241,0.3))',
+                      }}
+                    />
+                  </div>
                   <span className="text-[10px] text-slate-600">{d.label}</span>
                 </div>
               ))
@@ -707,7 +709,7 @@ function MiniType({
     <div className="rounded-xl border border-[#1A2642] px-4 py-3 text-center" style={{ background: '#0A0F1E' }}>
       <p className="text-[11px] text-slate-500">{label}</p>
       <p className="text-lg font-bold text-white mt-0.5">
-        {Math.round(mins).toLocaleString()}
+        {mins.toFixed(2)}
         <span className="text-xs font-normal text-slate-500"> min</span>
       </p>
       {showCost && <p className="text-[11px] font-semibold text-violet-300">{paiseToINR(costPaise)}</p>}
