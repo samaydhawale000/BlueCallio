@@ -75,6 +75,15 @@ export class UsageSegmentService {
       screenShare: boolean;
       participants: ParticipantMediaState[];
     } | null = null;
+    let isVideoCall = false;
+
+    const eventCallType = (event: EventInput) => {
+      if (!event.metadata || typeof event.metadata !== 'object' || Array.isArray(event.metadata)) {
+        return undefined;
+      }
+      const callType = (event.metadata as { callType?: unknown }).callType;
+      return typeof callType === 'string' ? callType.toUpperCase() : undefined;
+    };
 
     const close = (until: Date) => {
       if (!current) return;
@@ -90,8 +99,7 @@ export class UsageSegmentService {
       });
     };
 
-    // Deep-copy the live per-participant state so later mutations of `states`
-    // never retroactively change a segment that already closed over it.
+
     const snapshotParticipants = (): ParticipantMediaState[] =>
       Array.from(states.entries()).map(([participantId, s]) => ({
         participantId,
@@ -135,17 +143,25 @@ export class UsageSegmentService {
       switch (kind) {
         case 'CALL_STARTED':
         case 'PARTICIPANT_JOINED': {
+          if (kind === 'CALL_STARTED') {
+            isVideoCall = eventCallType(e) === 'VIDEO';
+            if (isVideoCall) {
+              for (const state of states.values()) {
+                state.audio = false;
+                state.video = true;
+              }
+            }
+          }
           const state = states.get(p) ?? {
             audio: false,
             video: false,
             screenShare: false,
           };
-          // On join, default to audio active (as the SDK enables audio).
-          state.audio = true;
-          if (e.event === 'CALL_STARTED') {
-            // Caller starts; assume audio on.
-            state.audio = true;
-          }
+          // On join, default to the media the call type implies: audio-only
+          // calls start with audio on, video calls start with the camera on
+          // (matching what the client's getUserMedia call actually captures).
+          state.audio = !isVideoCall;
+          state.video = isVideoCall;
           states.set(p, state);
           updateTotals(e.createdAt);
           break;
@@ -182,7 +198,7 @@ export class UsageSegmentService {
         }
         case 'MIC_ENABLED': {
           const s = states.get(p);
-          if (s) {
+          if (s && !isVideoCall) {
             s.audio = true;
             states.set(p, s);
             updateTotals(e.createdAt);

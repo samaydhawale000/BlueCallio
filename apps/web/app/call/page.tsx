@@ -12,13 +12,31 @@ type CallState =
   | 'incoming'
   | 'in-call'
   | 'rejected'
+  | 'cancelled'
+  | 'busy'
   | 'missed'
   | 'ended'
+  | 'connection-failed'
   | 'error';
+
+// Reconnecting is a sub-state of 'in-call' (see ConnectionBanner) — the call
+// screen stays up while a network blip is recovered, rather than bouncing
+// the user out to a different screen and back.
+type ConnectionIssue = 'none' | 'reconnecting';
+
+type ConnectionQuality = 'good' | 'unstable' | 'poor';
+
+interface RemoteMediaState {
+  camera: boolean;
+  microphone: boolean;
+  screenShare: boolean;
+}
 
 interface IncomingCallData {
   callId: string;
   callerId: string;
+  callerName?: string;
+  callerAvatar?: string;
   type: 'AUDIO' | 'VIDEO';
 }
 
@@ -110,6 +128,11 @@ function useDeviceEnumerate() {
 
   useEffect(() => {
     refresh();
+    // Camera/mic plugged in, unplugged, or switched mid-call — keep the
+    // device list (and therefore the device picker) live rather than frozen
+    // at whatever was connected on page load.
+    navigator.mediaDevices.addEventListener('devicechange', refresh);
+    return () => navigator.mediaDevices.removeEventListener('devicechange', refresh);
   }, [refresh]);
 
   const audioInputs = devices.filter((d) => d.kind === 'audioinput');
@@ -117,6 +140,61 @@ function useDeviceEnumerate() {
   const videoInputs = devices.filter((d) => d.kind === 'videoinput');
 
   return { devices, audioInputs, audioOutputs, videoInputs, loading, refresh };
+}
+
+/**
+ * Loops one of BlueJoinet's original call-sound assets (see
+ * public/sounds/SOURCE.md — synthesized in-house, no third-party audio).
+ * Driven entirely by call state (the caller waiting_effect below), never by
+ * an independent timer. play() always stops any existing instance first, so
+ * repeated calls (call 1 ends, call 2 starts) can never overlap into
+ * "ringtone + ringtone". Autoplay-restriction failures are swallowed —
+ * playback resumes on the next user gesture, but the call itself is never
+ * affected by whether the sound plays.
+ */
+function useSoundLoop(src: string) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const gestureCleanupRef = useRef<(() => void) | null>(null);
+
+  const stop = useCallback(() => {
+    gestureCleanupRef.current?.();
+    gestureCleanupRef.current = null;
+    const el = audioRef.current;
+    if (!el) return;
+    el.pause();
+    el.currentTime = 0;
+    audioRef.current = null;
+  }, []);
+
+  const play = useCallback(() => {
+    stop();
+    const el = new Audio(src);
+    el.loop = true;
+    el.volume = 0.5;
+    audioRef.current = el;
+
+    el.play().catch(() => {
+      // Blocked by the browser's autoplay policy until a user gesture —
+      // never surface this as a call error, just retry on the next click
+      // or keypress anywhere on the page.
+      const resume = () => {
+        el.play().catch(() => {});
+        gestureCleanupRef.current = null;
+        document.removeEventListener('click', resume);
+        document.removeEventListener('keydown', resume);
+      };
+      gestureCleanupRef.current = () => {
+        document.removeEventListener('click', resume);
+        document.removeEventListener('keydown', resume);
+      };
+      document.addEventListener('click', resume, { once: true });
+      document.addEventListener('keydown', resume, { once: true });
+    });
+  }, [src, stop]);
+
+  useEffect(() => stop, [stop]);
+
+  return { play, stop };
 }
 
 // getUserMedia that can never hang the accept flow — it rejects after a
@@ -142,6 +220,35 @@ function getUserMediaWithTimeout(
   });
 }
 
+
+function classifyMediaError(err: unknown): { title: string; body: string } {
+  const name = err instanceof Error ? err.name : '';
+  switch (name) {
+    case 'NotAllowedError':
+    case 'SecurityError':
+      return {
+        title: 'Camera/microphone access is blocked',
+        body: 'Allow camera and microphone access for this site in your browser settings, then reload the page.',
+      };
+    case 'NotFoundError':
+    case 'OverconstrainedError':
+      return {
+        title: 'No camera or microphone found',
+        body: 'Connect a camera/microphone and reload the page, or continue — the other participant can still be heard/seen.',
+      };
+    case 'NotReadableError':
+      return {
+        title: 'Camera or microphone is already in use',
+        body: 'Another app or browser tab may be using your camera/microphone. Close it and reload the page.',
+      };
+    default:
+      return {
+        title: 'Could not access camera/microphone',
+        body: 'Check your device permissions and try reloading the page.',
+      };
+  }
+}
+
 // ── Main ──────────────────────────────────────────────────
 
 function CallPageContent() {
@@ -161,17 +268,47 @@ function CallPageContent() {
   const [showDevices, setShowDevices] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState({ audio: '', video: '' });
   const [selfName, setSelfName] = useState('You');
+  const [connectionIssue, setConnectionIssue] = useState<ConnectionIssue>('none');
+  const [connectionQuality, setConnectionQuality] = useState<ConnectionQuality>('good');
+  const [mediaError, setMediaError] = useState<{ title: string; body: string } | null>(null);
+  const [deviceNotice, setDeviceNotice] = useState<string | null>(null);
+  const [remoteMedia, setRemoteMedia] = useState<RemoteMediaState>({
+    camera: true,
+    microphone: true,
+    screenShare: false,
+  });
 
   const deviceState = useDeviceEnumerate();
+  const ringback = useSoundLoop('/sounds/ringback.mp3');
+  const ringtone = useSoundLoop('/sounds/ringtone.mp3');
 
 const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
+  const remoteStreamRef = useRef<MediaStream | null>(null);
 const screenStreamRef = useRef<MediaStream | null>(null);
   const stateRef = useRef<CallState>('connecting');
   const callTypeRef = useRef<'AUDIO' | 'VIDEO'>('VIDEO');
+  const selfParticipantIdRef = useRef<string | null>(null);
+  const selfRoleRef = useRef<'CALLER' | 'RECEIVER' | null>(null);
+  const reconnectFailTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const negotiatingRef = useRef(false);
+  const statsIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lifecycleEndedRef = useRef(false);
+  const prevStatsRef = useRef<{ lost: number; received: number } | null>(null);
+  const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
+
+  // The local video element is mounted only after the call enters the
+  // in-call state, so attachMedia can run before its ref exists.
+  useEffect(() => {
+    const video = localVideoRef.current;
+    const stream = localStreamRef.current;
+    if (!video || !stream || screenStreamRef.current) return;
+    video.srcObject = stream;
+    video.play().catch(() => {});
+  }, [state, callType, isVideoOff, isScreenSharing]);
 
 const duration = useDurationTimer(state === 'in-call');
   const isDark = branding.theme === 'DARK';
@@ -230,20 +367,122 @@ if (res.ok) {
     }
   }, [token, apiUrl]);
 
-// Create the RTCPeerConnection synchronously so nothing blocks the accept
+  const stopStatsPolling = useCallback(() => {
+    if (statsIntervalRef.current) {
+      clearInterval(statsIntervalRef.current);
+      statsIntervalRef.current = null;
+    }
+    prevStatsRef.current = null;
+  }, []);
+
+  // Polls getStats() for packet loss (delta since last poll, not cumulative
+  // since call start — a cumulative ratio dilutes to near-zero after a
+  // couple minutes and would never reflect a fresh problem) and round-trip
+  // time on the active candidate pair, and classifies it into a simple
+  // Good/Unstable/Poor tier for the UI.
+  const startStatsPolling = useCallback((pc: RTCPeerConnection) => {
+    stopStatsPolling();
+    statsIntervalRef.current = setInterval(async () => {
+      try {
+        const report = await pc.getStats();
+        let rtt: number | null = null;
+        let lost = 0;
+        let received = 0;
+        report.forEach((entry: any) => {
+          if (entry.type === 'candidate-pair' && entry.state === 'succeeded' && entry.nominated) {
+            if (typeof entry.currentRoundTripTime === 'number') rtt = entry.currentRoundTripTime * 1000;
+          }
+          if (entry.type === 'inbound-rtp' && !entry.isRemote) {
+            lost += entry.packetsLost ?? 0;
+            received += entry.packetsReceived ?? 0;
+          }
+        });
+
+        let lossRate = 0;
+        if (prevStatsRef.current) {
+          const dLost = Math.max(0, lost - prevStatsRef.current.lost);
+          const dReceived = Math.max(0, received - prevStatsRef.current.received);
+          const total = dLost + dReceived;
+          lossRate = total > 0 ? dLost / total : 0;
+        }
+        prevStatsRef.current = { lost, received };
+
+        let quality: ConnectionQuality = 'good';
+        if (lossRate > 0.08 || (rtt !== null && rtt > 400)) quality = 'poor';
+        else if (lossRate > 0.02 || (rtt !== null && rtt > 150)) quality = 'unstable';
+        setConnectionQuality(quality);
+      } catch {
+        // getStats is best-effort — never let it break the call.
+      }
+    }, 3000);
+  }, [stopStatsPolling]);
+
+  // Populated after attemptIceRestart is defined further below (it needs
+  // createOffer, which is declared later) — kept as a ref so createPeer's
+  // ICE-state handler can call it without a circular declaration order.
+  const iceRestartRef = useRef<() => void>(() => {});
+
+  // Create the RTCPeerConnection synchronously so nothing blocks the accept
   // flow. ICE servers are applied in the background via setConfiguration().
   const createPeer = useCallback((): RTCPeerConnection => {
     const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
     pcRef.current = pc;
 
     pc.ontrack = (event) => {
-      const s = event.streams[0];
-      setRemoteStream(s);
-      setHasRemoteVideo(s.getVideoTracks().some((t) => t.enabled));
+      // Some browsers omit event.streams for individual tracks. Keep one
+      // stable stream and append those tracks, rather than treating a valid
+      // remote video track as "no video" and rendering the camera-off view.
+      const stream = event.streams[0] ?? remoteStreamRef.current ?? new MediaStream();
+      if (!event.streams[0] && !stream.getTracks().some((track) => track.id === event.track.id)) {
+        stream.addTrack(event.track);
+      }
+      remoteStreamRef.current = stream;
+      setRemoteStream(stream);
+
+      const refreshRemoteVideo = () => {
+        setHasRemoteVideo(stream.getVideoTracks().some((track) => track.readyState === 'live'));
+      };
+      refreshRemoteVideo();
+      event.track.onunmute = refreshRemoteVideo;
+      event.track.onended = refreshRemoteVideo;
     };
 
     pc.onicecandidate = (event) => {
       if (event.candidate) socket.emit('ice-candidate', { candidate: event.candidate });
+    };
+
+    // A network blip (disconnected) gets a grace period to self-heal, then
+    // an active ICE restart; a hard 'failed' restarts immediately. Either
+    // way, if we're not back within the watchdog window, this is a real
+    // failure, not a blip — surface it instead of hanging forever.
+    pc.oniceconnectionstatechange = () => {
+      const iceState = pc.iceConnectionState;
+      if (iceState === 'disconnected' || iceState === 'failed') {
+        setConnectionIssue('reconnecting');
+
+        if (!reconnectFailTimerRef.current) {
+          const restartDelay = iceState === 'failed' ? 0 : 3000;
+          setTimeout(() => {
+            if (pcRef.current === pc) iceRestartRef.current();
+          }, restartDelay);
+
+          reconnectFailTimerRef.current = setTimeout(() => {
+            const p = pcRef.current;
+            if (p === pc && p.iceConnectionState !== 'connected' && p.iceConnectionState !== 'completed') {
+              setConnectionIssue('none');
+              setState('connection-failed');
+            }
+            reconnectFailTimerRef.current = null;
+          }, 15000);
+        }
+      } else if (iceState === 'connected' || iceState === 'completed') {
+        setConnectionIssue('none');
+        if (reconnectFailTimerRef.current) {
+          clearTimeout(reconnectFailTimerRef.current);
+          reconnectFailTimerRef.current = null;
+        }
+        startStatsPolling(pc);
+      }
     };
 
     // Apply real ICE/TURN servers in the background (never blocks the call).
@@ -252,7 +491,7 @@ if (res.ok) {
       .catch(() => {});
 
     return pc;
-  }, [fetchIceServers]);
+  }, [fetchIceServers, startStatsPolling]);
 
   // Acquire media (bounded by a timeout so it can never hang) and attach the
   // local tracks to the peer connection. Best-effort: falls back to audio-only.
@@ -267,7 +506,21 @@ if (res.ok) {
       const stream = await getUserMediaWithTimeout(constraints);
       localStreamRef.current = stream;
       if (localVideoRef.current) localVideoRef.current.srcObject = stream;
-      stream.getTracks().forEach((t) => pc.addTrack(t, stream));
+      stream.getTracks().forEach((t) => {
+        pc.addTrack(t, stream);
+        // Fires when a device is physically unplugged (or otherwise stops
+        // supplying media) mid-call — surface it instead of just going
+        // silently black/silent with no explanation.
+        t.onended = () => {
+          if (localStreamRef.current !== stream) return; // stale track from a prior stream
+          setDeviceNotice(
+            t.kind === 'video'
+              ? 'Camera disconnected.'
+              : 'Microphone disconnected.',
+          );
+        };
+      });
+      setMediaError(null);
     },
     [selectedDevice.video],
   );
@@ -287,14 +540,67 @@ const initMedia = useCallback(
     socket.emit('offer', { offer });
   }, []);
 
+  // Drains ICE candidates that arrived before setRemoteDescription resolved
+  // (trickle ICE races with signaling — a candidate can beat the offer/answer
+  // over the wire).
+  const flushPendingCandidates = useCallback(async (pc: RTCPeerConnection) => {
+    const queued = pendingCandidatesRef.current;
+    pendingCandidatesRef.current = [];
+    for (const candidate of queued) {
+      await pc.addIceCandidate(new RTCIceCandidate(candidate)).catch((err) => {
+        console.error('addIceCandidate (flushed) failed', err);
+      });
+    }
+  }, []);
+
+  // Actively try to recover a degraded connection. Only the original
+  // offerer (the CALLER) re-negotiates — if both sides tried, they'd race
+  // (signaling glare); the other side's existing 'offer' handler already
+  // treats a renegotiation offer the same as the initial one.
+  const attemptIceRestart = useCallback(async () => {
+    const pc = pcRef.current;
+    if (!pc || negotiatingRef.current) return;
+    if (selfRoleRef.current !== 'CALLER') return;
+
+    negotiatingRef.current = true;
+    try {
+      const offer = await pc.createOffer({ iceRestart: true });
+      await pc.setLocalDescription(offer);
+      socket.emit('offer', { offer });
+    } catch (err) {
+      console.error('ICE restart failed', err);
+    } finally {
+      negotiatingRef.current = false;
+    }
+  }, []);
+
+  useEffect(() => {
+    iceRestartRef.current = attemptIceRestart;
+  }, [attemptIceRestart]);
+
   const cleanup = useCallback(() => {
     screenStreamRef.current?.getTracks().forEach((t) => t.stop());
     localStreamRef.current?.getTracks().forEach((t) => t.stop());
     pcRef.current?.close();
     pcRef.current = null;
     localStreamRef.current = null;
+    remoteStreamRef.current = null;
     screenStreamRef.current = null;
-  }, []);
+    pendingCandidatesRef.current = [];
+    stopStatsPolling();
+    ringback.stop();
+    ringtone.stop();
+    if (reconnectFailTimerRef.current) {
+      clearTimeout(reconnectFailTimerRef.current);
+      reconnectFailTimerRef.current = null;
+    }
+    setRemoteStream(null);
+    setHasRemoteVideo(false);
+    setConnectionIssue('none');
+    setConnectionQuality('good');
+    setRemoteMedia({ camera: true, microphone: true, screenShare: false });
+    setDeviceNotice(null);
+  }, [stopStatsPolling, ringback, ringtone]);
 
   useEffect(() => {
     if (!token || !urlCallId) {
@@ -317,9 +623,13 @@ socket.on('call-accepted', async () => {
         const isVideo = callTypeRef.current === 'VIDEO';
         await attachMedia(pc, isVideo)
           .catch(() => attachMedia(pc, false))
-          .catch(() => {});
+          .catch((err) => setMediaError(classifyMediaError(err)));
 
         setState('in-call');
+        // Join the gateway's Socket.IO room for this call — without this,
+        // the media-state broadcasts (camera/mic/screen-share toggles,
+        // participant.updated) have nowhere to be relayed to.
+        socket.emit('join-call', { callId: urlCallId });
         await createOffer();
         socket.emit('call.started', { callId: urlCallId });
       } catch (err) {
@@ -329,6 +639,20 @@ socket.on('call-accepted', async () => {
     });
 
 socket.on('call-rejected', () => setState('rejected'));
+
+    // Caller cancelled while still ringing — distinct from the receiver
+    // declining (call-rejected) and from a plain timeout (call-missed).
+    socket.on('call-cancelled', () => {
+      if (stateRef.current === 'ended' || stateRef.current === 'cancelled') return;
+      cleanup();
+      setState('cancelled');
+    });
+
+    // Receiver was already on another call — this call was never actually rung.
+    socket.on('call-busy', () => {
+      cleanup();
+      setState('busy');
+    });
 
     socket.on('call-missed', () => {
       if (stateRef.current === 'ended' || stateRef.current === 'missed') return;
@@ -346,10 +670,11 @@ socket.on('offer', async ({ offer }: { offer: RTCSessionDescriptionInit }) => {
         const isVideo = callTypeRef.current === 'VIDEO';
         await attachMedia(pc, isVideo)
           .catch(() => attachMedia(pc, false))
-          .catch(() => {});
+          .catch((err) => setMediaError(classifyMediaError(err)));
       }
 
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
+      await flushPendingCandidates(pc);
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
       socket.emit('answer', { answer });
@@ -358,11 +683,23 @@ socket.on('offer', async ({ offer }: { offer: RTCSessionDescriptionInit }) => {
     socket.on('answer', async ({ answer }: { answer: RTCSessionDescriptionInit }) => {
       if (!pcRef.current) return;
       await pcRef.current.setRemoteDescription(new RTCSessionDescription(answer));
+      await flushPendingCandidates(pcRef.current);
     });
 
+    // Trickle ICE races with signaling: a candidate can arrive before the
+    // remote description is set (addIceCandidate throws InvalidStateError
+    // if so) — queue it and flush once setRemoteDescription resolves,
+    // instead of dropping/erroring on it.
     socket.on('ice-candidate', async ({ candidate }: { candidate: RTCIceCandidateInit }) => {
-      if (!pcRef.current) return;
-      await pcRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+      const pc = pcRef.current;
+      if (!pc) return;
+      if (!pc.remoteDescription) {
+        pendingCandidatesRef.current.push(candidate);
+        return;
+      }
+      await pc.addIceCandidate(new RTCIceCandidate(candidate)).catch((err) => {
+        console.error('addIceCandidate failed', err);
+      });
     });
 
     socket.on('call-ended', () => {
@@ -370,6 +707,56 @@ socket.on('offer', async ({ offer }: { offer: RTCSessionDescriptionInit }) => {
       cleanup();
       setState('ended');
     });
+
+    // Carries our own resolved role/participantId — captured so
+    // participant.updated (broadcast to the whole room, including us) can
+    // tell which updates are about the OTHER participant.
+    socket.on('connected', (data: { participantId: string; role: 'CALLER' | 'RECEIVER' }) => {
+      selfParticipantIdRef.current = data.participantId;
+      selfRoleRef.current = data.role;
+    });
+
+    // The other participant muted/unmuted, toggled camera, or started/stopped
+    // screen share — reflect it immediately rather than only inferring video
+    // presence once from the initial ontrack.
+    //
+    // Deliberately NOT using the generic 'participant.updated' broadcast here
+    // even though it carries a full media snapshot: the room service
+    // initializes everyone's camera/mic to false at join time and only
+    // flips a field when that SPECIFIC toggle fires, so a snapshot read at
+    // the time of an unrelated toggle (e.g. muting) would report a stale
+    // "camera: false" default and incorrectly hide the remote video. Each
+    // dedicated event only updates the one field it's actually about.
+    const onCameraOn = (d: { participantId: string }) => {
+      if (d.participantId === selfParticipantIdRef.current) return;
+      setRemoteMedia((m) => ({ ...m, camera: true }));
+    };
+    const onCameraOff = (d: { participantId: string }) => {
+      if (d.participantId === selfParticipantIdRef.current) return;
+      setRemoteMedia((m) => ({ ...m, camera: false }));
+    };
+    const onMicOn = (d: { participantId: string }) => {
+      if (d.participantId === selfParticipantIdRef.current) return;
+      setRemoteMedia((m) => ({ ...m, microphone: true }));
+    };
+    const onMicOff = (d: { participantId: string }) => {
+      if (d.participantId === selfParticipantIdRef.current) return;
+      setRemoteMedia((m) => ({ ...m, microphone: false }));
+    };
+    const onScreenStart = (d: { participantId: string }) => {
+      if (d.participantId === selfParticipantIdRef.current) return;
+      setRemoteMedia((m) => ({ ...m, screenShare: true }));
+    };
+    const onScreenStop = (d: { participantId: string }) => {
+      if (d.participantId === selfParticipantIdRef.current) return;
+      setRemoteMedia((m) => ({ ...m, screenShare: false }));
+    };
+    socket.on('camera.enabled', onCameraOn);
+    socket.on('camera.disabled', onCameraOff);
+    socket.on('microphone.enabled', onMicOn);
+    socket.on('microphone.disabled', onMicOff);
+    socket.on('screenShare.started', onScreenStart);
+    socket.on('screenShare.stopped', onScreenStop);
 
     socket.on('connect', () => {
       socket.emit(
@@ -385,22 +772,56 @@ socket.on('offer', async ({ offer }: { offer: RTCSessionDescriptionInit }) => {
     socket.connect();
 
     return () => {
-['incoming-call', 'call-accepted', 'call-rejected', 'call-missed', 'offer', 'answer', 'ice-candidate', 'call-ended', 'connect']
-        .forEach((e) => socket.off(e));
+      [
+        'incoming-call', 'call-accepted', 'call-rejected', 'call-cancelled', 'call-busy',
+        'call-missed', 'offer', 'answer', 'ice-candidate', 'call-ended', 'connected',
+        'camera.enabled', 'camera.disabled', 'microphone.enabled', 'microphone.disabled',
+        'screenShare.started', 'screenShare.stopped', 'connect',
+      ].forEach((e) => socket.off(e));
       socket.disconnect();
       cleanup();
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Ringback while the caller waits, incoming ringtone for the receiver —
+  // driven purely by call state (not a timer): stops the instant either
+  // state is left (accepted, declined, cancelled, busy, missed…), and on
+  // unmount via useSoundLoop's own cleanup.
+  useEffect(() => {
+    if (state === 'waiting') {
+      ringback.play();
+    } else {
+      ringback.stop();
+    }
+    if (state === 'incoming') {
+      ringtone.play();
+    } else {
+      ringtone.stop();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+
+  // Transient toast — auto-dismiss so a one-time device-disconnect notice
+  // doesn't sit on screen for the rest of the call.
+  useEffect(() => {
+    if (!deviceNotice) return;
+    const t = setTimeout(() => setDeviceNotice(null), 6000);
+    return () => clearTimeout(t);
+  }, [deviceNotice]);
+
 useEffect(() => {
     if (remoteVideoRef.current && remoteStream) {
       remoteVideoRef.current.srcObject = remoteStream;
+      // `autoPlay` is not consistently enough after React mounts this video
+      // element conditionally. A direct play attempt keeps remote camera video
+      // from remaining black despite a live incoming track.
+      remoteVideoRef.current.play().catch(() => {});
     }
     if (remoteAudioRef.current && remoteStream) {
       remoteAudioRef.current.srcObject = remoteStream;
       remoteAudioRef.current.play().catch(() => {});
     }
-  }, [remoteStream]);
+  }, [callType, remoteMedia.camera, remoteStream]);
 
   // Apply theme background.
   useEffect(() => {
@@ -420,7 +841,7 @@ useEffect(() => {
     return res;
   }
 
-async function acceptCall() {
+  async function acceptCall() {
     if (!incomingData) return;
     try {
       // Create the peer connection synchronously so the caller's offer is
@@ -430,18 +851,23 @@ async function acceptCall() {
       callTypeRef.current = incomingData.type;
       const pc = pcRef.current ?? createPeer();
 
+      // Attach media before changing the call state. The caller receives the
+      // accepted event immediately and may offer straight away; preparing
+      // tracks first ensures this answer includes the receiver's camera.
+      await attachMedia(pc, incomingData.type === 'VIDEO')
+        .catch(() => attachMedia(pc, false))
+        .catch((err) => setMediaError(classifyMediaError(err)));
+
       // Accept + join the call server-side so the caller is notified.
       await sessionPost(`/calls/${incomingData.callId}/accept`);
       await sessionPost(`/calls/${incomingData.callId}/join`);
       setState('in-call');
+      // Join the gateway's Socket.IO room for this call — without this, the
+      // media-state broadcasts (camera/mic/screen-share toggles,
+      // participant.updated) have nowhere to be relayed to.
+      socket.emit('join-call', { callId: incomingData.callId });
       socket.emit('call.started', { callId: incomingData.callId });
 
-      // Attach local media in the background (bounded by a timeout, so a
-      // pending/blocked permission prompt can never stall the call). Video
-      // best-effort, falling back to audio-only.
-      attachMedia(pc, incomingData.type === 'VIDEO')
-        .catch(() => attachMedia(pc, false))
-        .catch(() => {});
     } catch (err) {
       console.error('Failed to accept call', err);
       setState('error');
@@ -456,8 +882,21 @@ async function acceptCall() {
     setState('rejected');
   }
 
+  // Caller hangs up while still ringing — distinct from rejectCall (which
+  // only the receiver can do).
+  async function cancelCall() {
+    if (!urlCallId) return;
+    lifecycleEndedRef.current = true;
+    await sessionPost(`/calls/${urlCallId}/cancel`).catch((err) => {
+      console.error('Failed to cancel call', err);
+    });
+    cleanup();
+    setState('cancelled');
+  }
+
   async function endCall() {
     if (!urlCallId) return;
+    lifecycleEndedRef.current = true;
     socket.emit('call.ended', { callId: urlCallId });
     socket.emit('call-ended');
     await sessionPost(`/calls/${urlCallId}/leave`).catch(() => {});
@@ -465,6 +904,24 @@ async function acceptCall() {
     cleanup();
     setState('ended');
   }
+
+  useEffect(() => {
+    if (!token || !urlCallId) return;
+
+    const endCallOnPageExit = () => {
+      if (lifecycleEndedRef.current || stateRef.current !== 'in-call') return;
+      lifecycleEndedRef.current = true;
+      socket.emit('call.ended', { callId: urlCallId });
+      void fetch(`${apiUrl}/calls/${urlCallId}/end`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        keepalive: true,
+      }).catch(() => {});
+    };
+
+    window.addEventListener('pagehide', endCallOnPageExit);
+    return () => window.removeEventListener('pagehide', endCallOnPageExit);
+  }, [apiUrl, token, urlCallId]);
 
   function toggleMute() {
     const track = localStreamRef.current?.getAudioTracks()[0];
@@ -604,9 +1061,17 @@ async function acceptCall() {
           </span>
         </div>
         <p className="font-medium mb-1" style={{ color: textPrimary }}>Waiting for answer</p>
-        <p className="text-sm" style={{ color: textSecondary }}>
+        <p className="text-sm mb-6" style={{ color: textSecondary }}>
           The other participant will join shortly
         </p>
+        <button
+          onClick={cancelCall}
+          style={{ background: '#3F1515' }}
+          className="w-14 h-14 rounded-full flex items-center justify-center hover:brightness-110 transition-all"
+          aria-label="Cancel call"
+        >
+          <PhoneDownIcon />
+        </button>
         {branding.waitingRoom && (
           <div className="mt-8 w-full max-w-xs" style={{ background: surfaceBg, border: `1px solid ${borderColor}`, borderRadius: 12, padding: 16 }}>
             <p className="text-xs font-semibold mb-3" style={{ color: textSecondary }}>Device setup</p>
@@ -654,13 +1119,24 @@ async function acceptCall() {
     return (
       <Screen>
         <div className="mb-6">
-          <Avatar id={incomingData?.callerId ?? '??'} size={80} color={primary} />
+          {incomingData?.callerAvatar ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={incomingData.callerAvatar}
+              alt={incomingData.callerName ?? incomingData.callerId}
+              width={80}
+              height={80}
+              style={{ borderRadius: '50%', border: `2px solid ${primary}`, objectFit: 'cover' }}
+            />
+          ) : (
+            <Avatar id={incomingData?.callerName ?? incomingData?.callerId ?? '??'} size={80} color={primary} />
+          )}
         </div>
         <p className="text-xs uppercase tracking-widest mb-1" style={{ color: textSecondary }}>
           Incoming {incomingData?.type === 'VIDEO' ? 'video' : 'audio'} call
         </p>
         <p className="text-2xl font-semibold mb-10" style={{ color: textPrimary }}>
-          {incomingData?.callerId}
+          {incomingData?.callerName ?? incomingData?.callerId}
         </p>
         <div className="flex gap-8">
           <button
@@ -692,12 +1168,43 @@ if (state === 'rejected') {
     );
   }
 
+  if (state === 'cancelled') {
+    return (
+      <Screen>
+        <p style={{ color: textSecondary }}>The call was cancelled.</p>
+      </Screen>
+    );
+  }
+
+  if (state === 'busy') {
+    return (
+      <Screen>
+        <p className="font-medium mb-1" style={{ color: textPrimary }}>Busy</p>
+        <p className="text-sm" style={{ color: textSecondary }}>
+          The other participant is already on another call.
+        </p>
+      </Screen>
+    );
+  }
+
   if (state === 'missed') {
     return (
       <Screen>
         <p className="font-medium mb-1" style={{ color: textPrimary }}>No answer</p>
         <p className="text-sm" style={{ color: textSecondary }}>
           The other participant didn't answer.
+        </p>
+      </Screen>
+    );
+  }
+
+  if (state === 'connection-failed') {
+    return (
+      <Screen>
+        <p className="font-medium mb-1" style={{ color: textPrimary }}>Unable to connect</p>
+        <p className="text-sm max-w-xs" style={{ color: textSecondary }}>
+          The connection couldn't be established or was lost and didn't recover.
+          Please try again.
         </p>
       </Screen>
     );
@@ -715,12 +1222,12 @@ if (state === 'rejected') {
   // ── In-call ──────────────────────────────────────────────
   return (
     <div
-      className="min-h-screen flex flex-col"
+      className="h-[100dvh] max-h-[100dvh] overflow-hidden flex flex-col"
       style={{ background: shellBg }}
     >
       {/* Header strip */}
       <div
-        className="flex items-center justify-between px-5 py-3"
+        className="flex shrink-0 items-center justify-between px-5 py-3"
         style={{ borderBottom: `1px solid ${borderColor}` }}
       >
         <span className="flex items-center gap-2 font-mono text-xs tracking-wider" style={{ color: isDark ? '#64748B' : '#94A3B8' }}>
@@ -730,8 +1237,11 @@ if (state === 'rejected') {
           )}
           {branding.companyName}
         </span>
-        <span className="font-mono text-sm tabular-nums" style={{ color: isDark ? '#94A3B8' : '#64748B' }}>
-          {duration}
+        <span className="flex items-center gap-3">
+          <ConnectionQualityDot quality={connectionQuality} />
+          <span className="font-mono text-sm tabular-nums" style={{ color: isDark ? '#94A3B8' : '#64748B' }}>
+            {duration}
+          </span>
         </span>
       </div>
 
@@ -740,7 +1250,7 @@ if (state === 'rejected') {
 
       {/* Video area */}
       <div className="flex-1 relative overflow-hidden" style={{ minHeight: 0 }}>
-        {callType === 'VIDEO' && hasRemoteVideo ? (
+        {callType === 'VIDEO' && hasRemoteVideo && remoteMedia.camera ? (
           <video
             ref={remoteVideoRef}
             autoPlay
@@ -757,6 +1267,53 @@ if (state === 'rejected') {
             <p className="text-sm" style={{ color: textSecondary }}>
               {callType === 'AUDIO' ? 'Audio call' : 'Camera off'}
             </p>
+          </div>
+        )}
+
+        {!remoteMedia.microphone && (
+          <div
+            className="absolute top-4 left-4 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs"
+            style={{ background: 'rgba(0,0,0,0.55)', color: '#F87171' }}
+          >
+            <MicOffIcon /> Muted
+          </div>
+        )}
+
+        {remoteMedia.screenShare && (
+          <div
+            className="absolute top-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs"
+            style={{ background: 'rgba(0,0,0,0.55)', color: '#93C5FD' }}
+          >
+            Presenting their screen
+          </div>
+        )}
+
+        {connectionIssue === 'reconnecting' && (
+          <div
+            className="absolute inset-x-0 top-0 flex items-center justify-center gap-2 py-2 text-sm"
+            style={{ background: 'rgba(217,119,6,0.9)', color: '#0F172A' }}
+          >
+            <span className="w-3 h-3 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: '#0F172A', borderTopColor: 'transparent' }} />
+            Reconnecting…
+          </div>
+        )}
+
+        {mediaError && (
+          <div
+            className="absolute inset-x-4 bottom-4 rounded-xl p-4"
+            style={{ background: 'rgba(127,29,29,0.92)', color: '#FEE2E2' }}
+          >
+            <p className="text-sm font-semibold">{mediaError.title}</p>
+            <p className="text-xs mt-1">{mediaError.body}</p>
+          </div>
+        )}
+
+        {deviceNotice && (
+          <div
+            className="absolute top-4 right-4 px-3 py-1.5 rounded-full text-xs"
+            style={{ background: 'rgba(0,0,0,0.65)', color: '#FBBF24' }}
+          >
+            {deviceNotice}
           </div>
         )}
 
@@ -925,6 +1482,19 @@ if (state === 'rejected') {
 
 // ── Sub-components ────────────────────────────────────────
 
+function ConnectionQualityDot({ quality }: { quality: ConnectionQuality }) {
+  const color = quality === 'good' ? '#34D399' : quality === 'unstable' ? '#FBBF24' : '#F87171';
+  const label = quality === 'good' ? 'Good connection' : quality === 'unstable' ? 'Unstable connection' : 'Poor connection';
+  return (
+    <span
+      className="w-2 h-2 rounded-full"
+      style={{ background: color }}
+      title={label}
+      aria-label={label}
+    />
+  );
+}
+
 function ControlButton({
   children,
   active,
@@ -1070,4 +1640,3 @@ export default function CallPage() {
     </Suspense>
   );
 }
-

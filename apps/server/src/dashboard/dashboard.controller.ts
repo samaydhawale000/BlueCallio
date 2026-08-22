@@ -9,8 +9,19 @@ export class DashboardController {
   constructor(private dashboardService: DashboardService) {}
 
   @Get('calls')
-  getCalls(@Req() req: any, @Query('projectId') projectId?: string) {
-    return this.dashboardService.getCalls(req.user.userId, projectId);
+  getCalls(
+    @Req() req: any,
+    @Query('projectId') projectId?: string,
+    @Query('page') page?: string,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.dashboardService.getCalls(req.user.userId, {
+      projectId,
+      page,
+      search,
+      status,
+    });
   }
 
   @Get('calls/:id')

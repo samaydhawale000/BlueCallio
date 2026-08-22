@@ -1,6 +1,9 @@
 import {
   BadRequestException,
+  ConflictException,
+  ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
@@ -18,10 +21,8 @@ import { RatingEngineService } from '../../billing/rating-engine.service';
 
 @Injectable()
 export class CallService implements OnModuleInit {
-  /**
-   * How long an unanswered (RINGING) call stays alive before it is
-   * automatically marked as MISSED. Configurable via CALL_RING_TIMEOUT_MS.
-   */
+  private readonly logger = new Logger(CallService.name);
+
   private readonly ringTimeoutMs: number;
 
   constructor(
@@ -34,14 +35,15 @@ export class CallService implements OnModuleInit {
     private segmentService: UsageSegmentService,
     private ratingEngine: RatingEngineService,
   ) {
-// Enforce a sane minimum so a misconfigured env can't make unanswered
-    // calls expire faster than a user can open the receiver tab / device and
-    // grant camera+mic permissions (the playground opens two tabs/devices).
     const parsed = Number(process.env.CALL_RING_TIMEOUT_MS);
-    this.ringTimeoutMs = Math.max(
-      60_000,
-      Number.isFinite(parsed) && parsed > 0 ? parsed : 60_000,
-    );
+    this.ringTimeoutMs = Number.isFinite(parsed) && parsed > 0 ? parsed : 60_000;
+
+    if (this.ringTimeoutMs < 20_000) {
+      this.logger.warn(
+        `CALL_RING_TIMEOUT_MS is set to ${this.ringTimeoutMs}ms — a receiver may not have ` +
+          `time to open the call link and grant camera/mic permissions before being auto-missed.`,
+      );
+    }
   }
 
   onModuleInit() {
@@ -61,12 +63,67 @@ async createCall(
     callerId: string;
     receiverId: string;
     type: CallType;
+    callerName?: string;
+    callerAvatar?: string;
+    receiverName?: string;
+    receiverAvatar?: string;
   },
 options?: {
     skipWebhook?: boolean;
     skipUsageCheck?: boolean;
   },
 ) {
+    // 1. Duplicate protection: this exact (caller, receiver) pair already has
+    // an active call — return it instead of creating a second one (e.g. a
+    // double-clicked "Call" button, or a retried request).
+    const existing = await this.prisma.call.findFirst({
+      where: {
+        projectId: data.projectId,
+        callerId: data.callerId,
+        receiverId: data.receiverId,
+        status: { in: [CallStatus.INITIATED, CallStatus.RINGING, CallStatus.ACCEPTED] },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (existing) {
+      return this.buildCallResponse(existing);
+    }
+
+    // 2. Busy detection: the receiver already has a DIFFERENT active call in
+    // progress (with someone else). Recorded as a terminal BUSY call for
+    // history/webhooks — it's never actually rung.
+    const receiverBusy = await this.prisma.call.findFirst({
+      where: {
+        projectId: data.projectId,
+        status: { in: [CallStatus.RINGING, CallStatus.ACCEPTED] },
+        OR: [{ callerId: data.receiverId }, { receiverId: data.receiverId }],
+      },
+    });
+    if (receiverBusy) {
+      const busyCall = await this.prisma.call.create({
+        data: {
+          projectId: data.projectId,
+          callerId: data.callerId,
+          receiverId: data.receiverId,
+          type: data.type,
+          status: CallStatus.BUSY,
+          endedAt: new Date(),
+          callerName: data.callerName,
+          callerAvatar: data.callerAvatar,
+          receiverName: data.receiverName,
+          receiverAvatar: data.receiverAvatar,
+        },
+      });
+      if (!options?.skipWebhook) {
+        this.webhookService.fireForCall(busyCall.id, 'call.busy');
+      }
+      throw new ConflictException({
+        error: 'BUSY',
+        message: `${data.receiverId} is currently on another call.`,
+        callId: busyCall.id,
+      });
+    }
+
 // Resolve the project owner and enforce the usage-based free allowance.
     // Screen share is always billable (no free allowance), so it is never
     // blocked. Uses the same UsageBillingService.canStartCall rule as
@@ -96,6 +153,10 @@ options?: {
         receiverId: data.receiverId,
         type: data.type,
         status: CallStatus.RINGING,
+        callerName: data.callerName,
+        callerAvatar: data.callerAvatar,
+        receiverName: data.receiverName,
+        receiverAvatar: data.receiverAvatar,
       },
     });
 
@@ -103,18 +164,28 @@ await this.prisma.callEvent.create({
       data: { callId: call.id, event: 'CALL_CREATED', participantId: data.callerId },
     });
 
-    const session = await this.callSessionService.createSession(call.id);
+    await this.callSessionService.createSession(call.id);
 
     if (!options?.skipWebhook) {
   this.webhookService.fireForCall(call.id, 'call.created');
 }
 
-const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
+    return this.buildCallResponse(call);
+  }
 
-    const callerToken = session.callerToken;
-    const receiverToken = session.receiverToken;
+  private async buildCallResponse(call: {
+    id: string;
+    callerId: string;
+    receiverId: string;
+    [key: string]: any;
+  }) {
+    const session = await this.callSessionService.getByCallId(call.id);
+    const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
 
+    const callerToken = session?.callerToken;
+    const receiverToken = session?.receiverToken;
     const hostedUrl = `${frontend}/call?token=${callerToken}&callId=${call.id}`;
+    const receiverUrl = `${frontend}/call?token=${receiverToken}&callId=${call.id}`;
 
     return {
       callId: call.id,
@@ -122,23 +193,23 @@ const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
       hostedUrl,
       participants: [
         {
-          participantId: data.callerId,
+          participantId: call.callerId,
           token: callerToken,
           hostedUrl,
-          expiresAt: session.expiresAt,
+          expiresAt: session?.expiresAt ?? null,
         },
         {
-          participantId: data.receiverId,
+          participantId: call.receiverId,
           token: receiverToken,
-          hostedUrl: `${frontend}/call?token=${receiverToken}&callId=${call.id}`,
-          expiresAt: session.expiresAt,
+          hostedUrl: receiverUrl,
+          expiresAt: session?.expiresAt ?? null,
         },
       ],
       // Backwards-compatible fields (still used by the playground)
       callerToken,
       receiverToken,
       callerUrl: hostedUrl,
-      receiverUrl: `${frontend}/call?token=${receiverToken}&callId=${call.id}`,
+      receiverUrl,
     };
   }
 
@@ -204,15 +275,21 @@ this.callGateway.emitToParticipant(callId, 'CALLER', 'call-missed', { callId });
     return updated;
   }
 
-  async acceptCall(callId: string) {
+  async acceptCall(callId: string, session?: { role?: 'CALLER' | 'RECEIVER' }) {
+    if (session?.role && session.role !== 'RECEIVER') {
+      throw new ForbiddenException('Only the receiver can accept a call.');
+    }
+
     const call = await this.prisma.call.findUnique({ where: { id: callId } });
     if (!call) throw new NotFoundException('Call not found');
 
-    // Guard against accepting a call that has already been missed/ended.
+    // Guard against accepting a call that has already reached a terminal state.
     if (
       call.status === CallStatus.MISSED ||
       call.status === CallStatus.ENDED ||
-      call.status === CallStatus.REJECTED
+      call.status === CallStatus.REJECTED ||
+      call.status === CallStatus.CANCELLED ||
+      call.status === CallStatus.BUSY
     ) {
       throw new BadRequestException(
         `Cannot accept a call that is already ${call.status.toLowerCase()}`,
@@ -234,7 +311,20 @@ this.callGateway.emitToParticipant(callId, 'CALLER', 'call-missed', { callId });
     return updated;
   }
 
-  async rejectCall(callId: string) {
+  /** Receiver declines a ringing call — distinct from the caller cancelling (cancelCall). */
+  async rejectCall(callId: string, session?: { role?: 'CALLER' | 'RECEIVER' }) {
+    if (session?.role && session.role !== 'RECEIVER') {
+      throw new ForbiddenException('Only the receiver can decline a call.');
+    }
+
+    const call = await this.prisma.call.findUnique({ where: { id: callId } });
+    if (!call) throw new NotFoundException('Call not found');
+    if (call.status !== CallStatus.RINGING && call.status !== CallStatus.INITIATED) {
+      throw new BadRequestException(
+        `Cannot decline a call that is already ${call.status.toLowerCase()}`,
+      );
+    }
+
     const updated = await this.prisma.call.update({
       where: { id: callId },
       data: { status: CallStatus.REJECTED },
@@ -246,6 +336,35 @@ this.callGateway.emitToParticipant(callId, 'CALLER', 'call-missed', { callId });
 
     this.callGateway.emitToParticipant(callId, 'CALLER', 'call-rejected', { callId });
     this.webhookService.fireForCall(callId, 'call.rejected');
+
+    return updated;
+  }
+
+  /** Caller cancels a call while it's still ringing — distinct from the receiver declining it (rejectCall). */
+  async cancelCall(callId: string, session?: { role?: 'CALLER' | 'RECEIVER' }) {
+    if (session?.role && session.role !== 'CALLER') {
+      throw new ForbiddenException('Only the caller can cancel a call.');
+    }
+
+    const call = await this.prisma.call.findUnique({ where: { id: callId } });
+    if (!call) throw new NotFoundException('Call not found');
+    if (call.status !== CallStatus.RINGING && call.status !== CallStatus.INITIATED) {
+      throw new BadRequestException(
+        `Cannot cancel a call that is already ${call.status.toLowerCase()}`,
+      );
+    }
+
+    const updated = await this.prisma.call.update({
+      where: { id: callId },
+      data: { status: CallStatus.CANCELLED, endedAt: new Date() },
+    });
+
+    await this.prisma.callEvent.create({
+      data: { callId, event: 'CALL_CANCELLED' },
+    });
+
+    this.callGateway.emitToParticipant(callId, 'RECEIVER', 'call-cancelled', { callId });
+    this.webhookService.fireForCall(callId, 'call.cancelled');
 
     return updated;
   }
@@ -295,13 +414,18 @@ async endCall(callId: string) {
             callId,
             event: 'CALL_STARTED',
             participantId: call.callerId,
-            metadata: { at: call.startedAt.toISOString() },
+            metadata: { at: call.startedAt.toISOString(), callType: call.type },
           },
         });
         // Backdate the event timestamp so the first segment starts then.
         await this.prisma.callEvent.updateMany({
           where: { callId, event: 'CALL_STARTED' },
           data: { createdAt: call.startedAt },
+        });
+      } else {
+        await this.prisma.callEvent.updateMany({
+          where: { callId, event: 'CALL_STARTED' },
+          data: { metadata: { callType: call.type } },
         });
       }
 
@@ -376,7 +500,11 @@ async endCall(callId: string) {
     if (!call) throw new NotFoundException('Call not found');
 
 const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const isCaller = session?.callerToken;
+    // NOTE: `session.callerToken` is always a truthy string on every session
+    // row regardless of which token was actually presented — resolve the
+    // role from `session.role` (set by CallSessionGuard from the presented
+    // token), not from field presence.
+    const isCaller = session?.role === 'CALLER';
     const token = isCaller ? session.callerToken : session.receiverToken;
 
     return {
@@ -385,6 +513,10 @@ const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
       status: call.status,
       callerId: call.callerId,
       receiverId: call.receiverId,
+      callerName: call.callerName,
+      callerAvatar: call.callerAvatar,
+      receiverName: call.receiverName,
+      receiverAvatar: call.receiverAvatar,
       participantId: isCaller ? call.callerId : call.receiverId,
       token,
       hostedUrl: `${frontend}/call?token=${token}&callId=${call.id}`,
@@ -406,7 +538,7 @@ const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
     const call = await this.prisma.call.findUnique({ where: { id: callId } });
     if (!call) throw new NotFoundException('Call not found');
 
-const participantId = session?.callerToken
+const participantId = session?.role === 'CALLER'
       ? call.callerId
       : call.receiverId;
 
@@ -429,7 +561,7 @@ const participantId = session?.callerToken
     const call = await this.prisma.call.findUnique({ where: { id: callId } });
     if (!call) throw new NotFoundException('Call not found');
 
-const participantId = session?.callerToken
+const participantId = session?.role === 'CALLER'
       ? call.callerId
       : call.receiverId;
 

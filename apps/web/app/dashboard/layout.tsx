@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -19,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../store/auth.store';
 import { useRequireAuth } from '../hooks/useRequireAuth';
+import logo from '../assets/images/logo.png';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -63,9 +65,8 @@ const logout = useAuthStore((s) => s.logout);
         <Link href="/dashboard" className="flex items-center gap-2">
           <span
             className="w-7 h-7 rounded-lg flex items-center justify-center text-sm"
-            style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}
           >
-            🎥
+            <Image src={logo} alt="BlueJoinet" width={28} height={28} className="h-6 w-6 object-contain" />
           </span>
           <span className="font-mono font-bold text-white tracking-tight">
             BlueJoinet
@@ -103,9 +104,8 @@ const logout = useAuthStore((s) => s.logout);
           <Link href="/dashboard" className="flex items-center gap-2.5">
             <span
               className="w-8 h-8 rounded-lg flex items-center justify-center text-base"
-              style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}
             >
-              🎥
+              <Image src={logo} alt="BlueJoinet" width={32} height={32} className="h-7 w-7 object-contain" />
             </span>
             <span className="font-mono font-bold text-white tracking-tight">
               BlueJoinet

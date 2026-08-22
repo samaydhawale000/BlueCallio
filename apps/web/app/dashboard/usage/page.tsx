@@ -12,11 +12,13 @@ import {
   Wallet,
   ArrowUpRight,
   Receipt,
+  Mic,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/auth.store';
 import { useRequireAuth } from '../../hooks/useRequireAuth';
 import { api } from '../../lib/api';
 import { Badge } from '../../components/ui/Badge';
+import { Pagination } from '../../components/ui/Pagination';
 
 interface CurrentUsage {
   cycle: { start: string; end: string };
@@ -50,6 +52,7 @@ interface CallUse {
   screenShareMinutes: number;
   participants: number;
   costPaise: number;
+  billedCostPaise: number;
   startedAt: string | null;
   endedAt: string | null;
   createdAt: string;
@@ -73,7 +76,18 @@ interface SegmentView {
   costPaise: number;
 }
 
-const paiseToINR = (paise: number) => `₹${(paise / 100).toFixed(2)}`;
+const paiseToINR = (paise: number | null | undefined) =>
+  `₹${((Number.isFinite(paise) ? Number(paise) : 0) / 100).toFixed(2)}`;
+
+function formatParticipantDuration(minutes: number, participants = 1) {
+  const elapsedMinutes = minutes / Math.max(1, participants);
+  const totalSeconds = Math.max(0, Math.round(elapsedMinutes * 60));
+  const wholeMinutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  if (wholeMinutes === 0) return `${seconds} sec`;
+  if (seconds === 0) return `${wholeMinutes} min`;
+  return `${wholeMinutes} min ${seconds} sec`;
+}
 
 export default function UsagePage() {
   const { token, logout } = useAuthStore();
@@ -87,6 +101,10 @@ const [usage, setUsage] = useState<CurrentUsage | null>(null);
   const [expandedCall, setExpandedCall] = useState<string | null>(null);
   const [segments, setSegments] = useState<Record<string, SegmentView[]>>({});
   const [segmentLoading, setSegmentLoading] = useState<string | null>(null);
+  const [callPage, setCallPage] = useState(1);
+  const [callPageSize, setCallPageSize] = useState(10);
+  const [callTotal, setCallTotal] = useState(0);
+  const [callPageCount, setCallPageCount] = useState(1);
 
   const toggleSegment = useCallback(
     async (callId: string) => {
@@ -110,15 +128,28 @@ const [usage, setUsage] = useState<CurrentUsage | null>(null);
     [expandedCall, segments, api],
   );
 
+  const fetchCallUsage = useCallback(async () => {
+    try {
+      const callRes = await api.get(`/billing/call-usage?page=${callPage}`);
+      setCallUsage(callRes.data.data ?? []);
+      setCallTotal(callRes.data.total ?? 0);
+      setCallPageCount(callRes.data.pageCount ?? 1);
+      setCallPageSize(callRes.data.pageSize ?? 10);
+    } catch (e: any) {
+      if (e?.response?.status === 401) {
+        logout();
+        router.push('/login');
+      }
+    }
+  }, [callPage, logout, router]);
+
   const fetchData = useCallback(async () => {
     try {
-      const [usageRes, callRes, chartRes] = await Promise.all([
+      const [usageRes, chartRes] = await Promise.all([
         api.get('/billing/current-usage'),
-        api.get('/billing/call-usage'),
         api.get('/dashboard/usage/chart?days=14'),
       ]);
       setUsage(usageRes.data);
-      setCallUsage(callRes.data ?? []);
       setChart(chartRes.data);
     } catch (e: any) {
       if (e?.response?.status === 401) {
@@ -135,6 +166,11 @@ const [usage, setUsage] = useState<CurrentUsage | null>(null);
     if (!token) { router.push('/login'); return; }
     fetchData();
   }, [isReady, token, fetchData, router]);
+
+  useEffect(() => {
+    if (!isReady || !token) return;
+    fetchCallUsage();
+  }, [isReady, token, fetchCallUsage]);
 
   if (loading) {
     return (
@@ -154,7 +190,8 @@ const u = usage?.usage;
   const cost = usage?.cost;
   const free = usage?.freeAllowance;
   const rates = usage?.rates;
-  const paiseToINRShort = (p: number) => `₹${(p / 100).toFixed(2)}`;
+  const paiseToINRShort = (p: number | null | undefined) =>
+    `₹${((Number.isFinite(p) ? Number(p) : 0) / 100).toFixed(2)}`;
   const maxMin = Math.max(...chart.map((d) => d.minutes), 1);
   const totalCallsInChart = chart.reduce((acc, d) => acc + d.calls, 0);
   const totalBillableMinutes =
@@ -162,9 +199,21 @@ const u = usage?.usage;
 
   return (
     <div className="flex flex-col gap-6">
-<div>
+<div className="flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-bold text-white">Current Usage</h1>
-        <p className="text-sm text-slate-500 mt-1">
+        {usage?.isFreeTier && (
+          <span
+            className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-mono font-semibold uppercase tracking-wider text-emerald-300"
+            style={{
+              background: 'rgba(16,185,129,0.10)',
+              borderColor: 'rgba(16,185,129,0.35)',
+            }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            Free tier active
+          </span>
+        )}
+        <p className="w-full text-sm text-slate-500 mt-1">
           Pay only for what you use. Track minutes and cost by media type.
         </p>
       </div>
@@ -208,7 +257,7 @@ const u = usage?.usage;
 
 {/* Overview cards */}
       <div className={`grid grid-cols-2 gap-4 ${usage?.isFreeTier ? 'sm:grid-cols-2' : 'sm:grid-cols-4'}`}>
-        <UsageCard icon={Clock} label="Total Minutes" value={totalBillableMinutes} color="#8B5CF6" />
+        <UsageCard icon={Clock} label="Total Minutes" value={totalBillableMinutes.toFixed(2)} color="#8B5CF6" />
         <UsageCard icon={PhoneCall} label="Total Calls" value={u?.callsCompleted ?? 0} color="#6366F1" />
         {!usage?.isFreeTier && (
           <>
@@ -246,7 +295,7 @@ const u = usage?.usage;
             costPaise={cost?.audioPaise ?? 0}
             freeOf={free?.audioMinutes ?? 0}
             rate={`${paiseToINRShort(rates?.audioPaise ?? 20)} / participant-min`}
-            showCost={!usage?.isFreeTier}
+            showCost
           />
           <TypeRow
             icon={<Video size={16} style={{ color: '#C084FC' }} />}
@@ -255,7 +304,7 @@ const u = usage?.usage;
             costPaise={cost?.videoPaise ?? 0}
             freeOf={free?.videoMinutes ?? 0}
             rate={`${paiseToINRShort(rates?.videoPaise ?? 80)} / participant-min`}
-            showCost={!usage?.isFreeTier}
+            showCost
           />
           <TypeRow
             icon={<Monitor size={16} style={{ color: '#34D399' }} />}
@@ -264,7 +313,7 @@ const u = usage?.usage;
             costPaise={cost?.screenSharePaise ?? 0}
             freeOf={0}
             rate={`+${paiseToINRShort(rates?.screenSharePaise ?? 10)} / participant-min`}
-            showCost={!usage?.isFreeTier}
+            showCost
           />
         </div>
       </div>
@@ -279,22 +328,30 @@ const u = usage?.usage;
             </p>
           </div>
         </div>
-        <div className="flex items-end justify-between gap-2 h-48">
-          {chart.map((d) => (
-            <div key={d.date} className="flex flex-col items-center gap-2 flex-1 min-w-0">
-              <span className="text-[10px] text-slate-500">{d.minutes > 0 ? d.minutes : ''}</span>
-              <div
-                className="w-full rounded-t-md transition-all"
-                style={{
-                  height: `${Math.max(4, (d.minutes / maxMin) * 100)}%`,
-                  background: 'linear-gradient(180deg, #6366F1, rgba(99,102,241,0.25))',
-                }}
-                title={`${d.label}: ${d.minutes} minutes, ${d.calls} calls`}
-              />
-              <span className="text-[10px] text-slate-600">{d.label}</span>
-            </div>
-          ))}
-        </div>
+        {chart.length === 0 ? (
+          <div className="flex h-48 items-center justify-center text-xs text-slate-600">
+            No usage data for this period.
+          </div>
+        ) : (
+          <div className="flex h-48 items-end justify-between gap-2">
+            {chart.map((d) => (
+              <div key={d.date} className="flex h-full flex-1 min-w-0 flex-col items-center justify-end gap-2">
+                <span className="text-[10px] text-slate-500">{d.minutes > 0 ? d.minutes.toFixed(2) : ''}</span>
+                <div className="flex h-full w-full items-end">
+                  <div
+                    className="min-h-[4px] w-full rounded-t-md transition-all"
+                    style={{
+                      height: `${Math.max(4, (d.minutes / maxMin) * 100)}%`,
+                      background: 'linear-gradient(180deg, #6366F1, rgba(99,102,241,0.25))',
+                    }}
+                    title={`${d.label}: ${d.minutes.toFixed(2)} minutes, ${d.calls} calls`}
+                  />
+                </div>
+                <span className="text-[10px] text-slate-600">{d.label}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
 {/* Call analytics */}
@@ -304,11 +361,11 @@ const u = usage?.usage;
             <p className="text-sm font-semibold text-white">Call analytics</p>
             <p className="text-xs text-slate-500 mt-0.5">
               {usage?.isFreeTier
-                ? `Per-call usage for this billing cycle. You're on the free tier — costs are shown once you exceed your free allowance.`
-                : 'Per-call usage and cost for this billing cycle.'}
+                ? `Per-call usage and charge after your free allowance is applied.`
+                : 'Per-call usage and charge for this billing cycle.'}
             </p>
           </div>
-          <span className="text-xs text-slate-500">{callUsage.length} calls</span>
+          <span className="text-xs text-slate-500">{callTotal} calls</span>
         </div>
 
         {callUsage.length === 0 ? (
@@ -326,12 +383,11 @@ const u = usage?.usage;
                   <th className="py-2 pr-4 font-medium">Video</th>
                   <th className="py-2 pr-4 font-medium">Screen</th>
                   <th className="py-2 pr-4 font-medium">Participants</th>
-                  {!usage?.isFreeTier && <th className="py-2 font-medium">Cost</th>}
+                  <th className="py-2 font-medium">Charge</th>
                 </tr>
               </thead>
               <tbody>
                 {callUsage.map((c) => {
-                  const totalMins = c.audioMinutes + c.videoMinutes + c.screenShareMinutes;
                   const open = expandedCall === c.callId;
                   return (
                     <>
@@ -351,22 +407,20 @@ const u = usage?.usage;
                             {c.startedAt ? new Date(c.startedAt).toLocaleDateString('en-IN') : '—'}
                           </p>
                         </td>
-                        <td className="py-3 pr-4 text-slate-300">{Math.round(c.audioMinutes)} min</td>
-                        <td className="py-3 pr-4 text-slate-300">{Math.round(c.videoMinutes)} min</td>
-                        <td className="py-3 pr-4 text-slate-300">{Math.round(c.screenShareMinutes)} min</td>
+                        <td className="py-3 pr-4 text-slate-300 whitespace-nowrap">{formatParticipantDuration(c.audioMinutes, c.participants)}</td>
+                        <td className="py-3 pr-4 text-slate-300 whitespace-nowrap">{formatParticipantDuration(c.videoMinutes, c.participants)}</td>
+                        <td className="py-3 pr-4 text-slate-300 whitespace-nowrap">{formatParticipantDuration(c.screenShareMinutes, c.participants)}</td>
                         <td className="py-3 pr-4 text-slate-300">{c.participants}</td>
-                        {!usage?.isFreeTier && (
-                          <td className="py-3 font-medium text-white">{paiseToINR(c.costPaise)}</td>
-                        )}
+                        <td className="py-3 font-medium text-white">{paiseToINR(c.billedCostPaise)}</td>
                       </tr>
                       {open && (
                         <tr key={`${c.id}-segments`}>
-                          <td colSpan={usage?.isFreeTier ? 5 : 6} className="py-3 px-4">
+                          <td colSpan={6} className="py-3 px-4">
                             <SegmentTimeline
                               callId={c.callId}
                               loading={segmentLoading === c.callId}
                               segments={segments[c.callId] ?? []}
-                              showCost={!usage?.isFreeTier}
+                              showCost={false}
                             />
                           </td>
                         </tr>
@@ -376,6 +430,13 @@ const u = usage?.usage;
                 })}
               </tbody>
             </table>
+            <Pagination
+              page={callPage}
+              pageCount={callPageCount}
+              totalItems={callTotal}
+              pageSize={callPageSize}
+              onPageChange={setCallPage}
+            />
           </div>
         )}
       </div>
@@ -391,7 +452,7 @@ const u = usage?.usage;
         <div>
           <p className="text-sm font-medium text-white">How usage is billed</p>
           <p className="text-xs text-slate-500 mt-0.5">
-            Minutes are counted per participant from when a call connects until it ends. Anything
+            Usage is calculated to the second, per participant, from when a call connects until it ends. Anything
             beyond the free allowance is billed at {paiseToINRShort(rates?.audioPaise ?? 20)} (audio), {paiseToINRShort(rates?.videoPaise ?? 80)} (video), and +{paiseToINRShort(rates?.screenSharePaise ?? 10)}
             (screen share) per participant-minute. An invoice is generated and your card charged
             on the 1st of each month.
@@ -443,8 +504,7 @@ function TypeRow({
         <p className="text-xs text-slate-500">{label}</p>
       </div>
       <p className="text-lg font-bold text-white">
-        {Math.round(minutes).toLocaleString()}
-        <span className="text-xs font-normal text-slate-500"> min</span>
+        {formatParticipantDuration(minutes)}
       </p>
       {showCost && <p className="text-xs font-semibold mt-1 text-violet-300">{paiseToINR(costPaise)}</p>}
       <p className="text-[11px] text-slate-600 mt-0.5">{rate}</p>
@@ -516,10 +576,10 @@ const durSec = Math.max(
             (new Date(s.endedAt).getTime() - new Date(s.startedAt).getTime()) / 1000,
           );
           const badges = [
-            s.audio && '🎧 Audio',
-            s.video && '📹 Video',
-            s.video && s.screenShare && '🖥 Screen',
-          ].filter(Boolean);
+            s.audio && { label: 'Audio', Icon: Mic },
+            s.video && { label: 'Video', Icon: Video },
+            s.video && s.screenShare && { label: 'Screen', Icon: Monitor },
+          ].filter(Boolean) as { label: string; Icon: typeof Mic }[];
           return (
             <div
               key={s.id ?? i}
@@ -530,13 +590,13 @@ const durSec = Math.max(
                   <span className="text-[10px] font-mono text-slate-600">{fmtTime(s.startedAt)}</span>
                   <span className="text-slate-600">→</span>
                   <span className="text-[10px] font-mono text-slate-600">{fmtTime(s.endedAt)}</span>
-                  {badges.map((b) => (
+                  {badges.map(({ label, Icon }) => (
                     <span
-                      key={b}
+                      key={label}
                       className="text-[10px] px-1.5 py-0.5 rounded-full"
                       style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '#C7D2FE' }}
                     >
-                      {b}
+                      <Icon size={11} className="mr-1 inline-block" />{label}
                     </span>
                   ))}
                 </div>

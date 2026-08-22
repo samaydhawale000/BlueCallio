@@ -2,15 +2,16 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { Atom, Blocks, BookOpen, Cable, CreditCard, Gauge, KeyRound, Lightbulb, Monitor, RotateCw, Server, UserRound, Webhook, Zap } from 'lucide-react';
 
 // ── Sidebar nav ───────────────────────────────────────────────────────────────
 const NAV = [
-  { group: 'Start here', items: [{ id: 'quickstart', label: '⚡ Quick Start' }, { id: 'how-it-works', label: '🔄 How it works' }, { id: 'authentication', label: '🔑 Authentication' }] },
-  { group: 'Products', items: [{ id: 'hosted-ui', label: '🖥 Hosted UI' }, { id: 'react-components', label: '⚛️ React Components' }, { id: 'headless-sdk', label: '🧩 Headless SDK' }] },
+  { group: 'Start here', items: [{ id: 'quickstart', label: 'Quick Start', icon: Zap }, { id: 'how-it-works', label: 'How it works', icon: RotateCw }, { id: 'authentication', label: 'Authentication', icon: KeyRound }] },
+  { group: 'Products', items: [{ id: 'hosted-ui', label: 'Hosted UI', icon: Monitor }, { id: 'react-components', label: 'React Components', icon: Atom }, { id: 'headless-sdk', label: 'Headless SDK', icon: Blocks }] },
   { group: 'REST API', items: [{ id: 'api-create', label: 'POST /calls' }, { id: 'api-join', label: 'POST /calls/:id/join' }, { id: 'api-leave', label: 'POST /calls/:id/leave' }, { id: 'api-accept', label: 'POST /calls/:id/accept' }, { id: 'api-reject', label: 'POST /calls/:id/reject' }, { id: 'api-end', label: 'POST /calls/:id/end' }, { id: 'api-get', label: 'GET /calls/:id' }] },
-{ group: 'Real-time', items: [{ id: 'websocket', label: '🔌 WebSocket Events' }, { id: 'webhooks', label: '🪝 Webhooks' }] },
-  { group: 'Billing', items: [{ id: 'usage-billing', label: '💳 Usage & Billing' }] },
-  { group: 'Reference', items: [{ id: 'examples', label: '💡 Examples' }, { id: 'errors', label: '🚨 Errors' }, { id: 'faq', label: '❓ FAQ' }] },
+{ group: 'Real-time', items: [{ id: 'websocket', label: 'WebSocket Events', icon: Cable }, { id: 'webhooks', label: 'Webhooks', icon: Webhook }] },
+  { group: 'Billing', items: [{ id: 'usage-billing', label: 'Usage & Billing', icon: CreditCard }] },
+  { group: 'Reference', items: [{ id: 'examples', label: 'Examples', icon: Lightbulb }, { id: 'errors', label: 'Errors', icon: Gauge }, { id: 'faq', label: 'FAQ', icon: BookOpen }] },
 ];
 
 // ── Tiny primitives ───────────────────────────────────────────────────────────
@@ -157,7 +158,7 @@ export default function DocsPage() {
                 <a key={item.id} href={`#${item.id}`}
                   className="flex items-center text-xs px-3 py-1.5 rounded-lg transition-all mb-0.5"
                   style={{ color: activeId === item.id ? '#A5B4FC' : '#64748B', background: activeId === item.id ? 'rgba(99,102,241,0.1)' : 'transparent', borderLeft: activeId === item.id ? '2px solid #6366F1' : '2px solid transparent' }}>
-                  {item.label}
+                  {item.icon && <item.icon size={14} className="mr-2 shrink-0" />}{item.label}
                 </a>
               ))}
             </div>
@@ -251,19 +252,19 @@ receiver_url = data['receiverUrl']`,
             <div className="rounded-xl border border-[#1A2642] p-6 mb-6" style={{ background: '#0D1421' }}>
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center">
                 {[
-                  { icon: '🖥', label: 'Your backend', sub: 'POST /calls' },
+                  { icon: Server, label: 'Your backend', sub: 'POST /calls' },
                   null,
-                  { icon: '⚡', label: 'BlueJoinet', sub: 'Returns 2 URLs' },
+                  { icon: Zap, label: 'BlueJoinet', sub: 'Returns 2 URLs' },
                   null,
-                  { icon: '👤', label: 'Alice (caller)', sub: 'Opens callerUrl' },
+                  { icon: UserRound, label: 'Alice (caller)', sub: 'Opens callerUrl' },
                   null,
-                  { icon: '👤', label: 'Bob (receiver)', sub: 'Opens receiverUrl' },
+                  { icon: UserRound, label: 'Bob (receiver)', sub: 'Opens receiverUrl' },
                 ].map((item, i) =>
                   item === null ? (
                     <div key={i} className="text-slate-700 text-lg hidden sm:block">→</div>
                   ) : (
                     <div key={item.label} className="flex flex-col items-center gap-1">
-                      <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl border border-[#2A3D64]" style={{ background: '#060B18' }}>{item.icon}</div>
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center border border-[#2A3D64] text-indigo-300" style={{ background: '#060B18' }}><item.icon size={22} /></div>
                       <p className="text-xs font-semibold text-white">{item.label}</p>
                       <p className="font-mono text-xs text-slate-600">{item.sub}</p>
                     </div>
@@ -306,7 +307,7 @@ receiver_url = data['receiverUrl']`,
 
           {/* ── Hosted UI ────────────────────────────── */}
           <Section id="hosted-ui">
-            <Heading>🖥 Hosted UI — zero frontend work</Heading>
+            <Heading>Hosted UI — zero frontend work</Heading>
             <p className="text-slate-400 text-sm mb-5">
               The fastest way to integrate. Create a call from your backend, then
               redirect your users to a BlueJoinet-hosted meeting page. No frontend
@@ -333,17 +334,17 @@ receiver_url = data['receiverUrl']`,
             <p className="text-sm font-semibold text-white mb-3">Integration flow</p>
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center rounded-xl border border-[#1A2642] p-6 mb-6" style={{ background: '#0D1421' }}>
               {[
-                { icon: '🖥', label: 'Your backend', sub: 'POST /calls' },
+                { icon: Server, label: 'Your backend', sub: 'POST /calls' },
                 null,
-                { icon: '⚡', label: 'BlueJoinet', sub: 'Returns hostedUrl + tokens' },
+                { icon: Zap, label: 'BlueJoinet', sub: 'Returns hostedUrl + tokens' },
                 null,
-                { icon: '👤', label: 'Redirect users', sub: 'Meeting starts' },
+                { icon: UserRound, label: 'Redirect users', sub: 'Meeting starts' },
               ].map((item, i) =>
                 item === null ? (
                   <div key={i} className="text-slate-700 text-lg hidden sm:block">→</div>
                 ) : (
                   <div key={item.label} className="flex flex-col items-center gap-1">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl border border-[#2A3D64]" style={{ background: '#060B18' }}>{item.icon}</div>
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center border border-[#2A3D64] text-indigo-300" style={{ background: '#060B18' }}><item.icon size={22} /></div>
                     <p className="text-xs font-semibold text-white">{item.label}</p>
                     <p className="font-mono text-xs text-slate-600">{item.sub}</p>
                   </div>
@@ -433,7 +434,7 @@ function Status() {
 
           {/* ── Headless SDK ─────────────────────────── */}
           <Section id="headless-sdk">
-            <Heading>🧩 Headless SDK</Heading>
+            <Heading>Headless SDK</Heading>
             <p className="text-slate-400 text-sm mb-5">
               For developers who want complete control. BlueJoinet provides only the
               communication engine — no UI included.
@@ -797,7 +798,7 @@ async def webhook(request: Request):
 
           {/* ── Examples ─────────────────────────────── */}
           <Section id="examples">
-            <Heading>💡 Examples</Heading>
+            <Heading>Examples</Heading>
 
             <p className="text-sm font-semibold text-white mb-3">Hosted UI — create & redirect (Node.js)</p>
             <Code code={`import BlueJoinet from '@bluejoinet/sdk';
@@ -885,7 +886,7 @@ meeting.microphone.enable();`} />
 
 {/* ── Usage & Billing ─────────────────────────── */}
           <Section id="usage-billing">
-            <Heading>💳 Usage & Billing</Heading>
+            <Heading>Usage & Billing</Heading>
             <p className="text-slate-400 text-sm mb-5">
               BlueJoinet is pay-as-you-go. There are no subscriptions and no
               up-front fees — you pay a simple per-participant-minute rate only

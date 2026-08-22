@@ -6,6 +6,7 @@ import {
   Inject,
   Param,
   Post,
+  Query,
   Req,
   Headers,
   UseGuards,
@@ -137,8 +138,11 @@ export class BillingController {
   // ── Usage-based invoices ────────────────────────────
   @Get('usage-invoices')
   @UseGuards(JwtGuard)
-  async usageInvoices(@Req() req: any) {
-    return this.invoiceBilling.getInvoicesForUser(req.user.userId);
+  async usageInvoices(
+    @Req() req: any,
+    @Query('page') page?: string,
+  ) {
+    return this.invoiceBilling.getInvoicesForUser(req.user.userId, page);
   }
 
   @Post('usage-invoices/generate')
@@ -203,8 +207,11 @@ export class BillingController {
 
 @Get('call-usage')
   @UseGuards(JwtGuard)
-  async callUsage(@Req() req: any) {
-    return this.usageBilling.getCallUsage(req.user.userId);
+  async callUsage(
+    @Req() req: any,
+    @Query('page') page?: string,
+  ) {
+    return this.usageBilling.getCallUsage(req.user.userId, page);
   }
 
   // ── Segment engine: per-call usage timeline ─────────

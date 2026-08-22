@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
+import { CalendarDays, Clock3, Hourglass, PhoneCall } from 'lucide-react';
 
 type UsageData = {
   minutesToday: number;
@@ -37,11 +38,11 @@ export default function AdminUsagePage() {
   }
 
   const cards = [
-    { label: 'Minutes Today', value: data.minutesToday, icon: '⏱️' },
-    { label: 'Minutes This Month', value: data.minutesMonth, icon: '📅' },
-    { label: 'Calls Today', value: data.callsToday, icon: '📞' },
-    { label: 'Calls This Month', value: data.callsMonth, icon: '📞' },
-    { label: 'Avg Call Duration', value: `${data.avgDuration} min`, icon: '⏳' },
+    { label: 'Minutes Today', value: data.minutesToday, icon: Clock3 },
+    { label: 'Minutes This Month', value: data.minutesMonth, icon: CalendarDays },
+    { label: 'Calls Today', value: data.callsToday, icon: PhoneCall },
+    { label: 'Calls This Month', value: data.callsMonth, icon: PhoneCall },
+    { label: 'Avg Call Duration', value: `${data.avgDuration} min`, icon: Hourglass },
   ];
 
   return (
@@ -54,7 +55,7 @@ export default function AdminUsagePage() {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {cards.map((c) => (
           <div key={c.label} className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
-            <div className="text-xl mb-2">{c.icon}</div>
+            <div className="mb-2 text-indigo-300"><c.icon size={20} /></div>
             <div className="text-2xl font-bold text-white">{c.value}</div>
             <div className="text-xs text-slate-500 mt-1">{c.label}</div>
           </div>

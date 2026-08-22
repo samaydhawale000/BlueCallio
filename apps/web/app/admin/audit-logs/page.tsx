@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
+import { Pagination } from '../../components/ui/Pagination';
 
 type AuditLog = {
   id: string;
@@ -24,14 +25,23 @@ export default function AdminAuditLogsPage() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [total, setTotal] = useState(0);
+  const [pageCount, setPageCount] = useState(1);
 
   useEffect(() => {
     api
-      .get('/admin/audit-logs')
-      .then((res) => setLogs(res.data))
+      .get(`/admin/audit-logs?page=${page}`)
+      .then((res) => {
+        setLogs(res.data.data ?? []);
+        setTotal(res.data.total ?? 0);
+        setPageCount(res.data.pageCount ?? 1);
+        setPageSize(res.data.pageSize ?? 10);
+      })
       .catch((e) => setError(e?.response?.data?.message || e?.message || 'Failed to load'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [page]);
 
   if (loading) {
     return <div className="text-slate-400 text-sm py-20 text-center">Loading audit logs…</div>;
@@ -93,6 +103,15 @@ export default function AdminAuditLogsPage() {
               )}
             </tbody>
           </table>
+        </div>
+        <div className="px-4 pb-4">
+          <Pagination
+            page={page}
+            pageCount={pageCount}
+            totalItems={total}
+            pageSize={pageSize}
+            onPageChange={setPage}
+          />
         </div>
       </div>
     </div>

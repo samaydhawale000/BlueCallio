@@ -1,9 +1,11 @@
+import { Rocket } from 'lucide-react';
+
 export default function EmptyState() {
   return (
     <div className="border rounded-2xl p-16 text-center bg-white mt-10">
 
-      <div className="text-6xl mb-5">
-        🚀
+      <div className="mb-5 flex justify-center text-indigo-500">
+        <Rocket size={48} />
       </div>
 
       <h2 className="text-2xl font-semibold">

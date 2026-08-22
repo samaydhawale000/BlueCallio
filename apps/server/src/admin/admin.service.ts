@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { CallStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CallGateway } from '../socket/gateways/call.gateway';
 import { TurnService } from '../turn/turn.service';
@@ -114,8 +115,12 @@ const [totalUsers, paidUsers, totalProjects, activeCalls] =
   }
 
   // ── Customers ────────────────────────────────────────
-  async getCustomers() {
-const users = await this.prisma.user.findMany({
+  async getCustomers(pageValue?: string) {
+      const page = Math.max(1, parseInt(pageValue ?? '', 10) || 1);
+      const pageSize = Math.min(100, Math.max(1, Number(process.env.PAGE_SIZE) || 10));
+      const [total, users] = await Promise.all([
+    this.prisma.user.count(),
+    this.prisma.user.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
         projects: {
@@ -127,9 +132,12 @@ const users = await this.prisma.user.findMany({
           include: { plan: true },
         },
       },
-    });
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+    ]);
 
-    return Promise.all(
+    const data = await Promise.all(
       users.map(async (u) => {
         const projects = u.projects;
         const totalMinutes = projects.flatMap((p) => p.calls).reduce(
@@ -160,6 +168,7 @@ const users = await this.prisma.user.findMany({
         };
       }),
     );
+    return { data, total, page, pageSize, pageCount: Math.max(1, Math.ceil(total / pageSize)) };
   }
 
   async updateCustomerStatus(userId: string, status: 'ACTIVE' | 'SUSPENDED') {
@@ -209,14 +218,24 @@ const users = await this.prisma.user.findMany({
   }
 
   // ── Live calls ───────────────────────────────────────
-async getLiveCalls() {
-    const calls = await this.prisma.call.findMany({
+async getLiveCalls(pageValue?: string) {
+    const page = Math.max(1, parseInt(pageValue ?? '', 10) || 1);
+    const pageSize = Math.min(100, Math.max(1, Number(process.env.PAGE_SIZE) || 10));
+    const where = {
+      status: { in: [CallStatus.RINGING, CallStatus.ACCEPTED, CallStatus.INITIATED] },
+    };
+    const [total, calls] = await Promise.all([
+      this.prisma.call.count({ where }),
+      this.prisma.call.findMany({
       where: { status: { in: ['RINGING', 'ACCEPTED', 'INITIATED'] } },
       orderBy: { createdAt: 'desc' },
       include: { project: { include: { owner: true } } },
-    });
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      }),
+    ]);
 
-    return calls.map((c) => ({
+    const data = calls.map((c) => ({
       id: c.id,
       type: c.type,
       status: c.status,
@@ -226,6 +245,7 @@ async getLiveCalls() {
       participants: this.callGateway.getRoomParticipantCount(c.id),
       duration: c.startedAt ? this.nowDiffMinutes(c.startedAt) : 0,
     }));
+    return { data, total, page, pageSize, pageCount: Math.max(1, Math.ceil(total / pageSize)) };
   }
 
   async endCall(callId: string) {
@@ -338,19 +358,26 @@ async getLiveCalls() {
   }
 
   // ── Audit logs ───────────────────────────────────────
-  async getAuditLogs() {
-    const logs = await this.prisma.auditLog.findMany({
+  async getAuditLogs(pageValue?: string) {
+    const page = Math.max(1, parseInt(pageValue ?? '', 10) || 1);
+    const pageSize = Math.min(100, Math.max(1, Number(process.env.PAGE_SIZE) || 10));
+    const [total, logs] = await Promise.all([
+      this.prisma.auditLog.count(),
+      this.prisma.auditLog.findMany({
       orderBy: { createdAt: 'desc' },
-      take: 100,
+      skip: (page - 1) * pageSize,
+      take: pageSize,
       include: { actor: { select: { name: true, email: true } } },
-    });
-    return logs.map((l) => ({
+      }),
+    ]);
+    const data = logs.map((l) => ({
       id: l.id,
       action: l.action,
       actor: l.actor?.name || l.actor?.email || 'System',
       metadata: l.metadata,
       createdAt: l.createdAt,
     }));
+    return { data, total, page, pageSize, pageCount: Math.max(1, Math.ceil(total / pageSize)) };
   }
 
   // ── Settings ─────────────────────────────────────────

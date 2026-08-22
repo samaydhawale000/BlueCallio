@@ -254,12 +254,21 @@ for (const u of usages) {
   /**
    * List a user's usage invoices (newest first).
    */
-  async getInvoicesForUser(userId: string) {
-    return this.prisma.usageInvoice.findMany({
-      where: { userId },
-      orderBy: { cycleStart: 'desc' },
-      include: { lineItems: true },
-    });
+  async getInvoicesForUser(userId: string, pageValue?: string) {
+    const page = Math.max(1, parseInt(pageValue ?? '', 10) || 1);
+    const pageSize = Math.min(100, Math.max(1, Number(process.env.PAGE_SIZE) || 10));
+    const where = { userId };
+    const [total, data] = await Promise.all([
+      this.prisma.usageInvoice.count({ where }),
+      this.prisma.usageInvoice.findMany({
+        where,
+        orderBy: { cycleStart: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        include: { lineItems: true },
+      }),
+    ]);
+    return { data, total, page, pageSize, pageCount: Math.max(1, Math.ceil(total / pageSize)) };
   }
 }
 

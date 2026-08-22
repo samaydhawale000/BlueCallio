@@ -3,40 +3,41 @@ import Image from "next/image";
 import logo from "./assets/images/logo.png";
 import StripeGradient from "./components/gradient/StripeGradient";
 import PricingSection from "./components/PricingSection";
+import { Atom, Blocks, BookOpen, BriefcaseBusiness, Globe2, Headphones, Monitor, ShoppingCart, Sparkles, Stethoscope, Target, Wrench } from 'lucide-react';
 
 const USE_CASES = [
    {
-      icon: "🎯",
+      icon: Target,
       label: "HR & Recruitment",
       description:
          "Interview candidates inside your hiring platform. No third-party meeting links, no context switching.",
    },
    {
-      icon: "🏥",
+      icon: Stethoscope,
       label: "Telemedicine",
       description:
          "Doctor-patient consultations embedded in your healthcare product. Secure, compliant, and seamless.",
    },
    {
-      icon: "💼",
+      icon: BriefcaseBusiness,
       label: "CRM & Sales",
       description:
          "Call leads without leaving the CRM. Call records attach to the contact automatically.",
    },
    {
-      icon: "🎧",
+      icon: Headphones,
       label: "Customer Support",
       description:
          "Agents connect to customers instantly — no hold music, no plugin downloads required.",
    },
    {
-      icon: "📚",
+      icon: BookOpen,
       label: "EdTech",
       description:
          "Live tutoring and classes built into your learning platform. Students never leave your product.",
    },
    {
-      icon: "🛒",
+      icon: ShoppingCart,
       label: "Marketplace",
       description:
          "Buyers and sellers meet face-to-face inside your platform before any transaction.",
@@ -108,7 +109,7 @@ const FEATURES = [
 
 const PRODUCTS = [
    {
-      icon: "🖥",
+      icon: Monitor,
       tag: "5-minute integration",
       name: "Hosted UI",
       tagline: "The fastest way to integrate BlueJoinet.",
@@ -125,7 +126,7 @@ const PRODUCTS = [
       cta: "Create a call, redirect your users, done.",
    },
    {
-      icon: "⚛️",
+      icon: Atom,
       tag: "Custom UI, zero WebRTC",
       name: "React Components",
       tagline: "A custom interface without building a meeting app.",
@@ -142,7 +143,7 @@ const PRODUCTS = [
       cta: "Build a fully branded meeting experience.",
    },
    {
-      icon: "🧩",
+      icon: Blocks,
       tag: "Full control",
       name: "Headless SDK",
       tagline: "Complete control over the meeting experience.",
@@ -184,22 +185,22 @@ const PLAYGROUND_STEPS = [
 
 const SUPPORT_ITEMS = [
    {
-      icon: "⚡",
+      icon: Sparkles,
       title: "Fast Response",
       body: "Technical engineers, not marketing bots.",
    },
    {
-      icon: "📖",
+      icon: BookOpen,
       title: "Clear Docs",
       body: "Quick start, copy buttons, examples in multiple languages.",
    },
    {
-      icon: "🛠",
+      icon: Wrench,
       title: "Working Examples",
       body: "Node.js, Python, cURL — drop in and it works.",
    },
    {
-      icon: "🌍",
+      icon: Globe2,
       title: "Community",
       body: "Ask questions, share integrations, get help.",
    },
@@ -368,7 +369,7 @@ export default function LandingPage() {
                         key={uc.label}
                         className="card-gradient rounded-xl border border-[#1A2642] p-6 transition-all hover:border-[#2A3D64]"
                      >
-                        <div className="text-2xl mb-4">{uc.icon}</div>
+                        <div className="mb-4 text-indigo-300"><uc.icon size={24} /></div>
                         <p className="font-semibold text-white mb-2 text-sm">
                            {uc.label}
                         </p>
@@ -411,7 +412,7 @@ export default function LandingPage() {
                                  border: "1px solid rgba(99,102,241,0.25)",
                               }}
                            >
-                              {product.icon}
+                              <product.icon size={24} />
                            </div>
                            <span
                               className="text-[10px] font-mono px-2.5 py-1 rounded-full uppercase tracking-widest"
@@ -596,7 +597,7 @@ export default function LandingPage() {
                            key={item.title}
                            className="card-surface rounded-xl border border-[#1A2642] p-5"
                         >
-                           <div className="text-xl mb-3">{item.icon}</div>
+                           <div className="mb-3 text-indigo-300"><item.icon size={20} /></div>
                            <p className="font-semibold text-white text-sm mb-1">
                               {item.title}
                            </p>
