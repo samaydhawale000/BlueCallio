@@ -1,5 +1,5 @@
 import type {
-  BlueJoinetConfig,
+  BlueCallioConfig,
   Call,
   CallDetails,
   CreateCallParams,
@@ -8,17 +8,17 @@ import type {
 } from './types';
 
 /**
- * Low-level REST client for the BlueJoinet API.
+ * Low-level REST client for the BlueCallio API.
  * Server-side only — never expose an API key to the browser.
  */
-export class BlueJoinetClient {
+export class BlueCallioClient {
   private readonly apiKey: string;
   private readonly baseUrl: string;
 
-  constructor(config: BlueJoinetConfig) {
-    if (!config.apiKey) throw new Error('BlueJoinet: apiKey is required');
+  constructor(config: BlueCallioConfig) {
+    if (!config.apiKey) throw new Error('BlueCallio: apiKey is required');
     this.apiKey = config.apiKey;
-    this.baseUrl = config.baseUrl ?? 'https://api.bluejoinet.com';
+    this.baseUrl = config.baseUrl ?? 'https://api.bluecallio.com';
   }
 
   private async request<T>(
@@ -39,7 +39,7 @@ export class BlueJoinetClient {
 
     if (!res.ok) {
       const err = (await res.json().catch(() => ({}))) as { message?: string };
-      throw new Error(err.message ?? `BlueJoinet error ${res.status}: ${path}`);
+      throw new Error(err.message ?? `BlueCallio error ${res.status}: ${path}`);
     }
 
     return res.json() as Promise<T>;

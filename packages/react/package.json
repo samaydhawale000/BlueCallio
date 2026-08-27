@@ -1,7 +1,7 @@
 {
-  "name": "@bluejoinet/react",
+  "name": "@bluecallio/react",
   "version": "0.1.0",
-  "description": "React UI components and hooks for BlueJoinet — build a branded meeting experience without touching WebRTC",
+  "description": "React UI components and hooks for BlueCallio — build a branded meeting experience without touching WebRTC",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -19,7 +19,7 @@
     "dev": "tsc --watch"
   },
   "keywords": [
-    "bluejoinet",
+    "bluecallio",
     "react",
     "video",
     "webrtc",
@@ -32,7 +32,7 @@
     "react-dom": ">=18.0.0"
   },
   "dependencies": {
-    "@bluejoinet/sdk": "0.2.0"
+    "@bluecallio/sdk": "0.2.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",

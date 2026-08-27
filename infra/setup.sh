@@ -1,5 +1,5 @@
 #!/bin/bash
-# BlueJoinet VPS Setup Script
+# BlueCallio VPS Setup Script
 # Run once on a fresh Ubuntu 22.04 / Debian 12 VPS.
 # Usage: bash setup.sh yourdomain.com your@email.com
 

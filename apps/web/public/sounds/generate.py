@@ -1,8 +1,8 @@
 """
-Synthesizes BlueJoinet's original ringback + ringtone cues from scratch —
+Synthesizes BlueCallio's original ringback + ringtone cues from scratch —
 pure additive sine synthesis with hand-shaped envelopes, no samples, no
 external audio, so there is no licensing question: this is 100% original
-programmatic composition owned by BlueJoinet.
+programmatic composition owned by BlueCallio.
 
 Design rationale (see SOURCE.md for the full writeup):
 - Ringback (caller waiting): a flat, calm two-note "doo-doo" pair (G4 -> C5,

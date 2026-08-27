@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { api } from '../lib/api';
 
 const FAQ_GROUPS = [
   {
@@ -9,19 +10,19 @@ const FAQ_GROUPS = [
     items: [
       {
         q: 'Which integration should I pick?',
-        a: 'Hosted UI is the fastest path (5 minutes — just create a call and redirect your users). React Components let you build a branded custom interface without implementing WebRTC. Headless SDK gives you complete control over the UI while BlueJoinet handles signaling, authentication, and media infrastructure.',
+        a: 'Hosted UI is the fastest path (5 minutes — just create a call and redirect your users). React Components let you build a branded custom interface without implementing WebRTC. Headless SDK gives you complete control over the UI while BlueCallio handles signaling, authentication, and media infrastructure.',
       },
       {
         q: 'Can I switch between the three products later?',
         a: 'Yes. All three products are powered by the same backend, the same POST /calls response, and the same per-participant session tokens. You can change your frontend integration without changing your server-side code.',
       },
       {
-        q: 'What is the difference between @bluejoinet/sdk and @bluejoinet/react?',
-        a: '@bluejoinet/sdk is the headless communication engine (join, leave, camera, microphone, screen share, events). @bluejoinet/react is a component library built on top of the core SDK — it provides ready-made React components (MeetingProvider, ParticipantGrid, ControlBar, etc.) that call into the engine for you.',
+        q: 'What is the difference between @bluecallio/sdk and @bluecallio/react?',
+        a: '@bluecallio/sdk is the headless communication engine (join, leave, camera, microphone, screen share, events). @bluecallio/react is a component library built on top of the core SDK — it provides ready-made React components (MeetingProvider, ParticipantGrid, ControlBar, etc.) that call into the engine for you.',
       },
       {
         q: 'Do you support group calls?',
-        a: 'Currently BlueJoinet supports 1:1 audio and video calls. Group calls are on the roadmap.',
+        a: 'Currently BlueCallio supports 1:1 audio and video calls. Group calls are on the roadmap.',
       },
     ],
   },
@@ -34,7 +35,7 @@ const FAQ_GROUPS = [
       },
       {
         q: 'What authentication methods are supported?',
-        a: 'BlueJoinet supports two server-side authentication methods: API Keys (x-api-key header, ideal for backend integration) and JWT (for the dashboard and playground). Call participants authenticate with short-lived session tokens over WebSocket.',
+        a: 'BlueCallio supports two server-side authentication methods: API Keys (x-api-key header, ideal for backend integration) and JWT (for the dashboard and playground). Call participants authenticate with short-lived session tokens over WebSocket.',
       },
       {
         q: 'Are session tokens single-use?',
@@ -42,7 +43,7 @@ const FAQ_GROUPS = [
       },
       {
         q: 'Are webhooks signed?',
-        a: 'Yes. Every webhook POST includes an X-BlueJoinet-Signature header (HMAC-SHA256 with your project secret). Always verify it before processing the payload.',
+        a: 'Yes. Every webhook POST includes an X-BlueCallio-Signature header (HMAC-SHA256 with your project secret). Always verify it before processing the payload.',
       },
     ],
   },
@@ -51,11 +52,11 @@ const FAQ_GROUPS = [
     items: [
       {
         q: 'What about calls behind strict firewalls?',
-        a: 'BlueJoinet provides TURN relay with time-limited HMAC credentials. The hosted UI and SDK fetch ICE servers automatically — no configuration needed on your side.',
+        a: 'BlueCallio provides TURN relay with time-limited HMAC credentials. The hosted UI and SDK fetch ICE servers automatically — no configuration needed on your side.',
       },
       {
         q: 'What browsers are supported?',
-        a: 'BlueJoinet uses standard WebRTC, so any modern browser works — Chrome, Firefox, Safari, Edge. Mobile browsers are fully supported with responsive layouts.',
+        a: 'BlueCallio uses standard WebRTC, so any modern browser works — Chrome, Firefox, Safari, Edge. Mobile browsers are fully supported with responsive layouts.',
       },
       {
         q: 'Can my users select which camera and microphone to use?',
@@ -80,7 +81,7 @@ const FAQ_GROUPS = [
       },
       {
         q: 'Who do I talk to for support?',
-        a: 'BlueJoinet support is run by the engineers who built the platform. Email hello@bluejoinet.com and you will get a technical answer.',
+        a: 'BlueCallio support is run by the engineers who built the platform. Email hello@bluecallio.com and you will get a technical answer.',
       },
     ],
   },
@@ -126,9 +127,9 @@ export default function FaqPage() {
 
   useEffect(() => {
     let active = true;
-    fetch('/billing/rates')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => { if (active && data) setRates(data); })
+    api
+      .get('/billing/rates')
+      .then((res) => { if (active) setRates(res.data); })
       .catch(() => {});
     return () => { active = false; };
   }, []);
@@ -146,7 +147,7 @@ export default function FaqPage() {
     { q: 'How does usage-based pricing work?', a: `There are no subscriptions or up-front fees. You pay a simple per-participant-minute rate only for minutes beyond the free allowance: audio ${audioRate}/min, video ${videoRate}/min, and screen share +${screenRate}/min (added on top of video).` },
     { q: 'Is screen sharing billable separately?', a: `Yes. Screen sharing is always billable at +${screenRate} per participant-minute on top of the video rate, and has no free allowance.` },
     { q: 'Do I need to add a payment method to start?', a: 'No. Your free allowance covers development and prototyping. You only add a payment method when you go to production and exceed the free minutes.' },
-    { q: 'When and how am I charged?', a: `At the end of each month we generate an invoice for your billable usage and charge your saved card automatically. A GST of ${gst}% applies on billable usage.` },
+    { q: 'When and how am I charged?', a: `At the end of each billing cycle (monthly, anchored to the date you started your plan) we generate an invoice for your billable usage and charge your saved card automatically. A GST of ${gst}% applies on billable usage.` },
     { q: 'What happens if a payment fails?', a: 'We retry, notify you, and enter a 7-day grace period. During grace you can keep existing calls, but you cannot start new ones until the payment succeeds. Active calls are never interrupted.' },
     { q: 'Can I see my usage and invoices?', a: 'Yes. The dashboard Usage page shows per-type minutes and estimated month-end cost, and the Billing page lists your payment methods and past invoices.' },
     { q: 'Is every feature included on the free tier?', a: 'Yes. Hosted UI, React Components, Headless SDK, REST API, WebSocket signaling, and the developer dashboard are all available. You only pay for minutes beyond the free allowance.' },
@@ -166,7 +167,7 @@ export default function FaqPage() {
         </h1>
         <p className="text-slate-400 text-base leading-relaxed max-w-2xl">
           Can't find what you're looking for? Email{' '}
-          <a href="mailto:hello@bluejoinet.com" className="text-indigo-400 hover:underline">hello@bluejoinet.com</a>{' '}
+          <a href="mailto:hello@bluecallio.com" className="text-indigo-400 hover:underline">hello@bluecallio.com</a>{' '}
           and an engineer will get back to you.
         </p>
       </div>

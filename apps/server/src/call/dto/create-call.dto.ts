@@ -21,7 +21,7 @@ export class CreateCallDto {
   type: CallTypeDto;
 
   // Display identity for the call UI (e.g. the incoming-call screen). The
-  // integrating app owns its own users — BlueJoinet only transports/shows
+  // integrating app owns its own users — BlueCallio only transports/shows
   // whatever it's given here, it never looks anyone up.
   @IsOptional()
   @IsString()

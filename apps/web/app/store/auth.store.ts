@@ -6,6 +6,7 @@ export interface AuthUser {
   email?: string | null;
   name?: string | null;
   avatarUrl?: string | null;
+  phone?: string | null;
 }
 
 interface AuthState {
@@ -35,7 +36,7 @@ export const useAuthStore = create<AuthState>()(
         set({ token: null, refreshToken: null, user: null }),
     }),
     {
-      name: 'BlueJoinet-auth',
+      name: 'BlueCallio-auth',
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
       },

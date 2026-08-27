@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CallGateway } from '../socket/gateways/call.gateway';
 import { TurnService } from '../turn/turn.service';
 import { UsageBillingService } from '../billing/usage-billing.service';
+import { BillingService } from '../billing/billing.service';
 
 @Injectable()
 export class AdminService {
@@ -12,6 +13,7 @@ export class AdminService {
     private callGateway: CallGateway,
     private turnService: TurnService,
     private usageBilling: UsageBillingService,
+    private billingService: BillingService,
   ) {}
 
   // ── Overview ──────────────────────────────────────────
@@ -184,35 +186,14 @@ const [totalUsers, paidUsers, totalProjects, activeCalls] =
     return user;
   }
 
+  /**
+   * Routes through BillingService.changePlanWithProration — the single
+   * plan-change code path — so an admin-initiated change gets the same
+   * proration treatment (and doesn't disturb the current cycle's boundaries
+   * or wipe accrued Usage) as any customer-initiated one.
+   */
   async updateCustomerPlan(userId: string, planSlug: string) {
-    const plan = await this.prisma.plan.findUnique({ where: { slug: planSlug } });
-    if (!plan) {
-      throw new Error('Plan not found');
-    }
-    const existing = await this.prisma.subscription.findFirst({
-      where: { companyId: userId },
-      orderBy: { createdAt: 'desc' },
-    });
-    const now = new Date();
-    const periodEnd = new Date(now);
-    periodEnd.setMonth(periodEnd.getMonth() + 1);
-
-    if (existing) {
-      await this.prisma.subscription.update({
-        where: { id: existing.id },
-        data: { planId: plan.id, status: 'ACTIVE', currentPeriodStart: now, currentPeriodEnd: periodEnd },
-      });
-    } else {
-      await this.prisma.subscription.create({
-        data: {
-          companyId: userId,
-          planId: plan.id,
-          status: 'ACTIVE',
-          currentPeriodStart: now,
-          currentPeriodEnd: periodEnd,
-        },
-      });
-    }
+    await this.billingService.changePlanWithProration(userId, planSlug);
     await this.logAudit('PLAN_CHANGED', userId, { userId, plan: planSlug });
     return { userId, plan: planSlug };
   }

@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { BillingService } from './billing.service';
 
 export interface UsageSnapshot {
   audioMinutes: number;
@@ -27,7 +28,7 @@ export interface BillingRates {
 }
 
 /**
- * Usage-based, per-participant-minute billing engine (BlueJoinet v2).
+ * Usage-based, per-participant-minute billing engine (BlueCallio v2).
  *
  * Rates:
  *  - Audio       ₹0.20 / participant-minute
@@ -44,7 +45,10 @@ export interface BillingRates {
 export class UsageBillingService {
   private readonly logger = new Logger(UsageBillingService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private billingService: BillingService,
+  ) {}
 
   /** Fetch the default billing rates (fall back to defaults if not seeded). */
   async getRates(): Promise<BillingRates> {
@@ -87,14 +91,18 @@ export class UsageBillingService {
   }
 
   /**
-   * Get (or create) the current monthly usage record for a user.
-   * Uses a rolling 30-day window keyed to the first day of the current month.
+   * Get (or create) the current usage record for a user, keyed to their
+   * subscription's own anchored billing cycle (currentPeriodStart/End) —
+   * NOT the calendar month. This is the single source of truth for "the
+   * current cycle" so this service and the legacy subscription-anchored
+   * code (BillingService, BillingJobsService) always write to the same
+   * Usage row. Creates a free subscription if the user has none yet,
+   * instead of hand-rolling cycle math here.
    */
   async getOrCreateUsage(userId: string) {
-    const now = new Date();
-    const cycleStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const cycleEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    cycleEnd.setHours(23, 59, 59, 999);
+    const sub = await this.getOrCreateSubscriptionForUsage(userId);
+    const cycleStart = sub.currentPeriodStart ?? new Date();
+    const cycleEnd = sub.currentPeriodEnd ?? new Date();
 
     const existing = await this.prisma.usage.findUnique({
       where: {
@@ -109,6 +117,7 @@ export class UsageBillingService {
     return this.prisma.usage.create({
       data: {
         companyId: userId,
+        subscriptionId: sub.id,
         billingCycleStart: cycleStart,
         billingCycleEnd: cycleEnd,
         minutesUsed: 0,
@@ -123,6 +132,16 @@ export class UsageBillingService {
         usageCostPaise: 0,
       },
     });
+  }
+
+  /**
+   * Resolve the subscription whose currentPeriodStart/End defines "the
+   * current cycle" for this user, creating a free one via BillingService's
+   * single subscription-creation path if none exists yet — so there is
+   * exactly one place a Subscription row is ever created.
+   */
+  private async getOrCreateSubscriptionForUsage(userId: string) {
+    return this.billingService.getOrCreateFreeSubscription(userId);
   }
 
   /**
@@ -382,6 +401,28 @@ cost: {
       pageSize,
       pageCount: Math.max(1, Math.ceil(total / pageSize)),
     };
+  }
+
+  /**
+   * Paginated history of a user's past billing cycles' usage (newest
+   * first), including the still-open current cycle. Each row is one
+   * anchored cycle now that Usage is keyed to Subscription.currentPeriod*
+   * rather than the calendar month.
+   */
+  async getUsageHistory(userId: string, pageValue?: string) {
+    const page = Math.max(1, parseInt(pageValue ?? '', 10) || 1);
+    const pageSize = Math.min(100, Math.max(1, Number(process.env.PAGE_SIZE) || 10));
+    const where = { companyId: userId };
+    const [total, data] = await Promise.all([
+      this.prisma.usage.count({ where }),
+      this.prisma.usage.findMany({
+        where,
+        orderBy: { billingCycleStart: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+    ]);
+    return { data, total, page, pageSize, pageCount: Math.max(1, Math.ceil(total / pageSize)) };
   }
 
   /**

@@ -24,6 +24,7 @@ interface Me {
   email?: string;
   name?: string;
   avatarUrl?: string;
+  phone?: string | null;
 }
 
 const COUNTRIES = [
@@ -65,14 +66,24 @@ export default function SettingsPage() {
         email: data.email ?? null,
         name: data.name ?? null,
         avatarUrl: data.avatarUrl ?? null,
+        phone: data.phone ?? null,
       });
-    } catch {
-      logout();
-      router.push('/login');
+    } catch (e: any) {
+      if (e?.response?.status === 401) {
+        logout();
+        router.replace('/login');
+      } else {
+        setMe(user ? {
+          userId: user.userId,
+          email: user.email ?? undefined,
+          name: user.name ?? undefined,
+          avatarUrl: user.avatarUrl ?? undefined,
+        } : null);
+      }
     } finally {
       setLoading(false);
     }
-  }, [logout, router, setUser]);
+  }, [logout, router, setUser, user]);
 
   useEffect(() => {
     if (!isReady) return;

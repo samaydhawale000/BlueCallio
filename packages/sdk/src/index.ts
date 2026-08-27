@@ -1,12 +1,12 @@
-export { BlueJoinetClient } from './client';
-export { BlueJoinetMeeting } from './meeting/meeting';
+export { BlueCallioClient } from './client';
+export { BlueCallioMeeting } from './meeting/meeting';
 
 // Default export = REST client for server-side convenience.
-import { BlueJoinetClient } from './client';
-export default BlueJoinetClient;
+import { BlueCallioClient } from './client';
+export default BlueCallioClient;
 
 export type {
-  BlueJoinetConfig,
+  BlueCallioConfig,
   Branding,
   Call,
   CallDetails,

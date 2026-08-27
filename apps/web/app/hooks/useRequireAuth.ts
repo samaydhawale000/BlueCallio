@@ -37,6 +37,7 @@ useEffect(() => {
             email: res.data.email ?? null,
             name: res.data.name ?? null,
             avatarUrl: res.data.avatarUrl ?? null,
+            phone: res.data.phone ?? null,
           });
         }
       })

@@ -1,7 +1,7 @@
 import LegalLayout, { LegalSection, LegalBullets } from "../components/LegalLayout";
 
 export const metadata = {
-  title: "Terms of Service | BlueJoinet",
+  title: "Terms of Service | BlueCallio",
 };
 
 export default function TermsPage() {
@@ -9,14 +9,14 @@ export default function TermsPage() {
     <LegalLayout
       title="Terms of Service"
       lastUpdated="24 August 2025"
-      intro="Welcome to BlueJoinet. These Terms of Service govern your access to and use of BlueJoinet's website, APIs, SDKs, hosted communication interfaces, React components, dashboards, and related services (collectively, the Service)."
+      intro="Welcome to BlueCallio. These Terms of Service govern your access to and use of BlueCallio's website, APIs, SDKs, hosted communication interfaces, React components, dashboards, and related services (collectively, the Service)."
     >
-      <LegalSection num="1" title="About BlueJoinet">
+      <LegalSection num="1" title="About BlueCallio">
         <p>
-          BlueJoinet provides communication infrastructure that allows developers and businesses to
+          BlueCallio provides communication infrastructure that allows developers and businesses to
           integrate audio calls, video calls, and screen sharing into their applications.
         </p>
-        <p>Depending on the product configuration, BlueJoinet may provide:</p>
+        <p>Depending on the product configuration, BlueCallio may provide:</p>
         <LegalBullets items={[
           "Hosted communication interfaces",
           "REST APIs",
@@ -28,7 +28,7 @@ export default function TermsPage() {
           "Usage tracking and billing",
           "Related developer services",
         ]} />
-        <p>Features may change, be added, or be discontinued as BlueJoinet evolves.</p>
+        <p>Features may change, be added, or be discontinued as BlueCallio evolves.</p>
       </LegalSection>
 
       <LegalSection num="2" title="Account Registration">
@@ -38,7 +38,7 @@ export default function TermsPage() {
           "Maintaining the confidentiality of your account credentials",
           "Protecting your API keys",
           "All activity performed through your account",
-          "Immediately notifying BlueJoinet if you believe your account or credentials have been compromised",
+          "Immediately notifying BlueCallio if you believe your account or credentials have been compromised",
         ]} />
         <p>
           You must not share your account credentials or API keys in a way that allows unauthorized
@@ -47,7 +47,7 @@ export default function TermsPage() {
       </LegalSection>
 
       <LegalSection num="3" title="Projects and API Keys">
-        <p>BlueJoinet allows customers to create projects and associated API credentials.</p>
+        <p>BlueCallio allows customers to create projects and associated API credentials.</p>
         <p>You are responsible for:</p>
         <LegalBullets items={[
           "Using API keys only for authorized applications",
@@ -63,10 +63,10 @@ export default function TermsPage() {
 
       <LegalSection num="4" title="Acceptable Use">
         <p>
-          You agree to use BlueJoinet only for lawful purposes and in accordance with the Acceptable
+          You agree to use BlueCallio only for lawful purposes and in accordance with the Acceptable
           Use Policy.
         </p>
-        <p>You must not use BlueJoinet to:</p>
+        <p>You must not use BlueCallio to:</p>
         <LegalBullets items={[
           "Facilitate illegal activity",
           "Harass or abuse others",
@@ -78,14 +78,14 @@ export default function TermsPage() {
           "Overload or intentionally disrupt the Service",
         ]} />
         <p>
-          BlueJoinet may suspend or restrict accounts that violate these Terms or pose a security or
+          BlueCallio may suspend or restrict accounts that violate these Terms or pose a security or
           operational risk.
         </p>
       </LegalSection>
 
       <LegalSection num="5" title="Communication Content">
         <p>
-          BlueJoinet provides communication infrastructure but generally does not control the content
+          BlueCallio provides communication infrastructure but generally does not control the content
           transmitted through customer applications.
         </p>
         <p>
@@ -100,7 +100,7 @@ export default function TermsPage() {
       </LegalSection>
 
       <LegalSection num="6" title="Usage-Based Billing">
-        <p>BlueJoinet may charge customers based on their actual usage.</p>
+        <p>BlueCallio may charge customers based on their actual usage.</p>
         <p>Depending on the applicable pricing model, usage may include:</p>
         <LegalBullets items={[
           "Audio participant-minutes",
@@ -118,7 +118,7 @@ export default function TermsPage() {
         </p>
         <p>
           Actual billing calculations may account for applicable rounding rules and usage events
-          defined by BlueJoinet.
+          defined by BlueCallio.
         </p>
       </LegalSection>
 
@@ -128,17 +128,17 @@ export default function TermsPage() {
           Payments may be processed through third-party payment providers such as Razorpay.
         </p>
         <p>
-          By providing a payment method, you authorize BlueJoinet and its payment provider to process
+          By providing a payment method, you authorize BlueCallio and its payment provider to process
           charges applicable to your account according to your selected plan and actual usage.
         </p>
         <p>
-          BlueJoinet does not store complete payment card details on its own servers when those
+          BlueCallio does not store complete payment card details on its own servers when those
           details are handled by the payment provider.
         </p>
       </LegalSection>
 
       <LegalSection num="8" title="Failed Payments">
-        <p>If a payment fails, BlueJoinet may:</p>
+        <p>If a payment fails, BlueCallio may:</p>
         <LegalBullets items={[
           "Notify you of the failed payment",
           "Retry the payment where supported",
@@ -159,7 +159,7 @@ export default function TermsPage() {
 
       <LegalSection num="10" title="Service Availability">
         <p>
-          BlueJoinet aims to provide reliable service but does not guarantee uninterrupted or
+          BlueCallio aims to provide reliable service but does not guarantee uninterrupted or
           error-free operation unless a separate written service-level agreement applies.
         </p>
         <p>Service availability may be affected by:</p>
@@ -175,7 +175,7 @@ export default function TermsPage() {
       </LegalSection>
 
       <LegalSection num="11" title="Third-Party Services">
-        <p>BlueJoinet may rely on third-party services including:</p>
+        <p>BlueCallio may rely on third-party services including:</p>
         <LegalBullets items={[
           "Cloud infrastructure providers",
           "Payment processors",
@@ -189,11 +189,11 @@ export default function TermsPage() {
 
       <LegalSection num="12" title="Intellectual Property">
         <p>
-          BlueJoinet and its underlying software, SDKs, APIs, documentation, branding, designs, and
-          technology are owned by BlueJoinet or its licensors.
+          BlueCallio and its underlying software, SDKs, APIs, documentation, branding, designs, and
+          technology are owned by BlueCallio or its licensors.
         </p>
         <p>
-          Except as expressly permitted, these Terms do not grant you ownership of BlueJoinet's
+          Except as expressly permitted, these Terms do not grant you ownership of BlueCallio's
           intellectual property.
         </p>
         <p>You retain ownership of your own application, data, and content.</p>
@@ -201,10 +201,10 @@ export default function TermsPage() {
 
       <LegalSection num="13" title="Customer Data">
         <p>
-          You retain ownership of data and content that you submit or transmit through BlueJoinet.
+          You retain ownership of data and content that you submit or transmit through BlueCallio.
         </p>
         <p>
-          You grant BlueJoinet the limited rights necessary to provide, maintain, secure, and improve
+          You grant BlueCallio the limited rights necessary to provide, maintain, secure, and improve
           the Service.
         </p>
         <p>Additional details are provided in the Privacy Policy.</p>
@@ -212,7 +212,7 @@ export default function TermsPage() {
 
       <LegalSection num="14" title="Security">
         <p>
-          BlueJoinet takes reasonable measures to protect the Service and customer information.
+          BlueCallio takes reasonable measures to protect the Service and customer information.
         </p>
         <p>However, no internet-based service can guarantee absolute security.</p>
         <p>
@@ -222,7 +222,7 @@ export default function TermsPage() {
       </LegalSection>
 
       <LegalSection num="15" title="Suspension and Termination">
-        <p>BlueJoinet may suspend or terminate accounts if:</p>
+        <p>BlueCallio may suspend or terminate accounts if:</p>
         <LegalBullets items={[
           "These Terms are violated",
           "Payment obligations remain unpaid",
@@ -239,7 +239,7 @@ export default function TermsPage() {
 
       <LegalSection num="16" title="Disclaimers">
         <p>
-          To the maximum extent permitted by applicable law, BlueJoinet provides the Service on an
+          To the maximum extent permitted by applicable law, BlueCallio provides the Service on an
           "as available" basis and makes no guarantees that the Service will always be uninterrupted,
           secure, or error-free.
         </p>
@@ -247,19 +247,19 @@ export default function TermsPage() {
 
       <LegalSection num="17" title="Limitation of Liability">
         <p>
-          To the maximum extent permitted by applicable law, BlueJoinet will not be liable for
+          To the maximum extent permitted by applicable law, BlueCallio will not be liable for
           indirect, incidental, special, consequential, or punitive damages arising from your use of
           the Service.
         </p>
         <p>
-          BlueJoinet's total liability arising from the Service will be limited to the amount paid by
-          the customer to BlueJoinet during the twelve months preceding the event giving rise to the
+          BlueCallio's total liability arising from the Service will be limited to the amount paid by
+          the customer to BlueCallio during the twelve months preceding the event giving rise to the
           claim, except where applicable law requires otherwise.
         </p>
       </LegalSection>
 
       <LegalSection num="18" title="Changes to These Terms">
-        <p>BlueJoinet may update these Terms from time to time.</p>
+        <p>BlueCallio may update these Terms from time to time.</p>
         <p>Material changes will be communicated through the Service or other reasonable means.</p>
         <p>
           Continued use of the Service after the effective date of updated Terms constitutes
@@ -274,9 +274,9 @@ export default function TermsPage() {
       <LegalSection num="20" title="Contact">
         <p>For questions regarding these Terms:</p>
         <LegalBullets items={[
-          "BlueJoinet",
-          "Email: hello@bluejoinet.com",
-          "Website: https://bluejoinet.com",
+          "BlueCallio",
+          "Email: hello@bluecallio.com",
+          "Website: https://bluecallio.com",
         ]} />
       </LegalSection>
     </LegalLayout>

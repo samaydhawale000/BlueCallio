@@ -9,10 +9,10 @@ import React, {
 } from 'react';
 
 import {
-  BlueJoinetMeeting,
+  BlueCallioMeeting,
   ConnectionState,
   Participant,
-} from '@bluejoinet/sdk';
+} from '@bluecallio/sdk';
 
 export interface MeetingProviderProps {
   token: string;
@@ -27,7 +27,7 @@ export interface MeetingProviderProps {
 }
 
 export interface MeetingContextValue {
-  engine: BlueJoinetMeeting | null;
+  engine: BlueCallioMeeting | null;
   callId: string;
   participantId: string | null;
   connectionState: ConnectionState;
@@ -74,7 +74,7 @@ export function MeetingProvider({
   onStateChange,
   children,
 }: MeetingProviderProps) {
-  const engineRef = useRef<BlueJoinetMeeting | null>(null);
+  const engineRef = useRef<BlueCallioMeeting | null>(null);
 
   const [connectionState, setConnectionState] =
     useState<ConnectionState>('idle');
@@ -90,7 +90,7 @@ export function MeetingProvider({
 
   // Create the engine once.
   if (!engineRef.current) {
-engineRef.current = new BlueJoinetMeeting({
+engineRef.current = new BlueCallioMeeting({
       token,
       callId,
       signalUrl,

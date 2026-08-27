@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   Wallet,
   PhoneCall,
@@ -14,6 +15,7 @@ import {
   AlertTriangle,
   CalendarClock,
   ShieldCheck,
+  Download,
 } from 'lucide-react';
 import { useAuthStore } from '../../store/auth.store';
 import { useRequireAuth } from '../../hooks/useRequireAuth';
@@ -69,6 +71,16 @@ interface UsageInvoice {
   lineItems?: any[];
 }
 
+interface UsageHistoryRow {
+  id: string;
+  billingCycleStart: string;
+  billingCycleEnd: string;
+  audioMinutes: number;
+  videoMinutes: number;
+  screenShareMinutes: number;
+  usageCostPaise: number;
+}
+
 const paiseToINR = (paise: number) => `₹${(paise / 100).toFixed(2)}`;
 
 const statusVariant: Record<string, 'default' | 'success' | 'warning' | 'error' | 'info'> = {
@@ -95,25 +107,69 @@ export default function BillingPage() {
   const [invoiceTotal, setInvoiceTotal] = useState(0);
   const [invoicePageCount, setInvoicePageCount] = useState(1);
 
+  const [usageHistory, setUsageHistory] = useState<UsageHistoryRow[]>([]);
+  const [usageHistoryPage, setUsageHistoryPage] = useState(1);
+  const [usageHistoryPageSize, setUsageHistoryPageSize] = useState(10);
+  const [usageHistoryTotal, setUsageHistoryTotal] = useState(0);
+  const [usageHistoryPageCount, setUsageHistoryPageCount] = useState(1);
+
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
   const showToast = useCallback((type: 'success' | 'error', message: string) => {
     setToast({ id: Date.now(), type, message });
   }, []);
 
+  const downloadInvoicePdf = useCallback(async (invoice: UsageInvoice) => {
+    setDownloadingId(invoice.id);
+    try {
+      const res = await api.get(`/billing/usage-invoices/${invoice.id}/pdf`, {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${invoice.invoiceNumber ?? invoice.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      showToast('error', 'Could not download the invoice PDF. Please try again.');
+    } finally {
+      setDownloadingId(null);
+    }
+  }, [showToast]);
+
   const fetchAll = useCallback(async () => {
     try {
-      const [usageRes, invoiceRes, pmRes, limitRes] = await Promise.all([
+      const [usageRes, invoiceRes, pmRes, limitRes, historyRes] = await Promise.all([
         api.get('/billing/current-usage'),
         api.get(`/billing/usage-invoices?page=${invoicePage}`),
         api.get('/billing/payment-methods'),
         api.get('/billing/spending-limit'),
+        api.get(`/billing/usage-history?page=${usageHistoryPage}`),
       ]);
       setUsage(usageRes.data);
       setInvoices(invoiceRes.data.data ?? []);
       setInvoiceTotal(invoiceRes.data.total ?? 0);
       setInvoicePageCount(invoiceRes.data.pageCount ?? 1);
       setInvoicePageSize(invoiceRes.data.pageSize ?? 10);
-      setPaymentMethods(pmRes.data ?? []);
+      const paymentMethodData = Array.isArray(pmRes.data)
+        ? pmRes.data
+        : pmRes.data?.data ?? pmRes.data?.items ?? [];
+      setPaymentMethods(paymentMethodData.map((pm: any) => ({
+        id: pm.id ?? pm.token ?? pm.tokenId,
+        brand: pm.brand ?? pm.network ?? pm.cardBrand ?? null,
+        last4: pm.last4 ?? pm.last_4 ?? pm.cardLast4 ?? null,
+        expMonth: pm.expMonth ?? pm.expirymonth ?? pm.expiry_month ?? pm.cardExpMonth ?? null,
+        expYear: pm.expYear ?? pm.expiryyear ?? pm.expiry_year ?? pm.cardExpYear ?? null,
+        default: Boolean(pm.default ?? pm.isDefault),
+      })));
       setSpendingLimitPaise(limitRes.data?.spendingLimitPaise ?? null);
+      setUsageHistory(historyRes.data.data ?? []);
+      setUsageHistoryTotal(historyRes.data.total ?? 0);
+      setUsageHistoryPageCount(historyRes.data.pageCount ?? 1);
+      setUsageHistoryPageSize(historyRes.data.pageSize ?? 10);
       setError(null);
     } catch (e: any) {
       if (e?.response?.status === 401) {
@@ -125,7 +181,7 @@ export default function BillingPage() {
     } finally {
       setLoading(false);
     }
-  }, [invoicePage, logout, router]);
+  }, [invoicePage, usageHistoryPage, logout, router]);
 
   useEffect(() => {
     if (!isReady) return;
@@ -171,7 +227,7 @@ const u = usage?.usage;
       <div>
         <h1 className="text-2xl font-bold text-white">Billing &amp; Usage</h1>
         <p className="text-sm text-slate-500 mt-1">
-          Pay only for what you use. Add a card and we&apos;ll auto-charge you at the end of each month.
+          Pay only for what you use. Add a card and we&apos;ll auto-charge you at the end of each billing cycle.
         </p>
       </div>
 
@@ -320,7 +376,7 @@ const u = usage?.usage;
           <div className="flex flex-col items-center gap-2 py-8 text-center">
             <Receipt size={24} className="text-slate-600" />
             <p className="text-sm text-slate-500">
-              No invoices yet. You&apos;ll be billed at the end of each month for usage beyond the free tier.
+              No invoices yet. You&apos;ll be billed at the end of each billing cycle for usage beyond the free tier.
             </p>
           </div>
         ) : (
@@ -333,7 +389,8 @@ const u = usage?.usage;
                   <th className="py-2 pr-4 font-medium">Usage</th>
                   <th className="py-2 pr-4 font-medium">Tax</th>
                   <th className="py-2 pr-4 font-medium">Total</th>
-                  <th className="py-2 font-medium">Status</th>
+                  <th className="py-2 pr-4 font-medium">Status</th>
+                  <th className="py-2 font-medium text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -348,10 +405,28 @@ const u = usage?.usage;
                     <td className="py-3 pr-4 font-medium text-white">{paiseToINR(inv.subtotalPaise)}</td>
                     <td className="py-3 pr-4 text-slate-400">{paiseToINR(inv.taxPaise)}</td>
                     <td className="py-3 pr-4 font-medium text-white">{paiseToINR(inv.totalPaise)}</td>
-                    <td className="py-3">
+                    <td className="py-3 pr-4">
                       <Badge variant={statusVariant[inv.status] ?? 'default'}>
                         {inv.status.toUpperCase()}
                       </Badge>
+                    </td>
+                    <td className="py-3">
+                      <div className="flex items-center justify-end gap-3">
+                        <Link
+                          href={`/dashboard/billing/invoices/${inv.id}`}
+                          className="text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
+                        >
+                          View
+                        </Link>
+                        <button
+                          onClick={() => downloadInvoicePdf(inv)}
+                          disabled={downloadingId === inv.id}
+                          className="inline-flex items-center gap-1 text-xs font-medium text-slate-400 hover:text-white transition-colors disabled:opacity-50"
+                        >
+                          <Download size={12} />
+                          {downloadingId === inv.id ? 'Downloading…' : 'PDF'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -368,6 +443,63 @@ const u = usage?.usage;
         )}
       </div>
 
+      {/* ── Usage history ── */}
+      <div className="rounded-2xl border border-[#1A2642] p-6" style={{ background: '#0D1421' }}>
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-sm font-semibold text-white">Usage history</p>
+          <span className="text-xs text-slate-500">{usageHistoryTotal} cycles</span>
+        </div>
+
+        {usageHistory.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 py-8 text-center">
+            <Clock size={24} className="text-slate-600" />
+            <p className="text-sm text-slate-500">No usage recorded yet.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-slate-500 border-b border-[#1A2642]">
+                  <th className="py-2 pr-4 font-medium">Cycle</th>
+                  <th className="py-2 pr-4 font-medium">Audio</th>
+                  <th className="py-2 pr-4 font-medium">Video</th>
+                  <th className="py-2 pr-4 font-medium">Screen share</th>
+                  <th className="py-2 font-medium">Cost</th>
+                </tr>
+              </thead>
+              <tbody>
+                {usageHistory.map((row) => {
+                  const isCurrent = new Date(row.billingCycleEnd) > new Date();
+                  return (
+                    <tr key={row.id} className="border-b border-[#1A2642]/60 last:border-0">
+                      <td className="py-3 pr-4 text-slate-300">
+                        {new Date(row.billingCycleStart).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
+                        {' – '}
+                        {new Date(row.billingCycleEnd).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
+                        {isCurrent && (
+                          <span className="ml-2 text-[10px] font-medium text-indigo-400">CURRENT</span>
+                        )}
+                      </td>
+                      <td className="py-3 pr-4 text-slate-300">{Math.round(row.audioMinutes).toLocaleString()} min</td>
+                      <td className="py-3 pr-4 text-slate-300">{Math.round(row.videoMinutes).toLocaleString()} min</td>
+                      <td className="py-3 pr-4 text-slate-300">{Math.round(row.screenShareMinutes).toLocaleString()} min</td>
+                      <td className="py-3 font-medium text-white">{paiseToINR(row.usageCostPaise)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            <Pagination
+              page={usageHistoryPage}
+              pageCount={usageHistoryPageCount}
+              totalItems={usageHistoryTotal}
+              pageSize={usageHistoryPageSize}
+              onPageChange={setUsageHistoryPage}
+            />
+          </div>
+        )}
+      </div>
+
       {/* ── How it works ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 <InfoCard
@@ -378,7 +510,7 @@ const u = usage?.usage;
         <InfoCard
           icon={<Clock size={16} style={{ color: '#818CF8' }} />}
           title="Monthly invoice"
-          body="On the 1st, we aggregate your usage and generate an invoice for anything beyond the free allowance."
+          body="On your billing date each month (anchored to when you started your plan), we aggregate your usage and generate an invoice for anything beyond the free allowance."
         />
         <InfoCard
           icon={<CreditCard size={16} style={{ color: '#FBBF24' }} />}

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   ConnectionState,
   Participant,
-} from '@bluejoinet/sdk';
+} from '@bluecallio/sdk';
 
 import { useMeetingContext } from './context';
 

@@ -9,6 +9,7 @@
 export interface CreateCustomerInput {
   email: string;
   name?: string | null;
+  contact?: string | null;
   userId: string;
 }
 
@@ -104,6 +105,8 @@ export interface PaymentService {
     amountPaise: number;
     currency?: string;
     tokenId?: string | null;
+    email: string;
+    contact: string;
     metadata?: Record<string, string>;
   }): Promise<PaymentIntentResult>;
   createCheckoutSession(
@@ -127,6 +130,13 @@ getInvoices(customerId: string): Promise<InvoiceResult[]>;
     tokenId: string,
   ): Promise<PaymentMethodResult | null>;
   deletePaymentMethod(customerId: string, tokenId: string): Promise<void>;
+  /**
+   * Syncs the customer's contact number on the payment provider. Razorpay
+   * requires the underlying Customer record — not just the Checkout call —
+   * to carry a contact number before it will authorise a recurring card
+   * mandate for that customer.
+   */
+  updateCustomerContact(customerId: string, contact: string): Promise<void>;
   /**
    * Verifies the HMAC signature Razorpay Checkout returns for a completed
    * payment (order_id|payment_id signed with the key secret). This is the

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Atom, Blocks, BookOpen, Cable, CreditCard, Gauge, KeyRound, Lightbulb, Monitor, RotateCw, Server, UserRound, Webhook, Zap } from 'lucide-react';
+import { api } from '../lib/api';
 
 // ── Sidebar nav ───────────────────────────────────────────────────────────────
 const NAV = [
@@ -129,9 +130,9 @@ export default function DocsPage() {
 
   useEffect(() => {
     let active = true;
-    fetch('/billing/rates')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => { if (active && data) setRates(data); })
+    api
+      .get('/billing/rates')
+      .then((res) => { if (active) setRates(res.data); })
       .catch(() => {});
     return () => { active = false; };
   }, []);
@@ -189,7 +190,7 @@ export default function DocsPage() {
                 { n: '01', title: 'Get your API key', body: 'Sign up → create a project → copy your key (starts with bj_live_).' },
                 { n: '02', title: 'Install the SDK', body: null },
                 { n: '03', title: 'Create a call from your backend', body: null },
-                { n: '04', title: 'Redirect each user — done', body: 'Alice opens callerUrl, Bob opens receiverUrl. BlueJoinet handles the rest.' },
+                { n: '04', title: 'Redirect each user — done', body: 'Alice opens callerUrl, Bob opens receiverUrl. BlueCallio handles the rest.' },
               ].map((step, i) => (
                 <div key={step.n} className="flex gap-4 rounded-xl border border-[#1A2642] p-5 transition-all hover:border-[#2A3D64]" style={{ background: '#0D1421' }}>
                   <div className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center font-mono text-xs font-bold" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2))', color: '#A5B4FC', border: '1px solid rgba(99,102,241,0.25)' }}>
@@ -198,11 +199,11 @@ export default function DocsPage() {
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-white text-sm mb-1">{step.title}</p>
                     {step.body && <p className="text-xs text-slate-500">{step.body}</p>}
-                    {i === 1 && <Code code="npm install @bluejoinet/sdk" />}
+                    {i === 1 && <Code code="npm install @bluecallio/sdk" />}
                     {i === 2 && (
                       <LangTabs tabs={{
-                        sdk: `import BlueJoinet from '@bluejoinet/sdk';
-const bj = new BlueJoinet({ apiKey: process.env.BLUEJOINET_API_KEY });
+                        sdk: `import BlueCallio from '@bluecallio/sdk';
+const bj = new BlueCallio({ apiKey: process.env.BLUECALLIO_API_KEY });
 
 const { callId, callerUrl, receiverUrl } = await bj.createCall({
   callerId: 'user_alice',
@@ -254,7 +255,7 @@ receiver_url = data['receiverUrl']`,
                 {[
                   { icon: Server, label: 'Your backend', sub: 'POST /calls' },
                   null,
-                  { icon: Zap, label: 'BlueJoinet', sub: 'Returns 2 URLs' },
+                  { icon: Zap, label: 'BlueCallio', sub: 'Returns 2 URLs' },
                   null,
                   { icon: UserRound, label: 'Alice (caller)', sub: 'Opens callerUrl' },
                   null,
@@ -310,7 +311,7 @@ receiver_url = data['receiverUrl']`,
             <Heading>Hosted UI — zero frontend work</Heading>
             <p className="text-slate-400 text-sm mb-5">
               The fastest way to integrate. Create a call from your backend, then
-              redirect your users to a BlueJoinet-hosted meeting page. No frontend
+              redirect your users to a BlueCallio-hosted meeting page. No frontend
               implementation required.
             </p>
 
@@ -336,7 +337,7 @@ receiver_url = data['receiverUrl']`,
               {[
                 { icon: Server, label: 'Your backend', sub: 'POST /calls' },
                 null,
-                { icon: Zap, label: 'BlueJoinet', sub: 'Returns hostedUrl + tokens' },
+                { icon: Zap, label: 'BlueCallio', sub: 'Returns hostedUrl + tokens' },
                 null,
                 { icon: UserRound, label: 'Redirect users', sub: 'Meeting starts' },
               ].map((item, i) =>
@@ -379,10 +380,10 @@ receiver_url = data['receiverUrl']`,
               implement WebRTC, signaling, or media handling yourself.
             </p>
 
-            <Code code="npm install @bluejoinet/react" label="install" />
+            <Code code="npm install @bluecallio/react" label="install" />
 
             <p className="text-sm font-semibold text-white mb-3">Quick example</p>
-            <Code code={`import { MeetingProvider, MeetingRoom, ParticipantGrid, ControlBar } from '@bluejoinet/react';
+            <Code code={`import { MeetingProvider, MeetingRoom, ParticipantGrid, ControlBar } from '@bluecallio/react';
 
 export function Call({ token, callId, signalUrl }) {
   return (
@@ -416,7 +417,7 @@ export function Call({ token, callId, signalUrl }) {
             </div>
 
             <p className="text-sm font-semibold text-white mb-3">Hooks</p>
-            <Code code={`import { useMeeting, useParticipants, useParticipant, useDevices, useConnection } from '@bluejoinet/react';
+            <Code code={`import { useMeeting, useParticipants, useParticipant, useDevices, useConnection } from '@bluecallio/react';
 
 function Status() {
   const { connectionState } = useConnection();
@@ -427,8 +428,8 @@ function Status() {
 }`} />
 
             <Tip type="info">
-              <code className="font-mono text-xs bg-black/30 px-1 rounded">@bluejoinet/react</code> is built on top of{' '}
-              <code className="font-mono text-xs bg-black/30 px-1 rounded">@bluejoinet/sdk</code> — the same session tokens and signaling work across both.
+              <code className="font-mono text-xs bg-black/30 px-1 rounded">@bluecallio/react</code> is built on top of{' '}
+              <code className="font-mono text-xs bg-black/30 px-1 rounded">@bluecallio/sdk</code> — the same session tokens and signaling work across both.
             </Tip>
           </Section>
 
@@ -436,16 +437,16 @@ function Status() {
           <Section id="headless-sdk">
             <Heading>Headless SDK</Heading>
             <p className="text-slate-400 text-sm mb-5">
-              For developers who want complete control. BlueJoinet provides only the
+              For developers who want complete control. BlueCallio provides only the
               communication engine — no UI included.
             </p>
 
-            <Code code="npm install @bluejoinet/sdk" label="install" />
+            <Code code="npm install @bluecallio/sdk" label="install" />
 
             <p className="text-sm font-semibold text-white mb-3">Quick example</p>
-<Code code={`import { BlueJoinetMeeting } from '@bluejoinet/sdk';
+<Code code={`import { BlueCallioMeeting } from '@bluecallio/sdk';
 
-const meeting = new BlueJoinetMeeting({
+const meeting = new BlueCallioMeeting({
   token,            // bj_session_... for this participant
   callId,
   signalUrl: 'wss://api.yourdomain.com',
@@ -565,7 +566,7 @@ meeting.on('remote.stream.ended', () => {});`} />
               </p>
               <LangTabs tabs={{
 sdk: `// SDK: engine.join() does this for you
-const meeting = new BlueJoinetMeeting({ token, callId, signalUrl });
+const meeting = new BlueCallioMeeting({ token, callId, signalUrl });
 await meeting.join();`,
                 curl: `curl -X POST https://api.yourdomain.com/calls/CALL_ID/join \\
   -H "Authorization: Bearer bj_session_..."`,
@@ -726,7 +727,7 @@ socket.on('connect', () => {
           {/* ── Webhooks ──────────────────────────────── */}
           <Section id="webhooks">
             <Heading>Webhooks</Heading>
-            <p className="text-slate-400 text-sm mb-5">BlueJoinet POSTs a signed event to your server on every call lifecycle change.</p>
+            <p className="text-slate-400 text-sm mb-5">BlueCallio POSTs a signed event to your server on every call lifecycle change.</p>
 
             {/* Setup */}
             <div className="rounded-xl border border-[#1A2642] p-5 mb-5" style={{ background: '#0D1421' }}>
@@ -752,18 +753,18 @@ socket.on('connect', () => {
             {/* Verify */}
             <p className="text-sm font-semibold text-white mb-3">Verify the signature</p>
             <Tip type="warn">
-              Always verify the <code className="font-mono text-xs bg-black/30 px-1 rounded">X-BlueJoinet-Signature</code> header before processing. Use <code className="font-mono text-xs bg-black/30 px-1 rounded">express.raw()</code> — do not parse JSON first.
+              Always verify the <code className="font-mono text-xs bg-black/30 px-1 rounded">X-BlueCallio-Signature</code> header before processing. Use <code className="font-mono text-xs bg-black/30 px-1 rounded">express.raw()</code> — do not parse JSON first.
             </Tip>
             <LangTabs tabs={{
               node: `import crypto from 'crypto';
 import express from 'express';
 
-app.post('/webhooks/bluejoinet',
+app.post('/webhooks/bluecallio',
   express.raw({ type: 'application/json' }),
   (req, res) => {
-    const sig      = req.headers['x-bluejoinet-signature'];
+    const sig      = req.headers['x-bluecallio-signature'];
     const expected = 'sha256=' + crypto
-      .createHmac('sha256', process.env.BLUEJOINET_WEBHOOK_SECRET)
+      .createHmac('sha256', process.env.BLUECALLIO_WEBHOOK_SECRET)
       .update(req.body)
       .digest('hex');
 
@@ -780,12 +781,12 @@ app.post('/webhooks/bluejoinet',
 from fastapi import FastAPI, Request, HTTPException
 
 app = FastAPI()
-SECRET = os.environ['BLUEJOINET_WEBHOOK_SECRET'].encode()
+SECRET = os.environ['BLUECALLIO_WEBHOOK_SECRET'].encode()
 
-@app.post('/webhooks/bluejoinet')
+@app.post('/webhooks/bluecallio')
 async def webhook(request: Request):
     body = await request.body()
-    sig  = request.headers.get('x-bluejoinet-signature', '')
+    sig  = request.headers.get('x-bluecallio-signature', '')
     expected = 'sha256=' + hmac.new(SECRET, body, hashlib.sha256).hexdigest()
 
     if not hmac.compare_digest(sig, expected):
@@ -801,10 +802,10 @@ async def webhook(request: Request):
             <Heading>Examples</Heading>
 
             <p className="text-sm font-semibold text-white mb-3">Hosted UI — create & redirect (Node.js)</p>
-            <Code code={`import BlueJoinet from '@bluejoinet/sdk';
+            <Code code={`import BlueCallio from '@bluecallio/sdk';
 
-const bj = new BlueJoinet({
-  apiKey: process.env.BLUEJOINET_API_KEY,
+const bj = new BlueCallio({
+  apiKey: process.env.BLUECALLIO_API_KEY,
   baseUrl: 'https://api.yourdomain.com',
 });
 
@@ -821,7 +822,7 @@ const { callId, hostedUrl, participants } = await bj.createCall({
 res.redirect(participants[0].hostedUrl);`} label="your-server.js" />
 
             <p className="text-sm font-semibold text-white mb-3 mt-6">React Components</p>
-            <Code code={`import { MeetingProvider, MeetingRoom, ParticipantGrid, CameraButton, MicrophoneButton, ScreenShareButton, LeaveButton, DeviceSelector } from '@bluejoinet/react';
+            <Code code={`import { MeetingProvider, MeetingRoom, ParticipantGrid, CameraButton, MicrophoneButton, ScreenShareButton, LeaveButton, DeviceSelector } from '@bluecallio/react';
 
 export function CustomCall({ token, callId, signalUrl }) {
   return (
@@ -841,9 +842,9 @@ export function CustomCall({ token, callId, signalUrl }) {
 }`} />
 
             <p className="text-sm font-semibold text-white mb-3 mt-6">Headless SDK</p>
-            <Code code={`import { BlueJoinetMeeting } from '@bluejoinet/sdk';
+            <Code code={`import { BlueCallioMeeting } from '@bluecallio/sdk';
 
-const meeting = new BlueJoinetMeeting({ token, callId, signalUrl });
+const meeting = new BlueCallioMeeting({ token, callId, signalUrl });
 
 meeting.on('remote.stream', (stream) => {
   document.getElementById('remote-video').srcObject = stream;
@@ -888,7 +889,7 @@ meeting.microphone.enable();`} />
           <Section id="usage-billing">
             <Heading>Usage & Billing</Heading>
             <p className="text-slate-400 text-sm mb-5">
-              BlueJoinet is pay-as-you-go. There are no subscriptions and no
+              BlueCallio is pay-as-you-go. There are no subscriptions and no
               up-front fees — you pay a simple per-participant-minute rate only
               for usage beyond the monthly free allowance.
             </p>
@@ -942,7 +943,7 @@ meeting.microphone.enable();`} />
                 { q: 'Which integration should I pick?', a: 'Hosted UI for the fastest path (5 minutes). React Components for a branded custom interface without building WebRTC. Headless SDK if you need complete control over the UI.' },
                 { q: 'Can I switch between the three products later?', a: 'Yes. All three use the same backend, the same POST /calls response, and the same session tokens. Change the frontend, keep your server-side integration.' },
                 { q: 'Where do I put the API key?', a: 'Server-side only (bj_live_...). Never send it to the browser. The hosted page uses per-participant session tokens (bj_session_...), not API keys.' },
-                { q: 'What about calls behind strict firewalls?', a: 'BlueJoinet provides TURN relay with time-limited credentials. The hosted UI and SDK fetch ICE servers automatically — no configuration needed.' },
+                { q: 'What about calls behind strict firewalls?', a: 'BlueCallio provides TURN relay with time-limited credentials. The hosted UI and SDK fetch ICE servers automatically — no configuration needed.' },
                 { q: 'Are session tokens single-use?', a: 'Yes. Each token is tied to one participant and one call. Create a new call if you need to re-invite someone.' },
                 { q: 'Do you support group calls?', a: 'Currently 1:1 calls. Group calls are on the roadmap.' },
                 { q: 'How do I debug a failed call?', a: 'Check the WebSocket connection state, verify the session token matches the correct participant, ensure camera/microphone permissions are granted, and confirm TURN credentials are returned from /turn/credentials.' },

@@ -4,14 +4,17 @@ import {
   Delete,
   Get,
   Inject,
+  NotFoundException,
   Param,
   Post,
   Query,
   Req,
+  Res,
   Headers,
   UseGuards,
 } from '@nestjs/common';
 import type { RawBodyRequest } from '@nestjs/common';
+import type { Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { AdminGuard } from '../admin/guards/admin.guard';
@@ -20,6 +23,7 @@ import { UsageBillingService } from './usage-billing.service';
 import { InvoiceBillingService } from './invoice-billing.service';
 import { UsageSegmentService } from './usage-segment.service';
 import { RatingEngineService } from './rating-engine.service';
+import { InvoicePdfService } from './invoice-pdf.service';
 import { PAYMENT_SERVICE } from '../payment/payment.service';
 import type { PaymentService } from '../payment/payment.service';
 import { CheckoutDto } from './dto/checkout.dto';
@@ -33,6 +37,7 @@ export class BillingController {
     private invoiceBilling: InvoiceBillingService,
     private segmentService: UsageSegmentService,
     private ratingEngine: RatingEngineService,
+    private invoicePdf: InvoicePdfService,
     @Inject(PAYMENT_SERVICE) private payments: PaymentService,
   ) {}
 
@@ -148,12 +153,54 @@ export class BillingController {
   @Post('usage-invoices/generate')
   @UseGuards(JwtGuard)
   async generateUsageInvoice(@Req() req: any) {
-    const now = new Date();
-    const cycleStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    // Generate for the subscription's actual current anchored cycle, not
+    // the calendar month — Usage rows are keyed to currentPeriodStart.
+    const usage = await this.usageBilling.getCurrentUsage(req.user.userId);
     return this.invoiceBilling.generateInvoiceForCycle(
       req.user.userId,
-      cycleStart,
+      usage.cycle.start,
     );
+  }
+
+  @Get('usage-invoices/:id')
+  @UseGuards(JwtGuard)
+  async usageInvoiceDetail(@Req() req: any, @Param('id') id: string) {
+    try {
+      return await this.invoiceBilling.getInvoiceForUser(req.user.userId, id);
+    } catch {
+      throw new NotFoundException('Invoice not found');
+    }
+  }
+
+  @Get('usage-invoices/:id/pdf')
+  @UseGuards(JwtGuard)
+  async usageInvoicePdf(@Req() req: any, @Param('id') id: string, @Res() res: Response) {
+    let invoice;
+    try {
+      invoice = await this.invoiceBilling.getInvoiceForPdf(req.user.userId, id);
+    } catch {
+      throw new NotFoundException('Invoice not found');
+    }
+    const pdf = await this.invoicePdf.renderInvoicePdf(invoice);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${invoice.invoiceNumber ?? invoice.id}.pdf"`,
+      'Content-Length': pdf.length,
+    });
+    res.send(pdf);
+  }
+
+  // ── Historical usage / billing cycle views ──────────
+  @Get('usage-history')
+  @UseGuards(JwtGuard)
+  async usageHistory(@Req() req: any, @Query('page') page?: string) {
+    return this.usageBilling.getUsageHistory(req.user.userId, page);
+  }
+
+  @Get('billing-history')
+  @UseGuards(JwtGuard)
+  async billingHistory(@Req() req: any, @Query('page') page?: string) {
+    return this.invoiceBilling.getCycleHistory(req.user.userId, page);
   }
 
 @Post('portal')

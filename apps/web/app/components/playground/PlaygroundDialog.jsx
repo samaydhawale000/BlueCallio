@@ -135,7 +135,7 @@ const connected = callStatus === "ACCEPTED";
                 >
                   <div>
                     <h2 className="text-2xl sm:text-3xl font-bold text-white">
-                      Try BlueJoinet
+                      Try BlueCallio
                     </h2>
                     <p className="text-indigo-100 mt-1.5 text-sm sm:text-base">
                       Test a real-time video call in seconds.
@@ -426,7 +426,7 @@ const connected = callStatus === "ACCEPTED";
                         </h3>
                       </div>
                       <p className="text-slate-400 text-sm mb-4 leading-relaxed">
-                        Open BlueJoinet on your laptop or desktop first.
+                        Open BlueCallio on your laptop or desktop first.
                       </p>
 <button
                         onClick={() => {

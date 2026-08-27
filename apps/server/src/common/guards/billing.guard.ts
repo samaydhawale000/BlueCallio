@@ -9,7 +9,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UsageBillingService } from '../../billing/usage-billing.service';
 
 /**
- * Billing middleware guard (BlueJoinet v2 — usage-based).
+ * Billing middleware guard (BlueCallio v2 — usage-based).
  *
  * Runs after the ApiKeyGuard (which sets `request.project`). Verifies the
  * project owner's account is not suspended, and — for call-creation requests

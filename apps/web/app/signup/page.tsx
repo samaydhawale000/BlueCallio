@@ -65,11 +65,11 @@ export default function SignupPage() {
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
             >
-              <Image src={logo} alt="BlueJoinet" width={40} height={40} className="h-8 w-8 object-contain" />
+              <Image src={logo} alt="BlueCallio" width={40} height={40} className="h-8 w-8 object-contain" />
             </div>
             <div>
               <p className="font-mono font-bold text-white text-lg tracking-tight">
-                BlueJoinet
+                BlueCallio
               </p>
               <p className="text-xs text-slate-500">Communication Infrastructure</p>
             </div>
@@ -154,7 +154,7 @@ export default function SignupPage() {
                 href="/"
                 className="font-mono font-bold text-white text-xl tracking-tight"
               >
-                BlueJoinet
+                BlueCallio
               </Link>
               <p className="text-slate-500 text-sm mt-1">Communication Infrastructure</p>
             </div>
@@ -168,7 +168,7 @@ export default function SignupPage() {
                 <div
                   className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-1"
                 >
-                  <Image src={logo} alt="BlueJoinet" width={48} height={48} className="h-9 w-9 object-contain" />
+                  <Image src={logo} alt="BlueCallio" width={48} height={48} className="h-9 w-9 object-contain" />
                 </div>
                 <h2 className="text-lg font-bold text-white">Create your account</h2>
                 <p className="text-sm text-slate-400">

@@ -90,14 +90,14 @@ if (isCallPage || isAppPage || isAuthPage) {
           <Link href="/" className="flex items-center gap-3">
             <Image
               src={logo}
-              alt="BlueJoinet"
+              alt="BlueCallio"
               width={30}
               height={30}
               className="object-contain"
             />
 
             <span className="font-mono text-xl font-bold tracking-tight text-white">
-              BlueJoinet
+              BlueCallio
             </span>
           </Link>
 
