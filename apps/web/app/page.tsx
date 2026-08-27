@@ -71,7 +71,7 @@ const FEATURES = [
    },
    {
       title: "Headless SDK",
-      body: "meeting.join(), camera.enable(), screenShare.start() — complete control with the @bluejoinet/sdk engine.",
+      body: "meeting.join(), camera.enable(), screenShare.start() — complete control with the @bluecallio/sdk engine.",
    },
    {
       title: "Waiting Room",
@@ -112,8 +112,8 @@ const PRODUCTS = [
       icon: Monitor,
       tag: "5-minute integration",
       name: "Hosted UI",
-      tagline: "The fastest way to integrate BlueJoinet.",
-      body: "Create a call from your backend and redirect users to a BlueJoinet-hosted meeting page. No frontend implementation required.",
+      tagline: "The fastest way to integrate BlueCallio.",
+      body: "Create a call from your backend and redirect users to a BlueCallio-hosted meeting page. No frontend implementation required.",
       features: [
          "Ready-made meeting interface",
          "Video, audio & screen sharing",
@@ -147,7 +147,7 @@ const PRODUCTS = [
       tag: "Full control",
       name: "Headless SDK",
       tagline: "Complete control over the meeting experience.",
-      body: "Just the communication engine — no UI included. You build the interface, BlueJoinet handles signaling, auth, and media infrastructure.",
+      body: "Just the communication engine — no UI included. You build the interface, BlueCallio handles signaling, auth, and media infrastructure.",
       features: [
          "join() / leave()",
          "camera & microphone controls",
@@ -156,7 +156,7 @@ const PRODUCTS = [
          "Full event system",
          "Type-safe TypeScript",
       ],
-      code: "const meeting = new BlueJoinet({ token }); await meeting.join();",
+      code: "const meeting = new BlueCallio({ token }); await meeting.join();",
       cta: "Build your own UI on a proven engine.",
    },
 ];
@@ -164,14 +164,14 @@ const PRODUCTS = [
 const STEPS = [
    {
       step: "Create a call",
-      body: "Your backend sends POST /calls with a caller ID and receiver ID. BlueJoinet returns a secure token for each participant.",
+      body: "Your backend sends POST /calls with a caller ID and receiver ID. BlueCallio returns a secure token for each participant.",
    },
    {
       step: "Redirect your users",
-      body: "Send each participant to the BlueJoinet hosted URL with their token. That's the only frontend work you do.",
+      body: "Send each participant to the BlueCallio hosted URL with their token. That's the only frontend work you do.",
    },
    {
-      step: "BlueJoinet takes over",
+      step: "BlueCallio takes over",
       body: "Signaling, WebRTC negotiation, media controls, screen sharing, and the call UI — all handled.",
    },
 ];
@@ -235,7 +235,7 @@ export default function LandingPage() {
                   calls. No WebRTC expertise, no frontend SDK, no complex
                   infrastructure — just transparent, per-minute rates on top
                   of a generous free allowance, with no surprise fees.
-                  BlueJoinet gives startups everything they need to launch
+                  BlueCallio gives startups everything they need to launch
                   communication features faster.
                </p>
 
@@ -274,7 +274,7 @@ export default function LandingPage() {
                         {"{ callId, hostedUrl, participants } = "}
                      </span>
                      <span className="tok-async">{"await "}</span>
-                     <span className="tok-base">{"BlueJoinet."}</span>
+                     <span className="tok-base">{"BlueCallio."}</span>
                      <span className="tok-fn">{"createCall"}</span>
                      <span className="tok-base">
                         {"({ callerId, receiverId })\n\n"}
@@ -293,7 +293,7 @@ export default function LandingPage() {
          <section className="section-alt py-24 px-6">
             <div className="max-w-6xl mx-auto">
                <p className="section-label font-mono text-xs tracking-widest uppercase mb-4">
-                  Why BlueJoinet
+                  Why BlueCallio
                </p>
                <h2 className="lp-h2 font-bold text-white mb-4">
                   Enterprise-grade communication. Startup-friendly pricing.
@@ -328,7 +328,7 @@ export default function LandingPage() {
 
                   <div className="card-gradient rounded-xl border border-[#2A3D64] p-8">
                      <p className="section-label font-mono text-xs tracking-widest uppercase mb-6">
-                        The BlueJoinet way
+                        The BlueCallio way
                      </p>
                      <div className="space-y-3">
                         {[
@@ -361,7 +361,7 @@ export default function LandingPage() {
                   Any product that needs real-time video between two people
                </h2>
                <p className="text-slate-400 mb-14 max-w-2xl">
-                  BlueJoinet is B2B infrastructure. Your customers never know it
+                  BlueCallio is B2B infrastructure. Your customers never know it
                   exists — it just works, invisibly, inside your product.
                </p>
                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -539,7 +539,7 @@ export default function LandingPage() {
                      <div className="px-5 py-4 border-b border-[#1A2642] flex items-center gap-2">
                         <span className="hero-badge-dot w-2 h-2 rounded-full" />
                         <span className="text-xs text-slate-400 font-mono">
-                           BlueJoinet Playground
+                           BlueCallio Playground
                         </span>
                      </div>
                      <div className="p-6">
@@ -588,7 +588,7 @@ export default function LandingPage() {
                      <p className="text-slate-400 leading-relaxed">
                         When something breaks, you need a fast answer from
                         someone who actually knows the stack — not a chatbot
-                        pointing to a FAQ. BlueJoinet support is run by the
+                        pointing to a FAQ. BlueCallio support is run by the
                         engineers who built it.
                      </p>
                   </div>

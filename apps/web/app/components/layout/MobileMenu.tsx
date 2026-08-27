@@ -44,7 +44,7 @@ export default function MobileMenu({
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[#1A2642] px-6 py-5">
               <span className="font-mono text-lg font-bold text-white">
-                BlueJoinet
+                BlueCallio
               </span>
 
               <button

@@ -433,7 +433,7 @@ model Call {
   receiverId String
 
   // Display identity passed by the integrating app at call creation — the
-  // customer's backend owns its own users; BlueJoinet only transports/shows
+  // customer's backend owns its own users; BlueCallio only transports/shows
   // what it's given for the call UI (incoming-call screen, etc.).
   callerName    String?
   callerAvatar  String?

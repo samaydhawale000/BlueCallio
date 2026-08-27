@@ -9,7 +9,7 @@ import { MicrophoneController } from '../media/microphone';
 import { ScreenShareController } from '../media/screenShare';
 
 /**
- * Headless BlueJoinet meeting engine.
+ * Headless BlueCallio meeting engine.
  *
  * Orchestrates the signaling transport, WebRTC peer connection, and media
  * controllers behind a single clean API. Layering:
@@ -19,14 +19,14 @@ import { ScreenShareController } from '../media/screenShare';
  *   - meeting.ts → wires them together
  *
  * @example
- * const meeting = new BlueJoinet({ token, callId, signalUrl, iceServers });
+ * const meeting = new BlueCallio({ token, callId, signalUrl, iceServers });
  * await meeting.join();
  * meeting.camera.toggle();
  * meeting.microphone.isEnabled();
  * meeting.screenShare.start();
  * meeting.leave();
  */
-export class BlueJoinetMeeting {
+export class BlueCallioMeeting {
   private readonly config: EngineConfig;
   private transport: SignalingTransport | null = null;
   private pc: RTCPeerConnection | null = null;
@@ -44,9 +44,9 @@ export class BlueJoinetMeeting {
   private cleanupFns: Array<() => void> = [];
 
   constructor(config: EngineConfig) {
-    if (!config.token) throw new Error('BlueJoinet: token is required');
-    if (!config.callId) throw new Error('BlueJoinet: callId is required');
-    if (!config.signalUrl) throw new Error('BlueJoinet: signalUrl is required');
+    if (!config.token) throw new Error('BlueCallio: token is required');
+    if (!config.callId) throw new Error('BlueCallio: callId is required');
+    if (!config.signalUrl) throw new Error('BlueCallio: signalUrl is required');
     this.config = config;
 
     this.cameraCtrl = new CameraController(() => this.localStream);

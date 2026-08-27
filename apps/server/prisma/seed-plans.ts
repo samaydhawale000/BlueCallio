@@ -62,7 +62,7 @@ const PLANS = [
       'Email Support',
       'Custom Branding',
       'Custom Logo',
-      'Remove BlueJoinet Branding',
+      'Remove BlueCallio Branding',
       'Higher API Rate Limits',
       'Production Usage',
       'Better TURN Priority',

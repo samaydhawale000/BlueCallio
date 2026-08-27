@@ -220,7 +220,7 @@ export default function ApiKeysPage() {
           </div>
           <p className="text-base font-semibold text-white mb-1">No API keys yet</p>
           <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto">
-            Create a key to authenticate calls to the BlueJoinet API.
+            Create a key to authenticate calls to the BlueCallio API.
           </p>
           {projects.length === 0 ? (
             <p className="text-xs text-amber-400 mb-4">

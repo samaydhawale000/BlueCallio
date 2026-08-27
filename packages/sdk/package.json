@@ -1,7 +1,7 @@
 {
-  "name": "@bluejoinet/sdk",
+  "name": "@bluecallio/sdk",
   "version": "0.2.0",
-  "description": "Official JavaScript SDK for BlueJoinet — REST API client and headless WebRTC engine",
+  "description": "Official JavaScript SDK for BlueCallio — REST API client and headless WebRTC engine",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -19,7 +19,7 @@
     "dev": "tsc --watch"
   },
   "keywords": [
-    "bluejoinet",
+    "bluecallio",
     "video",
     "webrtc",
     "communication",

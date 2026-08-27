@@ -36,7 +36,7 @@ export const useAuthStore = create<AuthState>()(
         set({ token: null, refreshToken: null, user: null }),
     }),
     {
-      name: 'BlueJoinet-auth',
+      name: 'BlueCallio-auth',
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
       },

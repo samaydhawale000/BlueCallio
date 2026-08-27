@@ -48,8 +48,8 @@ export default function LegalLayout({
             Our engineers are one email away.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            <a href="mailto:hello@bluejoinet.com" className="inline-flex items-center gap-2 text-white font-medium text-sm px-6 py-2.5 rounded-lg transition-all hover:opacity-90" style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}>
-              hello@bluejoinet.com
+            <a href="mailto:hello@bluecallio.com" className="inline-flex items-center gap-2 text-white font-medium text-sm px-6 py-2.5 rounded-lg transition-all hover:opacity-90" style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}>
+              hello@bluecallio.com
             </a>
             <Link href="/" className="inline-flex items-center gap-2 text-slate-300 font-medium text-sm px-6 py-2.5 rounded-lg border border-[#1A2642] hover:border-[#2A3D64] transition-all">
               Back to home

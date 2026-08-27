@@ -33,7 +33,7 @@ export class InvoicePdfService {
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
-      doc.fontSize(20).text('BlueJoinet', { continued: false });
+      doc.fontSize(20).text('BlueCallio', { continued: false });
       doc.fontSize(10).fillColor('#555').text(`Invoice ${invoice.invoiceNumber ?? invoice.id}`);
       doc.moveDown(1.5);
 

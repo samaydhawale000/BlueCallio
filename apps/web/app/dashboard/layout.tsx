@@ -137,10 +137,10 @@ const logout = useAuthStore((s) => s.logout);
           <span
             className="w-7 h-7 rounded-lg flex items-center justify-center text-sm"
           >
-            <Image src={logo} alt="BlueJoinet" width={28} height={28} className="h-6 w-6 object-contain" />
+            <Image src={logo} alt="BlueCallio" width={28} height={28} className="h-6 w-6 object-contain" />
           </span>
           <span className="font-mono font-bold text-white tracking-tight">
-            BlueJoinet
+            BlueCallio
           </span>
         </Link>
         <button
@@ -176,10 +176,10 @@ const logout = useAuthStore((s) => s.logout);
             <span
               className="w-8 h-8 rounded-lg flex items-center justify-center text-base"
             >
-              <Image src={logo} alt="BlueJoinet" width={32} height={32} className="h-7 w-7 object-contain" />
+              <Image src={logo} alt="BlueCallio" width={32} height={32} className="h-7 w-7 object-contain" />
             </span>
             <span className="font-mono font-bold text-white tracking-tight">
-              BlueJoinet
+              BlueCallio
             </span>
           </Link>
           <button

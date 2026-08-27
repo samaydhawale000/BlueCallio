@@ -125,11 +125,11 @@ export interface ExchangeResult {
   branding: Branding;
 }
 
-export interface BlueJoinetConfig {
+export interface BlueCallioConfig {
   apiKey: string;
-  /** BlueJoinet API base URL. Default: https://api.bluejoinet.com */
+  /** BlueCallio API base URL. Default: https://api.bluecallio.com */
   baseUrl?: string;
-  /** Hosted call UI base URL. Default: https://call.bluejoinet.com */
+  /** Hosted call UI base URL. Default: https://call.bluecallio.com */
   callBaseUrl?: string;
 }
 

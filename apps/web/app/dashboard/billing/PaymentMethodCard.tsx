@@ -183,7 +183,7 @@ export default function PaymentMethodCard({ paymentMethods, onChanged, showToast
         key: RAZORPAY_KEY_ID,
         order_id: orderId,
         customer_id: customerId,
-        name: 'BlueJoinet',
+        name: 'BlueCallio',
         description: 'Save your card for usage-based billing',
         prefill: { contact: phone },
         handler: async (response: any) => {

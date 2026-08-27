@@ -9,7 +9,7 @@ export default function Hero() {
       </div>
 
       <h1 className="text-5xl font-bold text-white leading-tight">
-        Experience BlueJoinet
+        Experience BlueCallio
         <br />
         before integrating it.
       </h1>

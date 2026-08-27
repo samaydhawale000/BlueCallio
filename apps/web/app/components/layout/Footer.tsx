@@ -21,7 +21,7 @@ const footerLinks = {
 
 Resources: [
     { name: "FAQ", href: "/faq" },
-    { name: "Support", href: "mailto:hello@bluejoinet.com" },
+    { name: "Support", href: "mailto:hello@bluecallio.com" },
     { name: "Docs", href: "/docs" },
     { name: "Roadmap", href: "/docs#faq" },
   ],
@@ -67,13 +67,13 @@ const pathname = usePathname();
             >
               <Image
                 src={logo}
-                alt="BlueJoinet"
+                alt="BlueCallio"
                 width={38}
                 height={38}
               />
 
               <span className="text-2xl font-bold text-white">
-                BlueJoinet
+                BlueCallio
               </span>
             </Link>
 
@@ -85,7 +85,7 @@ const pathname = usePathname();
 
             <div className="mt-8 flex gap-3">
 
-              <Social href="mailto:hello@bluejoinet.com">
+              <Social href="mailto:hello@bluecallio.com">
                 <Mail size={18} />
               </Social>
 
@@ -130,7 +130,7 @@ const pathname = usePathname();
         <div className="flex flex-col items-center justify-between gap-4 text-sm text-slate-500 md:flex-row">
 
           <span>
-            © {new Date().getFullYear()} BlueJoinet. All rights reserved.
+            © {new Date().getFullYear()} BlueCallio. All rights reserved.
           </span>
 
 <div className="flex items-center gap-6">

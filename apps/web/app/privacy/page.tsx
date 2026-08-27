@@ -1,7 +1,7 @@
 import LegalLayout, { LegalSection, LegalBullets } from "../components/LegalLayout";
 
 export const metadata = {
-  title: "Privacy Policy | BlueJoinet",
+  title: "Privacy Policy | BlueCallio",
 };
 
 export default function PrivacyPage() {
@@ -9,10 +9,10 @@ export default function PrivacyPage() {
     <LegalLayout
       title="Privacy Policy"
       lastUpdated="24 August 2025"
-      intro="This Privacy Policy explains how BlueJoinet collects, uses, stores, and protects personal information when you use our website and services."
+      intro="This Privacy Policy explains how BlueCallio collects, uses, stores, and protects personal information when you use our website and services."
     >
       <LegalSection num="1" title="Information We Collect">
-        <p>Depending on how you use BlueJoinet, we may collect:</p>
+        <p>Depending on how you use BlueCallio, we may collect:</p>
         <p className="font-semibold text-slate-300">Account Information</p>
         <LegalBullets items={[
           "Name",
@@ -39,7 +39,7 @@ export default function PrivacyPage() {
         ]} />
         <p>
           Payment card details may be processed directly by our payment provider and may not be
-          stored directly by BlueJoinet.
+          stored directly by BlueCallio.
         </p>
         <p className="font-semibold text-slate-300">Usage Information</p>
         <LegalBullets items={[
@@ -68,15 +68,15 @@ export default function PrivacyPage() {
 
       <LegalSection num="2" title="Communication Data">
         <p>
-          BlueJoinet provides communication infrastructure. Depending on the implementation,
+          BlueCallio provides communication infrastructure. Depending on the implementation,
           communication data may pass through or be processed by infrastructure necessary to
           establish and maintain calls.
         </p>
         <p>
-          BlueJoinet does not intentionally use customer communication content for advertising.
+          BlueCallio does not intentionally use customer communication content for advertising.
         </p>
         <p>
-          BlueJoinet provides real-time communication infrastructure and does not store recorded
+          BlueCallio provides real-time communication infrastructure and does not store recorded
           call audio or video content on our servers.
         </p>
       </LegalSection>
@@ -112,15 +112,15 @@ export default function PrivacyPage() {
 
       <LegalSection num="5" title="Google Authentication">
         <p>
-          If you use Google authentication, BlueJoinet may receive information provided by Google,
+          If you use Google authentication, BlueCallio may receive information provided by Google,
           such as your name, email address, and profile information permitted by the authentication
           flow.
         </p>
-        <p>We use this information to create and manage your BlueJoinet account.</p>
+        <p>We use this information to create and manage your BlueCallio account.</p>
       </LegalSection>
 
       <LegalSection num="6" title="Cookies">
-        <p>BlueJoinet may use cookies and similar technologies for:</p>
+        <p>BlueCallio may use cookies and similar technologies for:</p>
         <LegalBullets items={[
           "Authentication",
           "Session management",
@@ -135,7 +135,7 @@ export default function PrivacyPage() {
       </LegalSection>
 
       <LegalSection num="7" title="Data Sharing">
-        <p>BlueJoinet may share information with service providers necessary to operate the Service.</p>
+        <p>BlueCallio may share information with service providers necessary to operate the Service.</p>
         <p>Examples include:</p>
         <LegalBullets items={[
           "Cloud infrastructure providers",
@@ -170,10 +170,10 @@ export default function PrivacyPage() {
 
       <LegalSection num="10" title="International Data Transfers">
         <p>
-          Because BlueJoinet may use infrastructure and service providers located in different
+          Because BlueCallio may use infrastructure and service providers located in different
           countries, information may be processed outside the country where you live.
         </p>
-        <p>Where required, BlueJoinet will take appropriate measures for international transfers.</p>
+        <p>Where required, BlueCallio will take appropriate measures for international transfers.</p>
       </LegalSection>
 
       <LegalSection num="11" title="Your Rights">
@@ -186,12 +186,12 @@ export default function PrivacyPage() {
           "Object to certain processing",
           "Request data portability",
         ]} />
-        <p>Requests can be submitted to: hello@bluejoinet.com</p>
+        <p>Requests can be submitted to: hello@bluecallio.com</p>
       </LegalSection>
 
       <LegalSection num="12" title="Children's Privacy">
         <p>
-          BlueJoinet is intended for businesses and developers and is not directed toward children.
+          BlueCallio is intended for businesses and developers and is not directed toward children.
         </p>
         <p>
           We do not knowingly collect personal information from children in violation of applicable
@@ -206,9 +206,9 @@ export default function PrivacyPage() {
 
       <LegalSection num="14" title="Contact">
         <LegalBullets items={[
-          "BlueJoinet",
-          "Privacy Email: hello@bluejoinet.com",
-          "Website: https://bluejoinet.com",
+          "BlueCallio",
+          "Privacy Email: hello@bluecallio.com",
+          "Website: https://bluecallio.com",
         ]} />
       </LegalSection>
     </LegalLayout>

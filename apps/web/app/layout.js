@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "BlueJoinet — Video Communication Infrastructure",
+  title: "BlueCallio — Video Communication Infrastructure",
   description:
     "REST APIs, WebSocket signaling, and a hosted call UI for any software product. No frontend SDK required.",
 };

@@ -13,7 +13,7 @@ import type { PaymentService } from '../payment/payment.service';
 const PHONE_RE = /^\+[1-9]\d{7,14}$/;
 
 /**
- * BlueJoinet v1 billing = usage-based (see UsageBillingService,
+ * BlueCallio v1 billing = usage-based (see UsageBillingService,
  * RatingEngineService, UsageSegmentService — that is the active model
  * calls are actually metered and charged against, enforced via
  * UsageBillingService.canStartCall).
