@@ -209,6 +209,15 @@ export class AuthService {
     return tokens;
   }
 
+  /**
+   * Contact number, collected once right after login (not re-asked later,
+   * e.g. when saving a card) — see BillingService.setContactPhone for why
+   * Razorpay needs this synced onto the payment-provider customer too.
+   */
+  async setPhone(userId: string, phone: string) {
+    return this.billingService.setContactPhone(userId, phone);
+  }
+
   async logout(userId: string) {
     await this.prisma.user.update({
       where: {

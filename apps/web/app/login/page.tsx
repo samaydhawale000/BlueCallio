@@ -30,7 +30,7 @@ const ARCHITECTURE = [
 const TRUST_POINTS = [
   'Secure authentication',
   'Trusted by developers',
-  'No per-minute pricing',
+  'Transparent, predictable billing',
 ];
 
 export default function LoginPage() {

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import LegalLayout, { LegalSection, LegalBullets } from "../components/LegalLayout";
+import { api } from "../lib/api";
 
 export default function BillingTermsPage() {
   const [rates, setRates] = useState<{
@@ -15,9 +16,9 @@ export default function BillingTermsPage() {
 
   useEffect(() => {
     let active = true;
-    fetch("/billing/rates")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => { if (active && data) setRates(data); })
+    api
+      .get("/billing/rates")
+      .then((res) => { if (active) setRates(res.data); })
       .catch(() => {});
     return () => { active = false; };
   }, []);

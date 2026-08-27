@@ -9,6 +9,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PAYMENT_SERVICE } from '../payment/payment.service';
 import type { PaymentService } from '../payment/payment.service';
 
+/** Loose E.164 check (+ up to 15 digits) — what Razorpay requires for a contact number. */
+const PHONE_RE = /^\+[1-9]\d{7,14}$/;
+
 /**
  * BlueJoinet v1 billing = usage-based (see UsageBillingService,
  * RatingEngineService, UsageSegmentService — that is the active model
@@ -88,6 +91,7 @@ export class BillingService {
         billingCycle: 'MONTHLY',
         currentPeriodStart: now,
         currentPeriodEnd: periodEnd,
+        billingAnchorDay: now.getDate(),
       },
       include: { plan: true },
     });
@@ -179,7 +183,14 @@ async getBillingOverview(userId: string) {
       ];
     }
 
-    return methods.map((m) => ({ ...m, default: m.id === user?.razorpayTokenId }));
+    return methods.map((m) => ({
+      ...m,
+      brand: m.brand ?? (m.id === user?.razorpayTokenId ? user.cardBrand : null),
+      last4: m.last4 ?? (m.id === user?.razorpayTokenId ? user.cardLast4 : null),
+      expMonth: m.expMonth ?? (m.id === user?.razorpayTokenId ? user.cardExpMonth : null),
+      expYear: m.expYear ?? (m.id === user?.razorpayTokenId ? user.cardExpYear : null),
+      default: m.id === user?.razorpayTokenId,
+    }));
   }
 
   /**
@@ -273,6 +284,7 @@ async getBillingOverview(userId: string) {
       ? await this.payments.createCustomer({
           email: user.email || '',
           name: user.name,
+          contact: user.phone,
           userId,
         })
       : `cus_mock_${userId}`;
@@ -294,13 +306,58 @@ async getBillingOverview(userId: string) {
   }
 
   /**
-   * Create a ₹0 Razorpay order so the frontend can open the Checkout modal
-   * in "save card" mode (token.request = true). Returns the order id.
+   * Create a ₹1 Razorpay card-mandate authorisation order so the frontend
+   * can open the Checkout modal with recurring = true. Returns the order id.
+   *
+   * The contact phone number Razorpay requires to authorise a recurring
+   * mandate is collected once at login (see AuthService.setPhone) and kept
+   * in sync on the Razorpay customer — not re-collected here.
    */
   async createPaymentSetup(userId: string) {
     const customerId = await this.ensureRazorpayCustomer(userId);
+
+    if (this.payments.isConfigured()) {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { phone: true },
+      });
+      if (!user?.phone) {
+        throw new BadRequestException(
+          'Add a contact phone number to your account before saving a card.',
+        );
+      }
+      await this.payments.updateCustomerContact(customerId, user.phone);
+    }
+
     const setup = await this.payments.createSetupIntent(customerId);
     return { clientSecret: setup.clientSecret, customerId };
+  }
+
+  /**
+   * Sets the user's contact phone number (required by Razorpay to authorise
+   * a recurring card mandate) and, if a Razorpay customer already exists,
+   * syncs it there immediately — covers customers created before this field
+   * existed, which Razorpay would otherwise reject with "The contact field
+   * is required for recurring links".
+   */
+  async setContactPhone(userId: string, phone: string) {
+    const trimmed = phone?.trim();
+    if (!trimmed || !PHONE_RE.test(trimmed)) {
+      throw new BadRequestException(
+        'Enter a valid phone number with country code, e.g. +919876543210.',
+      );
+    }
+
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: { phone: trimmed },
+    });
+
+    if (user.razorpayCustomerId && this.payments.isConfigured()) {
+      await this.payments.updateCustomerContact(user.razorpayCustomerId, trimmed);
+    }
+
+    return { phone: trimmed };
   }
 
   /**
@@ -520,6 +577,11 @@ const priceId = plan.razorpayPlanId;
     return { checkoutUrl: session.url, sessionId: session.sessionId, minutes };
   }
 
+  /**
+   * Cancels at period end, not immediately: the customer keeps the plan
+   * (and gets billed one final invoice for usage already incurred) through
+   * currentPeriodEnd, honored by BillingJobsService.renewDueSubscriptions.
+   */
   async cancelSubscription(userId: string) {
     const sub = await this.getCurrentSubscription(userId);
     if (!sub) throw new NotFoundException('No subscription found');
@@ -531,7 +593,12 @@ const priceId = plan.razorpayPlanId;
       data: { cancelAtPeriodEnd: true },
     });
     await this.logAudit(userId, 'SUBSCRIPTION_CANCELED', { subscriptionId: sub.id });
-    return updated;
+    return {
+      ...updated,
+      message: sub.currentPeriodEnd
+        ? `Your plan will remain active until ${sub.currentPeriodEnd.toDateString()}, after which it will not renew.`
+        : 'Your plan will not renew at the end of the current cycle.',
+    };
   }
 
   async resumeSubscription(userId: string) {
@@ -724,30 +791,69 @@ async getRevenue() {
 
   // ── LEGACY: Mock upgrade (no Razorpay configured) ──
   private async mockUpgrade(userId: string, plan: any) {
-    const sub = await this.getOrCreateFreeSubscription(userId);
-    const now = new Date();
-    const periodEnd = new Date(now);
-    periodEnd.setMonth(periodEnd.getMonth() + 1);
+    const updated = await this.changePlanWithProration(userId, plan.slug);
+    await this.logAudit(userId, 'SUBSCRIPTION_CREATED', { plan: plan.slug });
+    return { plan: plan.name, status: updated.status, isMock: true };
+  }
 
-    await this.prisma.usage.deleteMany({
-      where: { companyId: userId },
-    });
+  /**
+   * Switch the user's plan immediately, mid-cycle, without disturbing the
+   * current billing cycle's boundaries or already-accrued Usage — those
+   * must survive so the eventual invoice for this cycle bills usage
+   * correctly regardless of which plan was active when it accrued.
+   *
+   * Cost is reconciled via a deferred ProrationAdjustment folded into the
+   * NEXT invoice (see InvoiceBillingService.generateInvoiceForCycle), not
+   * charged synchronously: standard days-remaining proration — credit the
+   * unused portion of the old plan, charge the remaining portion of the new
+   * plan, for the days left in the current cycle. Free-plan changes never
+   * prorate a cash payout, only forfeit the remainder.
+   */
+  async changePlanWithProration(userId: string, newPlanSlug: string) {
+    const newPlan = await this.getPlanBySlug(newPlanSlug);
+    if (!newPlan) throw new NotFoundException('Plan not found');
+
+    const sub = await this.getOrCreateFreeSubscription(userId);
+    const oldPlan = sub.plan;
+
+    if (sub.currentPeriodStart && sub.currentPeriodEnd && oldPlan.id !== newPlan.id) {
+      const cycleMs = sub.currentPeriodEnd.getTime() - sub.currentPeriodStart.getTime();
+      const daysInCycle = Math.max(1, cycleMs / 86400000);
+      const now = new Date();
+      const daysRemaining = Math.max(
+        0,
+        (sub.currentPeriodEnd.getTime() - now.getTime()) / 86400000,
+      );
+
+      const oldDailyRate = (oldPlan.monthlyPrice ?? 0) / daysInCycle;
+      const newDailyRate = (newPlan.monthlyPrice ?? 0) / daysInCycle;
+      const credit = Math.round(oldDailyRate * daysRemaining);
+      const charge = Math.round(newDailyRate * daysRemaining);
+      const netAdjustmentPaise = charge - credit;
+
+      if (netAdjustmentPaise !== 0) {
+        await this.prisma.prorationAdjustment.create({
+          data: {
+            userId,
+            amountPaise: netAdjustmentPaise,
+            reason: `plan_change:${oldPlan.slug}->${newPlan.slug}`,
+          },
+        });
+      }
+    }
 
     const updated = await this.prisma.subscription.update({
       where: { id: sub.id },
       data: {
-        planId: plan.id,
+        planId: newPlan.id,
         status: 'ACTIVE',
-        currentPeriodStart: now,
-        currentPeriodEnd: periodEnd,
         cancelAtPeriodEnd: false,
       },
       include: { plan: true },
     });
 
-    await this.ensureUsageRecord(userId, sub.id, now, periodEnd);
-    await this.logAudit(userId, 'SUBSCRIPTION_CREATED', { plan: plan.slug });
-    return { plan: plan.name, status: updated.status, isMock: true };
+    await this.logAudit(userId, 'PLAN_CHANGED', { from: oldPlan.slug, to: newPlan.slug });
+    return updated;
   }
 
   // ── Webhook (Razorpay) ──────────────────────────────

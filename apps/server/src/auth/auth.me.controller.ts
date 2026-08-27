@@ -22,6 +22,7 @@ export class AuthMeController {
         email: true,
         name: true,
         avatarUrl: true,
+        phone: true,
       },
     });
 
@@ -34,6 +35,7 @@ export class AuthMeController {
       email: user.email,
       name: user.name,
       avatarUrl: user.avatarUrl,
+      phone: user.phone,
     };
   }
 }

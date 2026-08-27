@@ -14,6 +14,7 @@ import {
 import { api } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
+import { useAuthStore } from '../../store/auth.store';
 
 const RAZORPAY_KEY_ID = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? '';
 
@@ -45,9 +46,13 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 /**
  * Collect a card via the Razorpay Checkout modal in "save card" mode.
  * Flow:
- *  1. POST /billing/payment-method/setup → { orderId } (a ₹1 minimum order).
- *  2. Open Razorpay Checkout with token.request = true so the card token
- *     (token_xxx) + card metadata are captured.
+ *  1. POST /billing/payment-method/setup → { orderId, customerId } (a ₹1
+ *     minimum order flagged server-side as a card-mandate authorisation).
+ *  2. Open Razorpay Checkout with customer_id + recurring = true so the
+ *     card token (token_xxx) is saved against the customer and can be
+ *     resolved server-side afterwards. The contact number Razorpay requires
+ *     for this comes from the user's profile (collected once at login by
+ *     DashboardLayout's PhoneGate) — not re-asked here.
  *  3. POST /billing/payment-method/attach with the token + card details so
  *     the server persists them for auto-charge at month end (this becomes
  *     the new default card).
@@ -55,6 +60,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
  * locals + demos still work end to end.
  */
 export default function PaymentMethodCard({ paymentMethods, onChanged, showToast }: Props) {
+  const phone = useAuthStore((s) => s.user?.phone);
   const [flow, setFlow] = useState<FlowState>('idle');
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -153,6 +159,11 @@ export default function PaymentMethodCard({ paymentMethods, onChanged, showToast
       return;
     }
 
+    if (!phone) {
+      await finishAdd(false, 'Add a contact phone number to your account first.');
+      return;
+    }
+
     try {
       const loaded = await loadRazorpayScript();
       if (!loaded) {
@@ -162,7 +173,8 @@ export default function PaymentMethodCard({ paymentMethods, onChanged, showToast
 
       const setupRes = await api.post('/billing/payment-method/setup');
       const orderId = setupRes.data?.clientSecret ?? setupRes.data?.orderId;
-      if (!orderId) {
+      const customerId = setupRes.data?.customerId;
+      if (!orderId || !customerId) {
         await finishAdd(false, 'Could not start card setup.');
         return;
       }
@@ -170,10 +182,10 @@ export default function PaymentMethodCard({ paymentMethods, onChanged, showToast
       const options = {
         key: RAZORPAY_KEY_ID,
         order_id: orderId,
-        amount: 0,
-        currency: 'INR',
+        customer_id: customerId,
         name: 'BlueJoinet',
         description: 'Save your card for usage-based billing',
+        prefill: { contact: phone },
         handler: async (response: any) => {
           const paymentId = response?.razorpay_payment_id;
           const signature = response?.razorpay_signature;
@@ -195,7 +207,7 @@ export default function PaymentMethodCard({ paymentMethods, onChanged, showToast
           ondismiss: () => setFlow('idle'),
         },
         theme: { color: '#6366F1' },
-        token: { request: true },
+        recurring: true,
       };
 
       const rzp = new window.Razorpay(options);
@@ -209,7 +221,7 @@ export default function PaymentMethodCard({ paymentMethods, onChanged, showToast
     } catch (e: any) {
       await finishAdd(false, e?.response?.data?.message || 'Could not start card setup.');
     }
-  }, [attachMockCard, attachVerifiedCard, finishAdd, loadRazorpayScript]);
+  }, [attachMockCard, attachVerifiedCard, finishAdd, loadRazorpayScript, phone]);
 
   const handleRemove = useCallback(
     async (id: string) => {

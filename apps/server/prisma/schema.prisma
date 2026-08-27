@@ -86,6 +86,7 @@ model User {
 
   role   UserRole   @default(USER)
   status UserStatus @default(ACTIVE)
+  phone String?
 
   razorpayCustomerId String?
   razorpayTokenId    String?
@@ -93,11 +94,6 @@ model User {
   cardLast4          String?
   cardExpMonth       Int?
   cardExpYear        Int?
-
-  // Customer-configurable monthly spending cap (paise) for paid usage, on
-  // top of the free allowance. Null = no cap. Protects both the customer
-  // (e.g. a leaked API key running up a bill) and us (unbounded exposure on
-  // a card that later fails to charge).
   spendingLimitPaise Int?
 
   lastActiveAt DateTime?
@@ -110,6 +106,7 @@ projects     Project[]
   subscriptions Subscription[]
   usages        Usage[]
   usageInvoices UsageInvoice[]
+  prorationAdjustments ProrationAdjustment[]
 }
 
 model Plan {
@@ -142,6 +139,10 @@ status               BillingStatus @default(ACTIVE)
   billingCycle         BillingCycle  @default(MONTHLY)
   currentPeriodStart   DateTime?
   currentPeriodEnd     DateTime?
+  // Fixed day-of-month (1-31) this customer bills on, captured once at
+  // signup. Immutable across month-length clamping so a Jan-31 signup rolls
+  // Feb 28 -> Mar 31, not Feb 28 -> Mar 28 (see billing-cycle.util.ts).
+  billingAnchorDay     Int?
   cancelAtPeriodEnd    Boolean  @default(false)
   gracePeriodEndsAt    DateTime?
   dunningAttempts      Int      @default(0)
@@ -153,6 +154,8 @@ status               BillingStatus @default(ACTIVE)
 payments Payment[]
   invoices  Invoices[]
   usage     Usage[]
+
+  @@index([companyId])
 }
 
 model Payment {
@@ -281,14 +284,35 @@ model UsageInvoice {
   taxPaise      Int      @default(0)
   totalPaise    Int      @default(0)
   currency      String   @default("INR")
-  status        String   @default("open") // open | paid | failed | dunning
+  status        String   @default("open") // open | processing | paid | failed | dunning
   dueAt         DateTime?
   paidAt        DateTime?
+  // Dunning retry scheduling (fixed day-1/3/7 schedule from dunningStartedAt).
+  dunningStartedAt DateTime?
+  nextRetryAt   DateTime?
+  retryCount    Int      @default(0)
   createdAt     DateTime @default(now())
 
   lineItems     UsageInvoiceLineItem[]
 
   @@unique([userId, cycleStart])
+}
+
+// Staging table for upgrade/downgrade proration: one row per pending
+// credit/charge to be folded into the customer's next UsageInvoice, then
+// marked consumed. Deliberately not a full running-balance ledger — see
+// plan doc for rationale.
+model ProrationAdjustment {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amountPaise       Int      // signed: negative = credit, positive = additional charge
+  reason            String
+  createdAt         DateTime @default(now())
+  consumedAt        DateTime?
+  consumedInvoiceId String?
+
+  @@index([userId, consumedAt])
 }
 
 model UsageInvoiceLineItem {

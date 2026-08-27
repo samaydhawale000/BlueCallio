@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -20,7 +20,74 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../store/auth.store';
 import { useRequireAuth } from '../hooks/useRequireAuth';
+import { api } from '../lib/api';
+import { Button } from '../components/ui/Button';
 import logo from '../assets/images/logo.png';
+
+/** Loose E.164 check (+ up to 15 digits) — what Razorpay requires for a contact number. */
+const isValidPhone = (value: string) => /^\+[1-9]\d{7,14}$/.test(value.trim());
+
+/**
+ * Blocks the dashboard until the user has a contact phone number on file.
+ * Collected once here (not re-asked when adding a card) because Razorpay
+ * requires a contact number on the payment-provider customer before it will
+ * authorise a recurring card mandate for auto-billing.
+ */
+function PhoneGate() {
+  const setUser = useAuthStore((s) => s.setUser);
+  const user = useAuthStore((s) => s.user);
+  const [phone, setPhone] = useState('+91');
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!isValidPhone(phone)) {
+      setError('Enter a valid phone number with country code, e.g. +919876543210.');
+      return;
+    }
+    setError(null);
+    setSaving(true);
+    try {
+      await api.post('/auth/phone', { phone: phone.trim() });
+      if (user) setUser({ ...user, phone: phone.trim() });
+    } catch (e: any) {
+      setError(e?.response?.data?.message || 'Could not save your phone number.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-6" style={{ background: '#060B18' }}>
+      <div
+        className="w-full max-w-sm rounded-2xl border border-[#1A2642] p-8"
+        style={{ background: '#0D1421', boxShadow: '0 24px 60px rgba(0,0,0,0.4)' }}
+      >
+        <p className="text-lg font-bold text-white mb-1">One more thing</p>
+        <p className="text-sm text-slate-400 mb-6">
+          Add a contact number to your account. It&apos;s required to authorise cards for
+          automatic monthly billing later on.
+        </p>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <input
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="+919876543210"
+            className="w-full rounded-lg border border-[#1A2642] px-3 py-2.5 text-sm text-slate-200"
+            style={{ background: '#0A0F1E' }}
+            autoFocus
+          />
+          {error && <p className="text-xs" style={{ color: '#F87171' }}>{error}</p>}
+          <Button type="submit" loading={saving} className="w-full justify-center">
+            Continue
+          </Button>
+        </form>
+      </div>
+    </div>
+  );
+}
 
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -43,7 +110,7 @@ const logout = useAuthStore((s) => s.logout);
   const user = useAuthStore((s) => s.user);
   const router = useRouter();
   const pathname = usePathname();
-  useRequireAuth();
+  const { isReady } = useRequireAuth();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -54,6 +121,10 @@ const logout = useAuthStore((s) => s.logout);
   useEffect(() => {
     setSidebarOpen(false);
   }, [pathname]);
+
+  if (isReady && user && !user.phone) {
+    return <PhoneGate />;
+  }
 
   return (
     <div className="min-h-screen lg:flex" style={{ background: '#060B18' }}>

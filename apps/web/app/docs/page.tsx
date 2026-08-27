@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Atom, Blocks, BookOpen, Cable, CreditCard, Gauge, KeyRound, Lightbulb, Monitor, RotateCw, Server, UserRound, Webhook, Zap } from 'lucide-react';
+import { api } from '../lib/api';
 
 // ── Sidebar nav ───────────────────────────────────────────────────────────────
 const NAV = [
@@ -129,9 +130,9 @@ export default function DocsPage() {
 
   useEffect(() => {
     let active = true;
-    fetch('/billing/rates')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => { if (active && data) setRates(data); })
+    api
+      .get('/billing/rates')
+      .then((res) => { if (active) setRates(res.data); })
       .catch(() => {});
     return () => { active = false; };
   }, []);

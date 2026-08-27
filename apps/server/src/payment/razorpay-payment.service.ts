@@ -24,9 +24,9 @@ import {
  * platform is still fully testable without payment credentials.
  *
  * Saved-card flow (no Stripe-style SetupIntents):
- *  1. createSetupIntent() → creates a ₹0 order (order_id) which the frontend
- *     uses to open the Razorpay Checkout modal in "save card" mode
- *     (token.request = true).
+ *  1. createSetupIntent() → creates a ₹1 card-mandate authorisation order
+ *     (order_id) which the frontend uses to open the Razorpay Checkout modal
+ *     with recurring = true.
  *  2. attachPaymentMethod() → the Checkout handler returns a card token
  *     (token_xxx) + card metadata; we persist them on the User. This method
  *     is a no-op for Razorpay (the token is already created server-side).
@@ -87,25 +87,49 @@ export class RazorpayPaymentService implements PaymentService {
     const customer = await this.razorpay.customers.create({
       email: input.email,
       name: input.name || undefined,
-      contact: undefined,
+      contact: input.contact || undefined,
       notes: { userId: input.userId },
     });
     return customer.id;
   }
 
   /**
-   * Creates a ₹1 order (the Razorpay minimum). The order id is used by the
-   * frontend Checkout modal to capture a card token in "save card" mode
-   * (token.request = true). The user is NOT charged — the checkout handler
-   * only captures a saved-card token; the order is never captured for
-   * payment. Razorpay rejects orders below ₹1 (100 paise), so we must use the
-   * ₹1 minimum rather than ₹0.
+   * Razorpay validates the *customer's* contact field before authorising a
+   * recurring card mandate for them ("The contact field is required for
+   * recurring links") — createCustomer alone isn't enough for customers
+   * created before a phone number was on file.
+   */
+  async updateCustomerContact(customerId: string, contact: string): Promise<void> {
+    this.assertConfigured();
+    await this.razorpay.customers.edit(customerId, { contact });
+  }
+
+  /**
+   * Creates a ₹1 order (the Razorpay minimum) flagged as a card-mandate
+   * authorisation (`method: 'card'` + `token`), which is what makes Razorpay
+   * actually save a reusable token against `customerId` once the frontend
+   * completes Checkout with `recurring: true`. Without `customer_id` +
+   * `method` + `token` here, Checkout only takes a one-off payment — no
+   * token is ever created, regardless of what the frontend passes.
+   *
+   * `token.max_amount` is capped at ₹15,000 (Razorpay's ceiling for
+   * authenticating a mandate without per-charge step-up authentication) so
+   * later off-session auto-charges via createPaymentIntent don't require the
+   * customer to be present. `token.expire_at` is set 10 years out as a
+   * effectively-non-expiring mandate for this subscription.
    */
   async createSetupIntent(customerId: string): Promise<SetupIntentResult> {
     this.assertConfigured();
     const order = await this.razorpay.orders.create({
       amount: 100, // ₹1 minimum — Razorpay rejects amounts below ₹1.
       currency: 'INR',
+      customer_id: customerId,
+      method: 'card',
+      token: {
+        max_amount: 1500000, // ₹15,000 — Razorpay's no-AFA ceiling.
+        expire_at: Math.floor(Date.now() / 1000) + 10 * 365 * 24 * 60 * 60,
+        frequency: 'monthly',
+      },
       receipt: `setup_${Date.now()}`,
       notes: { customerId },
     });
@@ -135,12 +159,20 @@ export class RazorpayPaymentService implements PaymentService {
 
   /**
    * Auto-charge a saved card token (off-session / server-to-server).
+   *
+   * Razorpay's recurring-card charge is a two-step call, not a plain
+   * payments.create(): an order must exist for the charge amount, then
+   * POST /payments/create/recurring debits the token against that order.
+   * email + contact are mandatory on that second call even though the
+   * customer isn't present — Razorpay uses them for the charge notification.
    */
   async createPaymentIntent(input: {
     customerId: string;
     amountPaise: number;
     currency?: string;
     tokenId?: string | null;
+    email: string;
+    contact: string;
     metadata?: Record<string, string>;
   }): Promise<PaymentIntentResult> {
     this.assertConfigured();
@@ -149,13 +181,24 @@ export class RazorpayPaymentService implements PaymentService {
         'Razorpay tokenId is required to charge a saved card.',
       );
     }
-    const payload: Record<string, any> = {
+    const currency = input.currency || 'INR';
+    const order = await this.razorpay.orders.create({
       amount: input.amountPaise,
-      currency: input.currency || 'INR',
-      token: { id: input.tokenId },
+      currency,
+      payment_capture: true,
       notes: input.metadata,
-    };
-    const payment = await this.razorpay.payments.create(payload);
+    });
+    const payment = await this.razorpay.payments.createRecurringPayment({
+      email: input.email,
+      contact: input.contact,
+      amount: input.amountPaise,
+      currency,
+      order_id: order.id,
+      customer_id: input.customerId,
+      token: input.tokenId,
+      recurring: true,
+      notes: input.metadata,
+    });
     return {
       id: payment.id,
       clientSecret: null,
@@ -249,15 +292,17 @@ export class RazorpayPaymentService implements PaymentService {
     this.assertConfigured();
     try {
       const res = await this.razorpay.customers.fetchTokens(customerId);
-      const items: any[] = res?.items ?? [];
+      const items: any[] = Array.isArray(res)
+        ? res
+        : res?.items ?? res?.data ?? [];
       return items.map((t: any) => {
-        const card = t?.card || {};
+        const card = t?.card || t || {};
         return {
           id: t?.token ?? t?.id ?? null,
-          brand: card?.network ?? card?.issuer ?? null,
-          last4: card?.last4 ?? null,
-          expMonth: card?.expirymonth != null ? Number(card.expirymonth) : null,
-          expYear: card?.expiryyear != null ? Number(card.expiryyear) : null,
+          brand: card?.network ?? card?.brand ?? card?.issuer ?? null,
+          last4: card?.last4 ?? card?.last_4 ?? card?.lastFour ?? null,
+          expMonth: this.readCardNumber(card, 'expirymonth', 'expiry_month', 'expMonth'),
+          expYear: this.readCardNumber(card, 'expiryyear', 'expiry_year', 'expYear'),
         };
       });
     } catch {
@@ -272,17 +317,22 @@ export class RazorpayPaymentService implements PaymentService {
     this.assertConfigured();
     try {
       const t = await this.razorpay.customers.fetchToken(customerId, tokenId);
-      const card = t?.card || {};
+      const card = t?.card || t || {};
       return {
         id: t?.token ?? tokenId,
-        brand: card?.network ?? card?.issuer ?? null,
-        last4: card?.last4 ?? null,
-        expMonth: card?.expirymonth != null ? Number(card.expirymonth) : null,
-        expYear: card?.expiryyear != null ? Number(card.expiryyear) : null,
+        brand: card?.network ?? card?.brand ?? card?.issuer ?? null,
+        last4: card?.last4 ?? card?.last_4 ?? card?.lastFour ?? null,
+        expMonth: this.readCardNumber(card, 'expirymonth', 'expiry_month', 'expMonth'),
+        expYear: this.readCardNumber(card, 'expiryyear', 'expiry_year', 'expYear'),
       };
     } catch {
       return null;
     }
+  }
+
+  private readCardNumber(card: any, ...keys: string[]): number | null {
+    const value = keys.map((key) => card?.[key]).find((candidate) => candidate != null);
+    return value != null && value !== '' ? Number(value) : null;
   }
 
   async deletePaymentMethod(customerId: string, tokenId: string): Promise<void> {
@@ -336,7 +386,15 @@ export class RazorpayPaymentService implements PaymentService {
     }
     // fetchTokens returns the customer's saved tokens; the one just created
     // by this Checkout session is the most recent.
-    return tokens[0];
+    const token = tokens[0];
+    const paymentCard = payment?.card || {};
+    return {
+      ...token,
+      brand: token.brand ?? paymentCard.network ?? paymentCard.brand ?? paymentCard.issuer ?? null,
+      last4: token.last4 ?? paymentCard.last4 ?? paymentCard.last_4 ?? null,
+      expMonth: token.expMonth ?? this.readCardNumber(paymentCard, 'expirymonth', 'expiry_month', 'expMonth'),
+      expYear: token.expYear ?? this.readCardNumber(paymentCard, 'expiryyear', 'expiry_year', 'expYear'),
+    };
   }
 
   async createPortalSession(_customerId: string): Promise<string> {

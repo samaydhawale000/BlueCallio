@@ -233,7 +233,8 @@ export default function LandingPage() {
                <p className="text-balance text-slate-400 text-lg leading-relaxed mb-10 max-w-2xl">
                   Integrate secure voice and video calling with just two API
                   calls. No WebRTC expertise, no frontend SDK, no complex
-                  infrastructure, and no unpredictable per-minute billing.
+                  infrastructure — just transparent, per-minute rates on top
+                  of a generous free allowance, with no surprise fees.
                   BlueJoinet gives startups everything they need to launch
                   communication features faster.
                </p>

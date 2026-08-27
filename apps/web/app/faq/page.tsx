@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { api } from '../lib/api';
 
 const FAQ_GROUPS = [
   {
@@ -126,9 +127,9 @@ export default function FaqPage() {
 
   useEffect(() => {
     let active = true;
-    fetch('/billing/rates')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => { if (active && data) setRates(data); })
+    api
+      .get('/billing/rates')
+      .then((res) => { if (active) setRates(res.data); })
       .catch(() => {});
     return () => { active = false; };
   }, []);
@@ -146,7 +147,7 @@ export default function FaqPage() {
     { q: 'How does usage-based pricing work?', a: `There are no subscriptions or up-front fees. You pay a simple per-participant-minute rate only for minutes beyond the free allowance: audio ${audioRate}/min, video ${videoRate}/min, and screen share +${screenRate}/min (added on top of video).` },
     { q: 'Is screen sharing billable separately?', a: `Yes. Screen sharing is always billable at +${screenRate} per participant-minute on top of the video rate, and has no free allowance.` },
     { q: 'Do I need to add a payment method to start?', a: 'No. Your free allowance covers development and prototyping. You only add a payment method when you go to production and exceed the free minutes.' },
-    { q: 'When and how am I charged?', a: `At the end of each month we generate an invoice for your billable usage and charge your saved card automatically. A GST of ${gst}% applies on billable usage.` },
+    { q: 'When and how am I charged?', a: `At the end of each billing cycle (monthly, anchored to the date you started your plan) we generate an invoice for your billable usage and charge your saved card automatically. A GST of ${gst}% applies on billable usage.` },
     { q: 'What happens if a payment fails?', a: 'We retry, notify you, and enter a 7-day grace period. During grace you can keep existing calls, but you cannot start new ones until the payment succeeds. Active calls are never interrupted.' },
     { q: 'Can I see my usage and invoices?', a: 'Yes. The dashboard Usage page shows per-type minutes and estimated month-end cost, and the Billing page lists your payment methods and past invoices.' },
     { q: 'Is every feature included on the free tier?', a: 'Yes. Hosted UI, React Components, Headless SDK, REST API, WebSocket signaling, and the developer dashboard are all available. You only pay for minutes beyond the free allowance.' },

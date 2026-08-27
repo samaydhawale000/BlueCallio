@@ -51,4 +51,17 @@ export class AuthController {
       req.user.userId,
     );
   }
+
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @UseGuards(JwtGuard)
+  @Post('phone')
+  setPhone(
+    @Req() req: any,
+    @Body() body: { phone: string },
+  ) {
+    return this.authService.setPhone(
+      req.user.userId,
+      body.phone,
+    );
+  }
 }

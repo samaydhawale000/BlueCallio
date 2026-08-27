@@ -58,6 +58,7 @@ setTokens(res.data.accessToken, res.data.refreshToken);
             email: u.email ?? null,
             name: u.name ?? null,
             avatarUrl: u.avatarUrl ?? null,
+            phone: u.phone ?? null,
           });
         }
         router.push('/dashboard');
