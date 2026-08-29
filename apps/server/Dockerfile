@@ -50,4 +50,4 @@ COPY --from=builder /app/apps/server/dist ./apps/server/dist
 EXPOSE 3005
 
 # Run migrations then start
-CMD ["sh", "-c", "cd apps/server && npx prisma migrate deploy && node dist/main"]
+CMD ["sh", "-c", "cd apps/server && npx prisma migrate deploy && node dist/src/main.js"]
