@@ -67,9 +67,6 @@ services:
 
   # ── Next.js Web App ─────────────────────────────────────────────────────────
   web:
-    build:
-      context: ..
-      dockerfile: apps/web/Dockerfile
 
     restart: unless-stopped
 
