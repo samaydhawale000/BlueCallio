@@ -373,30 +373,14 @@ export class InvoiceBillingService {
     return invoice;
   }
 
-  /**
-   * A single invoice enriched with the user + (current, best-effort — plan
-   * history isn't tracked per invoice) plan info needed to render a PDF.
-   */
+  /** A single invoice enriched with the user info needed to render a PDF. */
   async getInvoiceForPdf(userId: string, invoiceId: string) {
     const invoice = await this.getInvoiceForUser(userId, invoiceId);
-    const [user, sub] = await Promise.all([
-      this.prisma.user.findUnique({
-        where: { id: userId },
-        select: { name: true, email: true, cardBrand: true, cardLast4: true },
-      }),
-      this.prisma.subscription.findFirst({
-        where: { companyId: userId },
-        orderBy: { createdAt: 'desc' },
-        include: { plan: true },
-      }),
-    ]);
-    return {
-      ...invoice,
-      user: user!,
-      planName: sub?.plan?.name ?? null,
-      planPricePaise: sub?.plan?.monthlyPrice ?? null,
-      includedMinutes: sub?.plan?.includedMinutes ?? null,
-    };
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, email: true, cardBrand: true, cardLast4: true },
+    });
+    return { ...invoice, user: user! };
   }
 
   /**

@@ -4,7 +4,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CallGateway } from '../socket/gateways/call.gateway';
 import { TurnService } from '../turn/turn.service';
 import { UsageBillingService } from '../billing/usage-billing.service';
-import { BillingService } from '../billing/billing.service';
 
 @Injectable()
 export class AdminService {
@@ -13,7 +12,6 @@ export class AdminService {
     private callGateway: CallGateway,
     private turnService: TurnService,
     private usageBilling: UsageBillingService,
-    private billingService: BillingService,
   ) {}
 
   // ── Overview ──────────────────────────────────────────
@@ -23,16 +21,15 @@ export class AdminService {
     startOfDay.setHours(0, 0, 0, 0);
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-const [totalUsers, paidUsers, totalProjects, activeCalls] =
+const [totalUsers, paidUsersAgg, totalProjects, activeCalls] =
       await Promise.all([
         this.prisma.user.count(),
-        this.prisma.subscription.count({
-          where: { plan: { slug: { not: 'free' } } },
-        }),
+        this.prisma.usageInvoice.groupBy({ by: ['userId'], where: { status: 'paid' } }),
         this.prisma.project.count(),
         this.prisma.call.count({ where: { status: { in: ['RINGING', 'ACCEPTED', 'INITIATED'] } } }),
       ]);
 
+    const paidUsers = paidUsersAgg.length;
     const freeUsers = Math.max(0, totalUsers - paidUsers);
 
     const [callsEndedToday, callsEndedMonth] = await Promise.all([
@@ -128,11 +125,6 @@ const [totalUsers, paidUsers, totalProjects, activeCalls] =
         projects: {
           include: { apiKeys: true, calls: true },
         },
-        subscriptions: {
-          take: 1,
-          orderBy: { createdAt: 'desc' },
-          include: { plan: true },
-        },
       },
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -147,14 +139,12 @@ const [totalUsers, paidUsers, totalProjects, activeCalls] =
             sum + (c.startedAt && c.endedAt ? this.diffMinutes(c.startedAt, c.endedAt) : 0),
           0,
         );
-        const sub = u.subscriptions?.[0];
         return {
           id: u.id,
           name: u.name,
           email: u.email,
           avatarUrl: u.avatarUrl,
-          plan: sub?.plan?.slug || 'free',
-          planName: sub?.plan?.name || 'Free',
+          hasPaymentMethod: !!u.razorpayTokenId,
           status: u.status,
           role: u.role,
           createdAt: u.createdAt,
@@ -184,18 +174,6 @@ const [totalUsers, paidUsers, totalProjects, activeCalls] =
       { userId, status },
     );
     return user;
-  }
-
-  /**
-   * Routes through BillingService.changePlanWithProration — the single
-   * plan-change code path — so an admin-initiated change gets the same
-   * proration treatment (and doesn't disturb the current cycle's boundaries
-   * or wipe accrued Usage) as any customer-initiated one.
-   */
-  async updateCustomerPlan(userId: string, planSlug: string) {
-    await this.billingService.changePlanWithProration(userId, planSlug);
-    await this.logAudit('PLAN_CHANGED', userId, { userId, plan: planSlug });
-    return { userId, plan: planSlug };
   }
 
   // ── Live calls ───────────────────────────────────────
@@ -363,24 +341,10 @@ async getLiveCalls(pageValue?: string) {
 
   // ── Settings ─────────────────────────────────────────
 async getSettings() {
-    const plans = await this.prisma.plan.findMany({
-      orderBy: { displayOrder: 'asc' },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        monthlyPrice: true,
-        includedMinutes: true,
-        status: true,
-        displayOrder: true,
-      },
-    });
-
     const maintenanceMode = await this.getSetting<boolean>('maintenanceMode');
     const announcement = await this.getSetting<string | null>('announcement');
 
     return {
-      plans,
       maintenanceMode: maintenanceMode ?? false,
       announcement: announcement ?? null,
     };
