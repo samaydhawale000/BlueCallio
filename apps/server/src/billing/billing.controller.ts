@@ -26,8 +26,6 @@ import { RatingEngineService } from './rating-engine.service';
 import { InvoicePdfService } from './invoice-pdf.service';
 import { PAYMENT_SERVICE } from '../payment/payment.service';
 import type { PaymentService } from '../payment/payment.service';
-import { CheckoutDto } from './dto/checkout.dto';
-import { TopUpDto } from './dto/topup.dto';
 
 @Controller('billing')
 export class BillingController {
@@ -41,25 +39,13 @@ export class BillingController {
     @Inject(PAYMENT_SERVICE) private payments: PaymentService,
   ) {}
 
-// ── Public: plans list ──────────────────────────────
-  @Get('plans')
-  async getPlans() {
-    return this.billingService.getPlans();
-  }
-
-  // ── Public: billing rates (no auth — used by landing/docs/FAQ) ──
+// ── Public: billing rates (no auth — used by landing/docs/FAQ) ──
   @Get('rates')
   async getRatesPublic() {
     return this.usageBilling.getRates();
   }
 
   // ── Customer (auth) endpoints ───────────────────────
-  @Get('overview')
-  @UseGuards(JwtGuard)
-  async overview(@Req() req: any) {
-    return this.billingService.getBillingOverview(req.user.userId);
-  }
-
   @Get('invoices')
   @UseGuards(JwtGuard)
   async invoices(@Req() req: any) {
@@ -207,42 +193,6 @@ export class BillingController {
   @UseGuards(JwtGuard)
   async portal(@Req() req: any) {
     return this.billingService.createPortalSession(req.user.userId);
-  }
-
-  @Throttle({ default: { limit: 10, ttl: 60_000 } })
-  @Post('checkout')
-  @UseGuards(JwtGuard)
-  async checkout(@Req() req: any, @Body() dto: CheckoutDto) {
-    return this.billingService.createCheckout(req.user.userId, dto.planSlug);
-  }
-
-  @Throttle({ default: { limit: 10, ttl: 60_000 } })
-  @Post('topup')
-  @UseGuards(JwtGuard)
-  async topup(@Req() req: any, @Body() dto: TopUpDto) {
-    return this.billingService.topUp(
-      req.user.userId,
-      dto.minutes,
-      dto.currency,
-    );
-  }
-
-  @Post('cancel')
-  @UseGuards(JwtGuard)
-  async cancel(@Req() req: any) {
-    return this.billingService.cancelSubscription(req.user.userId);
-  }
-
-  @Post('resume')
-  @UseGuards(JwtGuard)
-  async resume(@Req() req: any) {
-    return this.billingService.resumeSubscription(req.user.userId);
-  }
-
-@Get('usage')
-  @UseGuards(JwtGuard)
-  async usage(@Req() req: any) {
-    return this.billingService.getUsageLimit(req.user.userId);
   }
 
   // ── Usage-based billing (v2) ────────────────────────

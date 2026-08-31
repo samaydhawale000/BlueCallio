@@ -34,14 +34,6 @@ export class AdminController {
     return this.adminService.updateCustomerStatus(id, body.status);
   }
 
-  @Patch('customers/:id/plan')
-  updateCustomerPlan(
-    @Param('id') id: string,
-    @Body() body: { plan: string },
-  ) {
-    return this.adminService.updateCustomerPlan(id, body.plan);
-  }
-
   @Get('calls')
   getLiveCalls(@Query('page') page?: string) {
     return this.adminService.getLiveCalls(page);

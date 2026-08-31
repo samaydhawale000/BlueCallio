@@ -13,9 +13,6 @@ function formatDate(d: Date): string {
 export type InvoiceForPdf = UsageInvoice & {
   lineItems: UsageInvoiceLineItem[];
   user: Pick<User, 'name' | 'email' | 'cardBrand' | 'cardLast4'>;
-  planName?: string | null;
-  planPricePaise?: number | null;
-  includedMinutes?: number | null;
 };
 
 /**
@@ -42,17 +39,6 @@ export class InvoicePdfService {
       doc.text(`Billing period: ${formatDate(invoice.cycleStart)} - ${formatDate(invoice.cycleEnd)}`);
       doc.text(`Invoice date: ${formatDate(invoice.createdAt)}`);
       doc.moveDown(1);
-
-      if (invoice.planName) {
-        doc.font('Helvetica-Bold').text('Plan');
-        doc.font('Helvetica').text(
-          `${invoice.planName}${invoice.planPricePaise ? `  ${formatRupees(invoice.planPricePaise)}` : ''}`,
-        );
-        if (invoice.includedMinutes) {
-          doc.text(`Included usage: ${invoice.includedMinutes.toLocaleString('en-IN')} participant minutes`);
-        }
-        doc.moveDown(1);
-      }
 
       doc.font('Helvetica-Bold').text('Usage');
       doc.font('Helvetica');

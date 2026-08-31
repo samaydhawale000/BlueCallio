@@ -40,11 +40,8 @@ enum UserStatus {
 
 enum BillingStatus {
   ACTIVE
-  TRIALING
   PAST_DUE
   CANCELED
-  INCOMPLETE
-  UNPAID
 }
 
 enum PaymentStatus {
@@ -52,11 +49,6 @@ enum PaymentStatus {
   FAILED
   PENDING
   REFUNDED
-}
-
-enum BillingCycle {
-  MONTHLY
-  YEARLY
 }
 
 enum AuditAction {
@@ -109,34 +101,11 @@ projects     Project[]
   prorationAdjustments ProrationAdjustment[]
 }
 
-model Plan {
-  id             String   @id @default(uuid())
-  name           String
-  slug           String   @unique
-  monthlyPrice   Int      @default(0)
-  currency       String   @default("INR")
-  includedMinutes Int     @default(0)
-  razorpayPlanId  String?
-  features       Json?
-  status         Boolean  @default(true)
-  displayOrder   Int      @default(0)
-
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  subscriptions  Subscription[]
-}
-
 model Subscription {
   id                   String   @id @default(uuid())
   companyId            String
   company              User     @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  planId               String
-  plan                 Plan     @relation(fields: [planId], references: [id])
-  razorpayCustomerId   String?
-  razorpaySubscriptionId String?
 status               BillingStatus @default(ACTIVE)
-  billingCycle         BillingCycle  @default(MONTHLY)
   currentPeriodStart   DateTime?
   currentPeriodEnd     DateTime?
   // Fixed day-of-month (1-31) this customer bills on, captured once at

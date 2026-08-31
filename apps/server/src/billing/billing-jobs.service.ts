@@ -149,8 +149,9 @@ export class BillingJobsService {
 
   /**
    * Any subscription that is PAST_DUE and has passed its grace period is
-   * downgraded to the Free plan (automatically). The customer can upgrade
-   * again later. Also seals any still-open dunning invoice as failed so
+   * reset to ACTIVE (giving up on collecting the unpaid invoice) unless the
+   * customer had already asked to cancel, in which case the cancellation is
+   * honored instead. Also seals any still-open dunning invoice as failed so
    * billing history doesn't show a permanently-pending state.
    */
   private async downgradePastDueSubscriptions() {
@@ -168,8 +169,8 @@ export class BillingJobsService {
       });
 
       // A customer who cancelled while their payment was failing shouldn't
-      // be silently kept alive on the Free plan when their grace period
-      // runs out — honor the cancellation instead of auto-downgrading.
+      // be silently reactivated when their grace period runs out — honor
+      // the cancellation instead of resetting them to good standing.
       if (sub.cancelAtPeriodEnd) {
         await this.prisma.subscription.update({
           where: { id: sub.id },
@@ -191,15 +192,9 @@ export class BillingJobsService {
         continue;
       }
 
-      const free = await this.prisma.plan.findUnique({
-        where: { slug: 'free' },
-      });
-      if (!free) continue;
-
       await this.prisma.subscription.update({
         where: { id: sub.id },
         data: {
-          planId: free.id,
           status: 'ACTIVE',
           cancelAtPeriodEnd: false,
           dunningAttempts: 0,
@@ -212,12 +207,12 @@ export class BillingJobsService {
         data: {
           actorId: sub.companyId,
           action: 'PLAN_CHANGED',
-          metadata: { from: 'PAST_DUE', to: 'free', reason: 'auto_downgrade' },
+          metadata: { reason: 'auto_reset_after_grace_period', from: 'PAST_DUE', to: 'ACTIVE' },
         },
       });
 
       this.logger.log(
-        `Auto-downgraded user ${sub.companyId} to Free (grace period elapsed).`,
+        `Reset subscription ${sub.id} to good standing (grace period elapsed, unpaid invoice sealed as failed).`,
       );
     }
   }

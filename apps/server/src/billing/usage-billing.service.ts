@@ -250,13 +250,8 @@ export class UsageBillingService {
       where: { id: userId },
       select: { razorpayTokenId: true },
     });
-    const sub = await this.prisma.subscription.findFirst({
-      where: { companyId: userId },
-      orderBy: { createdAt: 'desc' },
-      include: { plan: { select: { slug: true, monthlyPrice: true } } },
-    });
-    const isFreeTier = !sub || (sub.plan.monthlyPrice ?? 0) === 0;
     const hasPaymentMethod = !!user?.razorpayTokenId;
+    const isFreeTier = !hasPaymentMethod;
 
     // Free-allowance usage percentage (max of audio/video) for the 90% warning.
     const audioPct = rates.freeAudioMins > 0
