@@ -91,8 +91,8 @@ if (isCallPage || isAppPage || isAuthPage) {
             <Image
               src={logo}
               alt="BlueCallio"
-              width={30}
-              height={30}
+              width={36}
+              height={36}
               className="object-contain"
             />
 
