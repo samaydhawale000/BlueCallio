@@ -68,8 +68,8 @@ const pathname = usePathname();
               <Image
                 src={logo}
                 alt="BlueCallio"
-                width={38}
-                height={38}
+                width={46}
+                height={46}
               />
 
               <span className="text-2xl font-bold text-white">
