@@ -7,6 +7,7 @@ import { socket } from "../lib/socket";
 // ── Types ─────────────────────────────────────────────────
 
 type CallState =
+   | "lobby"
    | "connecting"
    | "waiting"
    | "incoming"
@@ -843,7 +844,11 @@ function CallPageContent() {
                   setState("error");
                   return;
                }
-               if (response.role === "CALLER") setState("waiting");
+               // Receiver keeps the original behavior exactly: stay on
+               // "connecting" until 'incoming-call' arrives, no extra step.
+               // Only the caller gets a lobby — ringing (and the ringback
+               // tone) waits for their explicit "Call" tap.
+               if (response.role === "CALLER") setState("lobby");
             },
          );
       });
@@ -874,12 +879,8 @@ function CallPageContent() {
          socket.disconnect();
          cleanup();
       };
-   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+   }, []); // eslint-disable-line react-hooks/exhaustive-deps 
 
-   // Ringback while the caller waits, incoming ringtone for the receiver —
-   // driven purely by call state (not a timer): stops the instant either
-   // state is left (accepted, declined, cancelled, busy, missed…), and on
-   // unmount via useSoundLoop's own cleanup.
    useEffect(() => {
       if (state === "waiting") {
          ringback.play();
@@ -905,9 +906,6 @@ function CallPageContent() {
    useEffect(() => {
       if (remoteVideoRef.current && remoteStream) {
          remoteVideoRef.current.srcObject = remoteStream;
-         // `autoPlay` is not consistently enough after React mounts this video
-         // element conditionally. A direct play attempt keeps remote camera video
-         // from remaining black despite a live incoming track.
          remoteVideoRef.current.play().catch(() => {});
       }
       if (remoteAudioRef.current && remoteStream) {
@@ -926,6 +924,26 @@ function CallPageContent() {
       };
    }, [isDark]);
 
+   // The only action on the lobby screen. Nothing before this point has
+   // touched the socket or requested a permission — this is the single
+   // moment both begin, for both the caller and the receiver.
+   function startCallFlow() {
+      // The socket is already connected in the background (needed so a
+      // receiver's incoming-call can arrive without an extra click) — the
+      // lobby only ever shows for the caller, so this just starts ringing.
+      setState("waiting");
+      // Tell an opener window (the Playground demo dialog) that the call has
+      // actually started, so it only advances to "join from another device"
+      // once there's really something to join — not the instant this tab
+      // opened.
+      if (window.opener) {
+         window.opener.postMessage(
+            { source: "bluecallio-call", type: "started", callId: urlCallId },
+            window.location.origin,
+         );
+      }
+   }
+
    async function sessionPost(path: string) {
       const res = await fetch(`${apiUrl}${path}`, {
          method: "POST",
@@ -941,16 +959,10 @@ function CallPageContent() {
    async function acceptCall() {
       if (!incomingData) return;
       try {
-         // Create the peer connection synchronously so the caller's offer is
-         // never dropped (the offer handler needs pcRef set). Nothing here
-         // awaits a network call, so the button responds immediately.
          setCallType(incomingData.type);
          callTypeRef.current = incomingData.type;
          const pc = pcRef.current ?? createPeer();
 
-         // Attach media before changing the call state. The caller receives the
-         // accepted event immediately and may offer straight away; preparing
-         // tracks first ensures this answer includes the receiver's camera.
          await attachMedia(pc, incomingData.type === "VIDEO")
             .catch(() => attachMedia(pc, false))
             .catch((err) => setMediaError(classifyMediaError(err)));
@@ -959,9 +971,6 @@ function CallPageContent() {
          await sessionPost(`/calls/${incomingData.callId}/accept`);
          await sessionPost(`/calls/${incomingData.callId}/join`);
          setState("in-call");
-         // Join the gateway's Socket.IO room for this call — without this, the
-         // media-state broadcasts (camera/mic/screen-share toggles,
-         // participant.updated) have nowhere to be relayed to.
          socket.emit("join-call", { callId: incomingData.callId });
          socket.emit("call.started", { callId: incomingData.callId });
       } catch (err) {
@@ -1148,6 +1157,44 @@ function CallPageContent() {
                style={{ color: isDark ? "#334155" : "#94A3B8" }}
             >
                Contact the sender for a new link.
+            </p>
+         </Screen>
+      );
+   }
+
+   if (state === "lobby") {
+      return (
+         <Screen>
+            <div
+               className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
+               style={{ background: surfaceBg, border: `2px solid ${primary}` }}
+            >
+               {callType === "VIDEO" ? <VideoIcon /> : <MicIcon />}
+            </div>
+            <p className="font-medium mb-1" style={{ color: textPrimary }}>
+               Ready to start your {callType === "VIDEO" ? "video" : "audio"}{" "}
+               call
+            </p>
+            <p
+               className="text-sm mb-8 max-w-xs"
+               style={{ color: textSecondary }}
+            >
+               We'll ask for {callType === "VIDEO" ? "camera and " : ""}
+               microphone access once you tap Call.
+            </p>
+            <button
+               onClick={startCallFlow}
+               style={{ background: "#0F3D1F" }}
+               className="w-16 h-16 rounded-full flex items-center justify-center hover:brightness-110 transition-all"
+               aria-label="Call"
+            >
+               <PhoneIcon />
+            </button>
+            <p
+               className="text-xs mt-4 font-medium tracking-wide"
+               style={{ color: textSecondary }}
+            >
+               Call
             </p>
          </Screen>
       );
@@ -1459,7 +1506,12 @@ function CallPageContent() {
                   autoPlay
                   playsInline
                   className="w-full h-full object-cover"
-                  style={{ background: surfaceBg }}
+                  style={{
+                     background: surfaceBg,
+                     // Their screen share replaces this same video track —
+                     // never mirror that, or any text/UI on it reads backwards.
+                     transform: remoteMedia.screenShare ? undefined : "scaleX(-1)",
+                  }}
                />
             ) : (
                <div
@@ -1559,6 +1611,9 @@ function CallPageContent() {
                         muted
                         playsInline
                         className="w-full h-full object-cover"
+                        style={{
+                           transform: isScreenSharing ? undefined : "scaleX(-1)",
+                        }}
                      />
                   )}
                </div>

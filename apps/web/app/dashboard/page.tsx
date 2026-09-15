@@ -303,9 +303,11 @@ const minutesUsed = usage?.minutesUsed ?? 0;
         >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-sm font-semibold text-white">Free Tier</p>
+              <p className="text-sm font-semibold text-white">
+                {currentUsage?.isFreeTier ? 'Free Tier' : 'Pay as you go'}
+              </p>
               <p className="text-xs text-slate-500 mt-0.5">
-                Pay only for what you use · {currentUsage?.freeAllowance?.audioMinutes ?? 500} audio + {currentUsage?.freeAllowance?.videoMinutes ?? 200} video mins free
+                Pay only for what you use · {currentUsage?.freeAllowance?.audioMinutes ?? 500} audio + {currentUsage?.freeAllowance?.videoMinutes ?? 200} video participant-min free/month · screen share always paid
               </p>
             </div>
             <Link
@@ -322,12 +324,18 @@ const minutesUsed = usage?.minutesUsed ?? 0;
             <MiniType label="Video" mins={videoMins} costPaise={currentUsage?.cost?.videoPaise ?? 0} showCost={!currentUsage?.isFreeTier} />
             <MiniType label="Screen Share" mins={screenMins} costPaise={currentUsage?.cost?.screenSharePaise ?? 0} showCost={!currentUsage?.isFreeTier} />
           </div>
+          <p className="text-[11px] text-slate-600 -mt-2 mb-4">
+            Shown in participant-minutes (call duration × participants using that media) — not raw call length.
+          </p>
 
           <div className="flex flex-wrap items-center justify-between mt-2 gap-3">
             <div className="flex items-center gap-6">
               <div>
-                <p className="text-xs text-slate-500">Total minutes</p>
-                <p className="text-lg font-bold text-white">{totalBillable.toFixed(2)}</p>
+                <p className="text-xs text-slate-500">Total usage</p>
+                <p className="text-lg font-bold text-white">
+                  {totalBillable.toFixed(2)}
+                  <span className="text-xs font-normal text-slate-500"> participant-min</span>
+                </p>
               </div>
               {!currentUsage?.isFreeTier && (
                 <>
@@ -338,6 +346,7 @@ const minutesUsed = usage?.minutesUsed ?? 0;
                   <div>
                     <p className="text-xs text-slate-500">Est. month-end</p>
                     <p className="text-lg font-bold text-white">{paiseToINR(monthEndCost)}</p>
+                    <p className="text-[10px] text-slate-600">projected from usage so far this cycle</p>
                   </div>
                 </>
               )}
