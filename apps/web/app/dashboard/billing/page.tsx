@@ -261,16 +261,19 @@ const u = usage?.usage;
               <Wallet size={22} />
             </div>
             <div>
-              <p className="text-lg font-bold text-white">Free Tier</p>
+              <p className="text-lg font-bold text-white">{usage?.isFreeTier ? 'Free Tier' : 'Pay as you go'}</p>
 <p className="text-sm text-slate-400 mt-0.5">
-                {free?.audioMinutes ?? 500} audio + {free?.videoMinutes ?? 200} video mins / month free · screen share always paid
+                {free?.audioMinutes ?? 500} audio + {free?.videoMinutes ?? 200} video participant-min / month free · screen share always paid
               </p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-xs text-slate-500 mb-1">Current balance</p>
+            <p className="text-xs text-slate-500 mb-1">Current balance (this cycle)</p>
             <p className="text-2xl font-bold text-white">{paiseToINR(cost?.totalPaise ?? 0)}</p>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p
+              className="text-[11px] text-slate-500 mt-0.5"
+              title="Projected total for the full cycle, based on your usage so far."
+            >
               est. month-end {paiseToINR(usage?.estimatedMonthEndPaise ?? 0)}
             </p>
           </div>
@@ -312,6 +315,7 @@ const u = usage?.usage;
           <SummaryTile
             label="Est. end-of-month"
             value={paiseToINR(usage?.estimatedMonthEndPaise ?? 0)}
+            hint="Projected total for the full cycle, based on your usage so far — not an additional charge."
           />
           <SummaryTile
             label="Next billing date"
@@ -480,9 +484,9 @@ const u = usage?.usage;
                           <span className="ml-2 text-[10px] font-medium text-indigo-400">CURRENT</span>
                         )}
                       </td>
-                      <td className="py-3 pr-4 text-slate-300">{Math.round(row.audioMinutes).toLocaleString()} min</td>
-                      <td className="py-3 pr-4 text-slate-300">{Math.round(row.videoMinutes).toLocaleString()} min</td>
-                      <td className="py-3 pr-4 text-slate-300">{Math.round(row.screenShareMinutes).toLocaleString()} min</td>
+                      <td className="py-3 pr-4 text-slate-300">{row.audioMinutes.toFixed(2)} min</td>
+                      <td className="py-3 pr-4 text-slate-300">{row.videoMinutes.toFixed(2)} min</td>
+                      <td className="py-3 pr-4 text-slate-300">{row.screenShareMinutes.toFixed(2)} min</td>
                       <td className="py-3 font-medium text-white">{paiseToINR(row.usageCostPaise)}</td>
                     </tr>
                   );
@@ -541,6 +545,7 @@ function TypeRow({
 }) {
   const pct =
     freeOf > 0 ? Math.min(100, Math.round((minutes / freeOf) * 100)) : Math.min(100, minutes > 0 ? 100 : 0);
+  const remaining = freeOf > 0 ? Math.max(0, freeOf - minutes) : 0;
   return (
     <div className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0A0F1E' }}>
       <div className="flex items-center gap-1.5 mb-1">
@@ -548,8 +553,8 @@ function TypeRow({
         <p className="text-xs text-slate-500">{label}</p>
       </div>
       <p className="text-lg font-bold text-white">
-        {Math.round(minutes).toLocaleString()}
-        <span className="text-xs font-normal text-slate-500"> min</span>
+        {minutes.toFixed(2)}
+        <span className="text-xs font-normal text-slate-500"> participant-min</span>
       </p>
       <p className="text-xs font-semibold mt-1" style={{ color }}>
         {paiseToINR(costPaise)}
@@ -558,7 +563,7 @@ function TypeRow({
       {freeOf > 0 && (
         <div className="mt-2.5">
           <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
-            <span>Free allowance: {freeOf} min</span>
+            <span>{remaining.toFixed(2)} / {freeOf} min remaining</span>
             <span>{pct}%</span>
           </div>
           <div className="h-1.5 rounded-full overflow-hidden" style={{ background: '#1A2642' }}>
@@ -581,14 +586,16 @@ function SummaryTile({
   value,
   icon,
   valueColor,
+  hint,
 }: {
   label: string;
   value: string;
   icon?: React.ReactNode;
   valueColor?: string;
+  hint?: string;
 }) {
   return (
-    <div>
+    <div title={hint}>
       <p className="text-[11px] text-slate-500 mb-1">{label}</p>
       <p
         className="text-sm font-semibold flex items-center gap-1.5 truncate"

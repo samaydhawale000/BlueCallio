@@ -40,14 +40,43 @@ export default function PlaygroundDialog({
 }) {
 const [callStatus, setCallStatus] = useState("RINGING");
   const [firstDeviceOpened, setFirstDeviceOpened] = useState(false);
+  // Tracks only "the button was clicked / window was opened" — distinct from
+  // firstDeviceOpened, which now means "the call actually started ringing".
+  // We need both so the status panel can tell the user which one they're
+  // still missing, instead of a single message that goes stale the moment
+  // they open the tab but haven't tapped Call inside it yet.
+  const [callWindowOpened, setCallWindowOpened] = useState(false);
   const [showLink, setShowLink] = useState(false);
+  const [showCallerLink, setShowCallerLink] = useState(false);
 
   // Reset status whenever the dialog/session changes.
   useEffect(() => {
     if (open && session) {
       setCallStatus("RINGING");
       setFirstDeviceOpened(false);
+      setCallWindowOpened(false);
     }
+  }, [open, session]);
+
+  // The opened call tab lands on its own "Call" lobby and only actually
+  // starts ringing once the user taps it there — so we can't advance to
+  // "join from another device" the instant the window opens (the call may
+  // not exist yet, and a device joining then would see nothing). Wait for
+  // the call tab to tell us it actually started.
+  useEffect(() => {
+    if (!open || !session) return;
+    const onMessage = (event) => {
+      if (event.origin !== window.location.origin) return;
+      if (
+        event.data?.source === "bluecallio-call" &&
+        event.data?.type === "started" &&
+        event.data?.callId === session.callId
+      ) {
+        setFirstDeviceOpened(true);
+      }
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
   }, [open, session]);
 
   // Poll the call status. The call is "connected" once both devices have
@@ -425,39 +454,100 @@ const connected = callStatus === "ACCEPTED";
                           Open the first device
                         </h3>
                       </div>
-                      <p className="text-slate-400 text-sm mb-4 leading-relaxed">
-                        Open BlueCallio on your laptop or desktop first.
-                      </p>
-<button
-                        onClick={() => {
-                          setFirstDeviceOpened(true);
-                          onOpenCaller();
-                        }}
-                        className="w-full py-3 rounded-xl text-white font-semibold transition hover:opacity-90 flex items-center justify-center gap-2"
-                        style={{
-                          background:
-                            "linear-gradient(135deg,#5B5DDB,#895DF6)",
-                        }}
-                      >
-                        Open Call on This Device
-                        <ExternalLink size={17} />
-                      </button>
+
+                      <div className="flex flex-col sm:flex-row gap-5 items-center mb-6">
+                        {/* QR */}
+                        <div className="bg-white rounded-2xl p-4 flex-shrink-0">
+                          <QRCode value={session.callerUrl} size={168} />
+                        </div>
+
+                        <div className="flex-1 w-full">
+                          <p className="text-slate-400 text-sm mb-2 leading-relaxed">
+                            Scan this QR code with your phone, or open the
+                            call right here on this device.
+                          </p>
+                          <p className="text-slate-500 text-xs mb-4 leading-relaxed">
+                            That opens a new tab with a green{" "}
+                            <span className="text-slate-300 font-medium">
+                              Call
+                            </span>{" "}
+                            button — tap it there to start ringing. This
+                            screen moves on by itself once it does.
+                          </p>
+
+                          <div className="flex flex-col gap-2.5">
+                            <button
+                              onClick={() => onCopy(session.callerUrl)}
+                              className="w-full py-2.5 rounded-xl text-white text-sm font-medium transition hover:opacity-90 flex items-center justify-center gap-2"
+                              style={{ background: "#1F2937" }}
+                            >
+                              <Copy size={16} />
+                              Copy Invite Link
+                            </button>
+                            <button
+                              onClick={() => {
+                                setCallWindowOpened(true);
+                                onOpenCaller();
+                              }}
+                              className="w-full py-2.5 rounded-xl text-white text-sm font-medium transition hover:opacity-90 flex items-center justify-center gap-2"
+                              style={{
+                                background:
+                                  "linear-gradient(135deg,#5B5DDB,#895DF6)",
+                              }}
+                            >
+                              Open Call on This Device
+                              <ExternalLink size={16} />
+                            </button>
+                          </div>
+
+                          {/* Show/hide raw link */}
+                          <button
+                            onClick={() => setShowCallerLink((s) => !s)}
+                            className="mt-3 text-xs text-slate-500 hover:text-slate-300 flex items-center gap-1 transition-colors"
+                          >
+                            {showCallerLink ? (
+                              <ChevronUp size={14} />
+                            ) : (
+                              <ChevronDown size={14} />
+                            )}
+                            {showCallerLink ? "Hide link" : "Show link"}
+                          </button>
+                          {showCallerLink && (
+                            <div
+                              className="mt-2 break-all text-[11px] text-slate-500 rounded-lg px-3 py-2"
+                              style={{
+                                background: "#0A1018",
+                                border: "1px solid #1A2A44",
+                              }}
+                            >
+                              {session.callerUrl}
+                            </div>
+                          )}
+                        </div>
+                      </div>
 
                       {/* LIVE STATUS */}
                       <div
                         className="rounded-2xl p-5 mt-6 flex items-center gap-3"
                         style={{
                           background: "#111827",
-                          border: "1px solid #5B5DDB",
+                          border: callWindowOpened
+                            ? "1px solid #FACC15"
+                            : "1px solid #5B5DDB",
                         }}
                       >
                         <div
                           className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
                           style={{
-                            background: "rgba(91,93,219,.12)",
+                            background: callWindowOpened
+                              ? "rgba(250,204,21,.12)"
+                              : "rgba(91,93,219,.12)",
                           }}
                         >
-                          <Rocket color="#818CF8" size={20} />
+                          <Rocket
+                            color={callWindowOpened ? "#FACC15" : "#818CF8"}
+                            size={20}
+                          />
                         </div>
                         <div>
                           <p
@@ -468,10 +558,14 @@ const connected = callStatus === "ACCEPTED";
                               className="w-2 h-2 rounded-full inline-block animate-pulse"
                               style={{ background: "#FACC15" }}
                             />
-                            Waiting for another device...
+                            {callWindowOpened
+                              ? "Waiting for you to tap Call..."
+                              : "Waiting for another device..."}
                           </p>
                           <p className="text-slate-400 text-xs mt-0.5">
-                            Open the first device to get started.
+                            {callWindowOpened
+                              ? "Go back to the tab you just opened and tap the green Call button — this page updates automatically once the call starts."
+                              : "Open the first device to get started."}
                           </p>
                         </div>
                       </div>

@@ -229,19 +229,40 @@ export class UsageBillingService {
     return updated;
   }
 
-/**
+  private async getAggregatedCallUsage(usageId: string) {
+    const agg = await this.prisma.callUsage.aggregate({
+      where: { usageId },
+      _sum: {
+        audioMinutes: true,
+        videoMinutes: true,
+        screenShareMinutes: true,
+        participants: true,
+      },
+      _count: true,
+    });
+    return {
+      audioMinutes: agg._sum.audioMinutes ?? 0,
+      videoMinutes: agg._sum.videoMinutes ?? 0,
+      screenShareMinutes: agg._sum.screenShareMinutes ?? 0,
+      participants: agg._sum.participants ?? 0,
+      callsCompleted: agg._count,
+    };
+  }
+
+  /**
    * Current usage + cost for the user's current cycle.
    */
   async getCurrentUsage(userId: string) {
     const usage = await this.getOrCreateUsage(userId);
     const rates = await this.getRates();
+    const totals = await this.getAggregatedCallUsage(usage.id);
     const cost = await this.computeCost({
-      audioMinutes: usage.audioMinutes,
-      videoMinutes: usage.videoMinutes,
-      screenShareMinutes: usage.screenShareMinutes,
-      participants: usage.participants,
+      audioMinutes: totals.audioMinutes,
+      videoMinutes: totals.videoMinutes,
+      screenShareMinutes: totals.screenShareMinutes,
+      participants: totals.participants,
       callsCreated: usage.callsCreated,
-      callsCompleted: usage.callsCompleted,
+      callsCompleted: totals.callsCompleted,
     });
 
     // Free-tier + payment-method status so the UI can decide whether to show
@@ -255,24 +276,24 @@ export class UsageBillingService {
 
     // Free-allowance usage percentage (max of audio/video) for the 90% warning.
     const audioPct = rates.freeAudioMins > 0
-      ? Math.round((usage.audioMinutes / rates.freeAudioMins) * 100)
+      ? Math.round((totals.audioMinutes / rates.freeAudioMins) * 100)
       : 0;
     const videoPct = rates.freeVideoMins > 0
-      ? Math.round((usage.videoMinutes / rates.freeVideoMins) * 100)
+      ? Math.round((totals.videoMinutes / rates.freeVideoMins) * 100)
       : 0;
     const freeUsagePercent = Math.max(audioPct, videoPct);
 
     // Free allowance only covers audio + video (screen share always paid).
     const billableAudio = Math.max(
       0,
-      usage.audioMinutes - rates.freeAudioMins,
+      totals.audioMinutes - rates.freeAudioMins,
     );
     const billableVideo = Math.max(
       0,
-      usage.videoMinutes - rates.freeVideoMins,
+      totals.videoMinutes - rates.freeVideoMins,
     );
     // Screen share is always billable.
-    const billableScreenShare = usage.screenShareMinutes;
+    const billableScreenShare = totals.screenShareMinutes;
 
     const billableCostAudio = billableAudio * rates.audioPaise;
     const billableCostVideo = billableVideo * rates.videoPaise;
@@ -298,12 +319,12 @@ export class UsageBillingService {
         end: usage.billingCycleEnd,
       },
       usage: {
-        audioMinutes: usage.audioMinutes,
-        videoMinutes: usage.videoMinutes,
-        screenShareMinutes: usage.screenShareMinutes,
-        participants: usage.participants,
+        audioMinutes: totals.audioMinutes,
+        videoMinutes: totals.videoMinutes,
+        screenShareMinutes: totals.screenShareMinutes,
+        participants: totals.participants,
         callsCreated: usage.callsCreated,
-        callsCompleted: usage.callsCompleted,
+        callsCompleted: totals.callsCompleted,
       },
       freeAllowance: {
         audioMinutes: rates.freeAudioMins,
@@ -389,8 +410,43 @@ cost: {
       .reverse();
 
     const total = ratedCalls.length;
+    const pageData = ratedCalls.slice((page - 1) * pageSize, page * pageSize);
+
+    const callIds = pageData.map((c) => c.callId);
+    const segmentsByCall = new Map<
+      string,
+      { audioSeconds: number; videoSeconds: number; screenShareSeconds: number }
+    >();
+    if (callIds.length) {
+      const segs = await this.prisma.usageSegment.findMany({
+        where: { callId: { in: callIds } },
+      });
+      for (const seg of segs) {
+        const entry = segmentsByCall.get(seg.callId) ?? {
+          audioSeconds: 0,
+          videoSeconds: 0,
+          screenShareSeconds: 0,
+        };
+        const seconds = Math.max(
+          0,
+          (seg.endedAt.getTime() - seg.startedAt.getTime()) / 1000,
+        );
+        if (seg.audio) entry.audioSeconds += seconds;
+        if (seg.video) entry.videoSeconds += seconds;
+        if (seg.screenShare) entry.screenShareSeconds += seconds;
+        segmentsByCall.set(seg.callId, entry);
+      }
+    }
+
     return {
-      data: ratedCalls.slice((page - 1) * pageSize, page * pageSize),
+      data: pageData.map((call) => ({
+        ...call,
+        durationSeconds: segmentsByCall.get(call.callId) ?? {
+          audioSeconds: 0,
+          videoSeconds: 0,
+          screenShareSeconds: 0,
+        },
+      })),
       total,
       page,
       pageSize,
@@ -417,7 +473,33 @@ cost: {
         take: pageSize,
       }),
     ]);
-    return { data, total, page, pageSize, pageCount: Math.max(1, Math.ceil(total / pageSize)) };
+
+    const now = Date.now();
+    const rates = await this.getRates();
+    const withCurrentRecomputed = await Promise.all(
+      data.map(async (row) => {
+        if (row.billingCycleEnd.getTime() > now) {
+          const totals = await this.getAggregatedCallUsage(row.id);
+          const billableVideo = Math.max(0, totals.videoMinutes - rates.freeVideoMins);
+          const billableAudio = Math.max(0, totals.audioMinutes - rates.freeAudioMins);
+          return {
+            ...row,
+            audioMinutes: totals.audioMinutes,
+            videoMinutes: totals.videoMinutes,
+            screenShareMinutes: totals.screenShareMinutes,
+            participants: totals.participants,
+            callsCompleted: totals.callsCompleted,
+            usageCostPaise:
+              billableAudio * rates.audioPaise +
+              billableVideo * rates.videoPaise +
+              totals.screenShareMinutes * rates.screenSharePaise,
+          };
+        }
+        return row;
+      }),
+    );
+
+    return { data: withCurrentRecomputed, total, page, pageSize, pageCount: Math.max(1, Math.ceil(total / pageSize)) };
   }
 
   /**
@@ -428,11 +510,12 @@ cost: {
   async getFreeAllowanceStatus(userId: string) {
     const usage = await this.getOrCreateUsage(userId);
     const rates = await this.getRates();
+    const totals = await this.getAggregatedCallUsage(usage.id);
     return {
-      audioRemaining: Math.max(0, rates.freeAudioMins - usage.audioMinutes),
-      videoRemaining: Math.max(0, rates.freeVideoMins - usage.videoMinutes),
-      audioExhausted: usage.audioMinutes >= rates.freeAudioMins,
-      videoExhausted: usage.videoMinutes >= rates.freeVideoMins,
+      audioRemaining: Math.max(0, rates.freeAudioMins - totals.audioMinutes),
+      videoRemaining: Math.max(0, rates.freeVideoMins - totals.videoMinutes),
+      audioExhausted: totals.audioMinutes >= rates.freeAudioMins,
+      videoExhausted: totals.videoMinutes >= rates.freeVideoMins,
     };
   }
 
@@ -497,8 +580,8 @@ cost: {
     });
     if (!user?.spendingLimitPaise) return { allowed: true };
 
-    const usage = await this.getOrCreateUsage(ownerId);
-    if (usage.usageCostPaise >= user.spendingLimitPaise) {
+    const current = await this.getCurrentUsage(ownerId);
+    if (current.cost.totalPaise >= user.spendingLimitPaise) {
       return {
         allowed: false,
         reason: `You've reached your monthly spending limit of ₹${(user.spendingLimitPaise / 100).toFixed(2)}. Raise or remove it in Billing settings to continue making calls.`,
