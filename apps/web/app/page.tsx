@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import logo from "./assets/images/logo.png";
+import heroPreview from "./assets/images/hero-preview.png";
 import StripeGradient from "./components/gradient/StripeGradient";
 import PricingSection from "./components/PricingSection";
 import { Atom, Blocks, BookOpen, BriefcaseBusiness, Globe2, Headphones, Monitor, ShoppingCart, Sparkles, Stethoscope, Target, Wrench } from 'lucide-react';
@@ -224,67 +225,80 @@ export default function LandingPage() {
 
                <h1 className="lp-h1 font-bold text-white leading-tight mb-6">
                   Build real-time communication into your product
-                  <br />
                   <span className="gradient-text-hero">
-                     in minutes, not weeks.
+                    {" "} in minutes, not weeks.
                   </span>
                </h1>
 
-               <p className="text-balance text-slate-400 text-lg leading-relaxed mb-10 max-w-2xl">
-                  Integrate secure voice and video calling with just two API
-                  calls. No WebRTC expertise, no frontend SDK, no complex
+               <p className="text-balance text-slate-400 text-lg leading-relaxed mb-6">
+                  Integrate secure voice and video calling with just two API calls. No WebRTC expertise, no frontend SDK, no complex
                   infrastructure — just transparent, per-minute rates on top
                   of a generous free allowance, with no surprise fees.
                   BlueCallio gives startups everything they need to launch
                   communication features faster.
                </p>
 
-               <div className="flex flex-wrap gap-4 mb-16">
-                  <Link
-                     href="/dashboard"
-                     className="btn-primary inline-flex items-center gap-2 text-white font-medium text-sm px-6 py-3 rounded-lg transition-all hover:opacity-90"
-                  >
-                     Start building free<span>→</span>
-                  </Link>
-                  <Link
-                     href="/docs"
-                     className="btn-secondary inline-flex items-center gap-2 font-medium text-sm px-6 py-3 rounded-lg border border-[#1A2642] transition-all hover:border-slate-500 hover:text-white text-slate-300"
-                  >
-                     Read the docs
-                  </Link>
-               </div>
+               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                  <div>
+                     <div className="flex flex-wrap gap-4 mb-8">
+                        <Link
+                           href="/dashboard"
+                           className="btn-primary inline-flex items-center gap-2 text-white font-medium text-sm px-6 py-3 rounded-lg transition-all hover:opacity-90"
+                        >
+                           Start building free<span>→</span>
+                        </Link>
+                        <Link
+                           href="/docs"
+                           className="btn-secondary inline-flex items-center gap-2 font-medium text-sm px-6 py-3 rounded-lg border border-[#1A2642] transition-all hover:border-slate-500 hover:text-white text-slate-300"
+                        >
+                           Read the docs
+                        </Link>
+                     </div>
 
-               {/* Code snippet */}
-               <div className="lp-code-block max-w-2xl rounded-xl overflow-hidden border border-[#1A2642]">
-                  <div className="flex items-center gap-2 px-4 py-3 border-b border-[#1A2642]">
-                     <span className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
-                     <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
-                     <span className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
-                     <span className="font-mono text-slate-500 text-xs ml-2">
-                        your-server.js
-                     </span>
-                     <span className="ml-auto text-xs text-slate-600 font-mono">
-                        integration takes minutes, not days
-                     </span>
+                     {/* Code snippet */}
+                     <div className="lp-code-block rounded-xl overflow-hidden border border-[#1A2642]">
+                        <div className="flex items-center gap-2 px-4 py-3 border-b border-[#1A2642]">
+                           <span className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
+                           <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
+                           <span className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
+                           <span className="font-mono text-slate-500 text-xs ml-2">
+                              your-server.js
+                           </span>
+                           <span className="ml-auto text-xs text-slate-600 font-mono hidden sm:inline">
+                              integration takes minutes, not days
+                           </span>
+                        </div>
+                        <pre className="lp-pre font-mono text-sm px-5 py-5 overflow-x-auto">
+                           <span className="tok-comment">{`// 1. Create a call from your backend\n`}</span>
+                           <span className="tok-keyword">{"const "}</span>
+                           <span className="tok-base">
+                              {"{ callId, hostedUrl, participants } = "}
+                           </span>
+                           <span className="tok-async">{"await "}</span>
+                           <span className="tok-base">{"BlueCallio."}</span>
+                           <span className="tok-fn">{"createCall"}</span>
+                           <span className="tok-base">
+                              {"({ callerId, receiverId })\n\n"}
+                           </span>
+                           <span className="tok-comment">{`// 2. Redirect each user — you're done\n`}</span>
+                           <span className="tok-async">{"redirect"}</span>
+                           <span className="tok-base">{`(alice, participants[0].hostedUrl)\n`}</span>
+                           <span className="tok-async">{"redirect"}</span>
+                           <span className="tok-base">{`(bob, participants[1].hostedUrl)`}</span>
+                        </pre>
+                     </div>
                   </div>
-                  <pre className="lp-pre font-mono text-sm px-5 py-5 overflow-x-auto">
-                     <span className="tok-comment">{`// 1. Create a call from your backend\n`}</span>
-                     <span className="tok-keyword">{"const "}</span>
-                     <span className="tok-base">
-                        {"{ callId, hostedUrl, participants } = "}
-                     </span>
-                     <span className="tok-async">{"await "}</span>
-                     <span className="tok-base">{"BlueCallio."}</span>
-                     <span className="tok-fn">{"createCall"}</span>
-                     <span className="tok-base">
-                        {"({ callerId, receiverId })\n\n"}
-                     </span>
-                     <span className="tok-comment">{`// 2. Redirect each user — you're done\n`}</span>
-                     <span className="tok-async">{"redirect"}</span>
-                     <span className="tok-base">{`(alice, participants[0].hostedUrl)\n`}</span>
-                     <span className="tok-async">{"redirect"}</span>
-                     <span className="tok-base">{`(bob, participants[1].hostedUrl)`}</span>
-                  </pre>
+
+                  {/* Product preview */}
+                  <div className="relative mx-auto w-full max-w-lg lg:max-w-none">
+                     <Image
+                        src={heroPreview}
+                        alt="BlueCallio video call interface with quick integration code and API response preview"
+                        className="w-full h-auto"
+                        priority
+                        sizes="(min-width: 1024px) 42vw, (min-width: 640px) 80vw, 100vw"
+                     />
+                  </div>
                </div>
             </div>
          </section>

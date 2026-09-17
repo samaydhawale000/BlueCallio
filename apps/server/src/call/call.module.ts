@@ -11,19 +11,9 @@ import { BillingModule } from '../billing/billing.module';
 import { CallSessionGuard } from '../common/guards/call-session.guard';
 
 @Module({
-  imports: [
-    CallSessionModule,
-    SocketModule,
-    WebhookModule,
-    BillingModule,
-  ],
+  imports: [CallSessionModule, SocketModule, WebhookModule, BillingModule],
   controllers: [CallController],
-  providers: [
-    CallService,
-    CallSessionGuard,
-  ],
-  exports: [
-    CallService,
-  ],
+  providers: [CallService, CallSessionGuard],
+  exports: [CallService],
 })
 export class CallModule {}

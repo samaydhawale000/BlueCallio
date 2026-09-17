@@ -7,9 +7,16 @@ import { AdminGuard } from './guards/admin.guard';
 import { SocketModule } from '../socket/socket.module';
 import { TurnModule } from '../turn/turn.module';
 import { BillingModule } from '../billing/billing.module';
+import { OciMonitoringModule } from '../oci/oci-monitoring.module';
 
 @Module({
-  imports: [JwtModule.register({}), SocketModule, TurnModule, BillingModule],
+  imports: [
+    JwtModule.register({}),
+    SocketModule,
+    TurnModule,
+    BillingModule,
+    OciMonitoringModule,
+  ],
   controllers: [AdminController],
   providers: [AdminService, AdminGuard],
 })

@@ -14,6 +14,8 @@ import { BillingGuard } from '../../common/guards/billing.guard';
 import { CallSessionGuard } from '../../common/guards/call-session.guard';
 import { CallService } from '../services/call.service';
 import { CreateCallDto } from '../dto/create-call.dto';
+import { WebrtcTransportDto } from '../dto/webrtc-transport.dto';
+import { WebrtcIceDto } from '../dto/webrtc-ice.dto';
 
 @Controller('calls')
 export class CallController {
@@ -66,6 +68,44 @@ export class CallController {
   @UseGuards(CallSessionGuard)
   end(@Param('id') id: string) {
     return this.callService.endCall(id);
+  }
+
+  // Client-reported WebRTC transport classification (P2P vs TURN-relayed),
+  // straight from the browser's own getStats() — see CallService's doc
+  // comment. Best-effort by design: never let a reporting failure surface
+  // to the caller, since it isn't part of the actual call.
+  @Post(':id/webrtc-transport')
+  @UseGuards(CallSessionGuard)
+  reportWebrtcTransport(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() body: WebrtcTransportDto,
+  ) {
+    return this.callService.recordWebrtcTransport(
+      id,
+      req.callSession,
+      body.transport,
+      body.candidateType,
+    );
+  }
+
+  // Client-reported ICE outcome — see CallService's doc comment on why a
+  // call can report both a FAILED and a later SUCCESS. Best-effort, same as
+  // webrtc-transport: never let a reporting failure surface to the caller.
+  @Post(':id/webrtc-ice')
+  @UseGuards(CallSessionGuard)
+  reportWebrtcIce(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() body: WebrtcIceDto,
+  ) {
+    return this.callService.recordWebrtcIceOutcome(
+      id,
+      req.callSession,
+      body.outcome,
+      body.iceConnectionState,
+      body.connectionState,
+    );
   }
 
   @Get(':id/details')

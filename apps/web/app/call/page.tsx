@@ -328,6 +328,15 @@ function CallPageContent() {
    const lifecycleEndedRef = useRef(false);
    const prevStatsRef = useRef<{ lost: number; received: number } | null>(null);
    const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
+   // Reported once per call, the first time ICE connects — not on every
+   // reconnect/restart, so a single flaky renegotiation can't double-count.
+   const transportReportedRef = useRef(false);
+   // Independent one-shot flags (not a single shared lock) so a call that
+   // hits a definitive ICE failure and then recovers via restart reports
+   // BOTH — the failure is still true history, but the call still counts as
+   // eventually successful for reliability aggregation server-side.
+   const iceSuccessReportedRef = useRef(false);
+   const iceFailureReportedRef = useRef(false);
 
    // The local video element is mounted only after the call enters the
    // in-call state, so attachMedia can run before its ref exists.
@@ -513,6 +522,11 @@ function CallPageContent() {
          if (iceState === "disconnected" || iceState === "failed") {
             setConnectionIssue("reconnecting");
 
+            // Only a hard 'failed' is a definitive ICE failure — a network
+            // blip commonly bounces disconnected → connected on its own, and
+            // reporting that as a failure would misrepresent reliability.
+            if (iceState === "failed") reportIceOutcome(pc, "FAILED");
+
             if (!reconnectFailTimerRef.current) {
                const restartDelay = iceState === "failed" ? 0 : 3000;
                setTimeout(() => {
@@ -539,6 +553,8 @@ function CallPageContent() {
                reconnectFailTimerRef.current = null;
             }
             startStatsPolling(pc);
+            reportWebrtcTransport(pc);
+            reportIceOutcome(pc, "SUCCESS");
          }
       };
 
@@ -944,16 +960,67 @@ function CallPageContent() {
       }
    }
 
-   async function sessionPost(path: string) {
+   async function sessionPost(path: string, body?: unknown) {
       const res = await fetch(`${apiUrl}${path}`, {
          method: "POST",
          headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
          },
+         body: body !== undefined ? JSON.stringify(body) : undefined,
       });
       if (!res.ok) throw new Error(`${path} failed with ${res.status}`);
       return res;
+   }
+
+   // Classifies this call as P2P or TURN from the browser's own WebRTC
+   // stats — the only place that actually knows which candidate pair won.
+   // "relay" means media is flowing through the TURN server; "host"/"srflx"
+   // means the two peers connected directly. Best-effort: a stats-shape
+   // surprise here should never affect the call itself.
+   async function reportWebrtcTransport(pc: RTCPeerConnection) {
+      if (transportReportedRef.current || !urlCallId) return;
+      try {
+         const stats = await pc.getStats();
+         let selectedPair: any = null;
+         stats.forEach((report: any) => {
+            if (report.type === "candidate-pair" && report.state === "succeeded") {
+               if (report.nominated || !selectedPair) selectedPair = report;
+            }
+         });
+         if (!selectedPair) return;
+
+         let candidateType: string | undefined;
+         stats.forEach((report: any) => {
+            if (report.id === selectedPair.localCandidateId) {
+               candidateType = report.candidateType;
+            }
+         });
+         if (!candidateType) return;
+
+         transportReportedRef.current = true;
+         const transport = candidateType === "relay" ? "TURN" : "P2P";
+         await sessionPost(`/calls/${urlCallId}/webrtc-transport`, {
+            transport,
+            candidateType,
+         }).catch(() => {});
+      } catch {
+         // getStats() shape varies across browsers — never let this block the call.
+      }
+   }
+
+   // Reports at most once per outcome per call (see the two refs' comment) —
+   // a call can legitimately report both a FAILED and a later SUCCESS.
+   async function reportIceOutcome(pc: RTCPeerConnection, outcome: "SUCCESS" | "FAILED") {
+      if (!urlCallId) return;
+      const reportedRef = outcome === "SUCCESS" ? iceSuccessReportedRef : iceFailureReportedRef;
+      if (reportedRef.current) return;
+      reportedRef.current = true;
+      await sessionPost(`/calls/${urlCallId}/webrtc-ice`, {
+         outcome,
+         iceConnectionState: pc.iceConnectionState,
+         connectionState: pc.connectionState,
+      }).catch(() => {});
    }
 
    async function acceptCall() {
