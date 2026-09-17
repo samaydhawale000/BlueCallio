@@ -1,5 +1,5 @@
 # ── Stage 1: Dependencies ──────────────────────────────────────────────────────
-FROM node:20-alpine AS deps
+FROM node:20-bookworm-slim AS deps
 
 WORKDIR /app
 
@@ -7,10 +7,13 @@ COPY package.json package-lock.json ./
 COPY apps/web/package.json ./apps/web/
 COPY packages/ ./packages/
 
-RUN npm ci --workspace=apps/web
+RUN npm ci --include=optional --workspace=apps/web
+
+RUN npm install --no-save --package-lock=false \
+    lightningcss-linux-arm64-gnu@1.32.0
 
 # ── Stage 2: Build ─────────────────────────────────────────────────────────────
-FROM node:20-alpine AS builder
+FROM node:20-bookworm-slim AS builder
 
 WORKDIR /app
 
@@ -33,7 +36,7 @@ WORKDIR /app/apps/web
 RUN npm run build
 
 # ── Stage 3: Production ────────────────────────────────────────────────────────
-FROM node:20-alpine AS production
+FROM node:20-bookworm-slim AS production
 
 WORKDIR /app
 
