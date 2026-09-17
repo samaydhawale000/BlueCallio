@@ -54,6 +54,11 @@ export class AdminController {
     return this.adminService.getHealth();
   }
 
+  @Get('monitoring')
+  getMonitoring() {
+    return this.adminService.getMonitoring();
+  }
+
   @Get('alerts')
   getAlerts() {
     return this.adminService.getAlerts();
