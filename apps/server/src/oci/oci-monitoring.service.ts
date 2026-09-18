@@ -37,6 +37,13 @@ export class OciMonitoringService implements OnModuleInit {
   private readonly cacheTtlMs: number;
   private readonly requestTimeoutMs: number;
 
+  // Operator-supplied capacity constants (see the types file's caveat on
+  // OciScalarMetric.capacity) — undefined when not configured, in which
+  // case the corresponding capacity field is simply omitted.
+  private readonly cpuSafeLimitPercent?: number;
+  private readonly instanceMemoryGB?: number;
+  private readonly instanceNetworkMbps?: number;
+
   private cached: { snapshot: OciMetricsSnapshot; expiresAt: number } | null =
     null;
   // Serializes concurrent refreshes (e.g. two admin dashboards polling at
@@ -51,6 +58,21 @@ export class OciMonitoringService implements OnModuleInit {
       Number(this.config.get<string>('OCI_METRICS_CACHE_TTL_MS')) || 20_000;
     this.requestTimeoutMs =
       Number(this.config.get<string>('OCI_METRICS_TIMEOUT_MS')) || 8_000;
+
+    this.cpuSafeLimitPercent = this.parseOptionalNumber(
+      'OCI_CPU_SAFE_LIMIT_PERCENT',
+    );
+    this.instanceMemoryGB = this.parseOptionalNumber('OCI_INSTANCE_MEMORY_GB');
+    this.instanceNetworkMbps = this.parseOptionalNumber(
+      'OCI_INSTANCE_NETWORK_MBPS',
+    );
+  }
+
+  private parseOptionalNumber(key: string): number | undefined {
+    const raw = this.config.get<string>(key);
+    if (!raw) return undefined;
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : undefined;
   }
 
   /**
@@ -121,10 +143,17 @@ export class OciMonitoringService implements OnModuleInit {
       [
         this.fetchMetric('CpuUtilization', 'mean'),
         this.fetchMetric('MemoryUtilization', 'mean'),
-        this.fetchMetric('NetworksBytesIn', 'sum'),
-        this.fetchMetric('NetworksBytesOut', 'sum'),
-        this.fetchMetric('DiskBytesRead', 'sum'),
-        this.fetchMetric('DiskBytesWritten', 'sum'),
+        // NetworksBytesIn/Out and DiskBytesRead/Written are cumulative
+        // counters (confirmed: a live reading through `.sum()` produced a
+        // physically-impossible ~10 Gbps on a 1 Gbps-capped VM — summing
+        // several samples of an ever-growing counter, not a per-interval
+        // delta). MQL's `rate()` statistic exists specifically to convert a
+        // cumulative counter into a per-second rate — use that instead of
+        // hand-rolling the division, and don't divide by 60 again below.
+        this.fetchMetric('NetworksBytesIn', 'rate'),
+        this.fetchMetric('NetworksBytesOut', 'rate'),
+        this.fetchMetric('DiskBytesRead', 'rate'),
+        this.fetchMetric('DiskBytesWritten', 'rate'),
       ],
     );
 
@@ -140,8 +169,8 @@ export class OciMonitoringService implements OnModuleInit {
     }
 
     const snapshot: OciMetricsSnapshot = {
-      cpu: this.toScalar(cpu),
-      memory: this.toScalar(memory),
+      cpu: this.toCpu(cpu),
+      memory: this.toMemory(memory),
       network: this.toNetwork(netIn, netOut),
       disk: this.toDisk(diskRead, diskWrite),
       connected,
@@ -153,25 +182,35 @@ export class OciMonitoringService implements OnModuleInit {
     return snapshot;
   }
 
-  private toScalar(r: RawMetricResult): OciScalarMetric {
+  private toCpu(r: RawMetricResult): OciScalarMetric {
+    const available = r.ok && r.value != null;
     return {
-      value: r.ok ? r.value : null,
-      available: r.ok && r.value != null,
+      value: available ? this.round(r.value!, 1) : null,
+      available,
       source: 'oci',
       unit: r.unit,
+      capacity:
+        this.cpuSafeLimitPercent != null
+          ? { limit: this.cpuSafeLimitPercent, unit: 'Percent' }
+          : null,
     };
   }
 
-  // NetworksBytesIn/Out are reported by the compute agent as bytes
-  // transferred DURING each ~1-minute sampling interval (confirmed against
-  // Oracle's own oci_computeagent metrics reference), not a since-boot
-  // running total — so dividing by the interval length converts directly
-  // to a rate. See this class's doc comment for the caveat: Oracle's own
-  // page also labels these "cumulative counter" as a metric *type*, which
-  // is a different (and confusingly overlapping) concept from "the value
-  // you get back is a running total" — this has not been confirmed against
-  // two live, known-different readings on the real instance. Treat the
-  // resulting Mbps as best-effort until that's done.
+  private toMemory(r: RawMetricResult): OciScalarMetric {
+    const available = r.ok && r.value != null;
+    return {
+      value: available ? this.round(r.value!, 1) : null,
+      available,
+      source: 'oci',
+      unit: r.unit,
+      capacity:
+        this.instanceMemoryGB != null
+          ? { limit: this.instanceMemoryGB, unit: 'GB' }
+          : null,
+    };
+  }
+
+  // `rate()` already returns bytes/sec — no further division needed here.
   private toNetwork(
     rxRaw: RawMetricResult,
     txRaw: RawMetricResult,
@@ -179,10 +218,11 @@ export class OciMonitoringService implements OnModuleInit {
     const available =
       rxRaw.ok && txRaw.ok && rxRaw.value != null && txRaw.value != null;
     return {
-      rxMbps: available ? this.bytesPerIntervalToMbps(rxRaw.value!) : null,
-      txMbps: available ? this.bytesPerIntervalToMbps(txRaw.value!) : null,
+      rxMbps: available ? this.bytesPerSecToMbps(rxRaw.value!) : null,
+      txMbps: available ? this.bytesPerSecToMbps(txRaw.value!) : null,
       available,
       source: 'oci',
+      capacityMbps: this.instanceNetworkMbps ?? null,
     };
   }
 
@@ -196,22 +236,29 @@ export class OciMonitoringService implements OnModuleInit {
       readRaw.value != null &&
       writeRaw.value != null;
     return {
-      readMBps: available ? this.bytesPerIntervalToMBps(readRaw.value!) : null,
-      writeMBps: available
-        ? this.bytesPerIntervalToMBps(writeRaw.value!)
-        : null,
+      readMBps: available ? this.bytesPerSecToMBps(readRaw.value!) : null,
+      writeMBps: available ? this.bytesPerSecToMBps(writeRaw.value!) : null,
       available,
       source: 'oci',
+      // Throughput only — filesystem space usage isn't exposed by
+      // oci_computeagent at all (confirmed against Oracle's metrics
+      // reference; it would need the separate oci_blockstore namespace,
+      // which this integration doesn't query).
+      storage: { usedBytes: null, totalBytes: null, available: false },
     };
   }
 
-  private bytesPerIntervalToMbps(bytes: number): number {
-    // bytes over a 60s window → bits/sec → Mbps
-    return Math.round((((bytes / 60) * 8) / 1_000_000) * 100) / 100;
+  private round(value: number, decimals: number): number {
+    const factor = 10 ** decimals;
+    return Math.round(value * factor) / factor;
   }
 
-  private bytesPerIntervalToMBps(bytes: number): number {
-    return Math.round((bytes / 60 / 1_000_000) * 100) / 100;
+  private bytesPerSecToMbps(bytesPerSec: number): number {
+    return this.round((bytesPerSec * 8) / 1_000_000, 2);
+  }
+
+  private bytesPerSecToMBps(bytesPerSec: number): number {
+    return this.round(bytesPerSec / 1_000_000, 2);
   }
 
   private unavailableSnapshot(
@@ -219,14 +266,37 @@ export class OciMonitoringService implements OnModuleInit {
     error: string,
   ): OciMetricsSnapshot {
     return {
-      cpu: { value: null, available: false, source: 'oci' },
-      memory: { value: null, available: false, source: 'oci' },
-      network: { rxMbps: null, txMbps: null, available: false, source: 'oci' },
+      cpu: {
+        value: null,
+        available: false,
+        source: 'oci',
+        capacity:
+          this.cpuSafeLimitPercent != null
+            ? { limit: this.cpuSafeLimitPercent, unit: 'Percent' }
+            : null,
+      },
+      memory: {
+        value: null,
+        available: false,
+        source: 'oci',
+        capacity:
+          this.instanceMemoryGB != null
+            ? { limit: this.instanceMemoryGB, unit: 'GB' }
+            : null,
+      },
+      network: {
+        rxMbps: null,
+        txMbps: null,
+        available: false,
+        source: 'oci',
+        capacityMbps: this.instanceNetworkMbps ?? null,
+      },
       disk: {
         readMBps: null,
         writeMBps: null,
         available: false,
         source: 'oci',
+        storage: { usedBytes: null, totalBytes: null, available: false },
       },
       connected: false,
       checkedAt,
@@ -234,7 +304,7 @@ export class OciMonitoringService implements OnModuleInit {
     };
   }
 
-  private buildQuery(metricName: string, stat: 'mean' | 'sum'): string {
+  private buildQuery(metricName: string, stat: 'mean' | 'rate'): string {
     // resourceId is an OCID (fixed alphanumeric/dot/hyphen charset — no
     // quotes or backslashes to escape) interpolated into an MQL string
     // literal, matching the exact query shape already verified via the OCI
@@ -244,7 +314,7 @@ export class OciMonitoringService implements OnModuleInit {
 
   private async fetchMetric(
     metricName: string,
-    stat: 'mean' | 'sum',
+    stat: 'mean' | 'rate',
   ): Promise<RawMetricResult> {
     try {
       const request: monitoring.requests.SummarizeMetricsDataRequest = {

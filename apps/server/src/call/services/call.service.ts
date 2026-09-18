@@ -595,15 +595,6 @@ export class CallService implements OnModuleInit {
     };
   }
 
-  /**
-   * Record a participant's own WebRTC transport classification (P2P vs
-   * TURN-relayed) — the only place that actually knows which ICE candidate
-   * pair won is the client's own `RTCPeerConnection.getStats()`. Stored as a
-   * CallEvent (not a Call column) because a 1:1 call can get up to two
-   * independent reports, one per participant; AdminService classifies the
-   * whole call as TURN if either side reports it, P2P only if every report
-   * says so.
-   */
   async recordWebrtcTransport(
     callId: string,
     session: any,
