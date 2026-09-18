@@ -76,6 +76,7 @@ describe('OciMonitoringService', () => {
       value: null,
       available: false,
       source: 'oci',
+      capacity: null,
     });
     expect(snapshot.memory.available).toBe(false);
     expect(snapshot.network.available).toBe(false);
@@ -115,23 +116,72 @@ describe('OciMonitoringService', () => {
       available: true,
       source: 'oci',
       unit: 'Percent',
+      capacity: null,
     });
     expect(snapshot.memory).toEqual({
       value: 21.7,
       available: true,
       source: 'oci',
       unit: 'Percent',
+      capacity: null,
     });
   });
 
-  it('converts NetworksBytesIn/Out per-1m-interval bytes into Mbps, not the raw byte count', async () => {
-    // 60,000,000 bytes over a 60s window -> 1,000,000 bytes/sec -> 8 Mbps.
+  it('reports the configured capacity ceilings alongside the measured value', async () => {
+    const service = await buildConfiguredService(
+      (req: any) => {
+        const q = req.summarizeMetricsDataDetails.query;
+        if (q.startsWith('CpuUtilization'))
+          return Promise.resolve(metricResponse(18.4));
+        if (q.startsWith('MemoryUtilization'))
+          return Promise.resolve(metricResponse(21.7));
+        return Promise.resolve(metricResponse(null));
+      },
+      {
+        OCI_CPU_SAFE_LIMIT_PERCENT: '90',
+        OCI_INSTANCE_MEMORY_GB: '6',
+        OCI_INSTANCE_NETWORK_MBPS: '1000',
+      },
+    );
+
+    const snapshot = await service.getSnapshot();
+
+    expect(snapshot.cpu.capacity).toEqual({ limit: 90, unit: 'Percent' });
+    expect(snapshot.memory.capacity).toEqual({ limit: 6, unit: 'GB' });
+    expect(snapshot.network.capacityMbps).toBe(1000);
+  });
+
+  it('reports disk storage (filesystem space, distinct from throughput) as permanently unavailable — not exposed by oci_computeagent', async () => {
     const service = await buildConfiguredService((req: any) => {
       const q = req.summarizeMetricsDataDetails.query;
+      if (q.startsWith('DiskBytesRead'))
+        return Promise.resolve(metricResponse(1_000_000));
+      if (q.startsWith('DiskBytesWritten'))
+        return Promise.resolve(metricResponse(500_000));
+      return Promise.resolve(metricResponse(null));
+    });
+
+    const snapshot = await service.getSnapshot();
+
+    expect(snapshot.disk.storage).toEqual({
+      usedBytes: null,
+      totalBytes: null,
+      available: false,
+    });
+  });
+
+  it('uses MQL rate() for the cumulative-counter metrics, and converts its bytes/sec directly into Mbps', async () => {
+    // rate() already returns bytes/sec: 1,000,000 bytes/sec -> 8 Mbps.
+    // (An earlier version used sum() and divided by 60, which is wrong for
+    // a cumulative counter — it produced a physically-impossible ~10 Gbps
+    // reading against this metric's real semantics.)
+    const service = await buildConfiguredService((req: any) => {
+      const q = req.summarizeMetricsDataDetails.query;
+      expect(q).not.toContain('.sum()');
       if (q.startsWith('NetworksBytesIn'))
-        return Promise.resolve(metricResponse(60_000_000, 'Bytes'));
+        return Promise.resolve(metricResponse(1_000_000, 'Bytes'));
       if (q.startsWith('NetworksBytesOut'))
-        return Promise.resolve(metricResponse(30_000_000, 'Bytes'));
+        return Promise.resolve(metricResponse(500_000, 'Bytes'));
       return Promise.resolve(metricResponse(null));
     });
 
@@ -142,14 +192,14 @@ describe('OciMonitoringService', () => {
     expect(snapshot.network.txMbps).toBe(4);
   });
 
-  it('converts DiskBytesRead/Written per-1m-interval bytes into MB/s', async () => {
-    // 60,000,000 bytes over 60s -> 1,000,000 bytes/sec -> 1 MB/s.
+  it('converts DiskBytesRead/Written rate() bytes/sec directly into MB/s', async () => {
+    // 1,000,000 bytes/sec -> 1 MB/s.
     const service = await buildConfiguredService((req: any) => {
       const q = req.summarizeMetricsDataDetails.query;
       if (q.startsWith('DiskBytesRead'))
-        return Promise.resolve(metricResponse(60_000_000, 'Bytes'));
+        return Promise.resolve(metricResponse(1_000_000, 'Bytes'));
       if (q.startsWith('DiskBytesWritten'))
-        return Promise.resolve(metricResponse(30_000_000, 'Bytes'));
+        return Promise.resolve(metricResponse(500_000, 'Bytes'));
       return Promise.resolve(metricResponse(null));
     });
 
@@ -176,6 +226,7 @@ describe('OciMonitoringService', () => {
       available: false,
       source: 'oci',
       unit: undefined,
+      capacity: null,
     });
   });
 

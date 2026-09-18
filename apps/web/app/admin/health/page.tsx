@@ -34,12 +34,19 @@ type Alert = {
 // from a missing key; the API always returns the shape explicitly.
 type NotAvailable<T> = { available: boolean } & T;
 
+type Capacity = { limit: number; unit: string } | null;
+
 type MonitoringData = {
   server: {
-    cpu: NotAvailable<{ value: number | null; source: string; unit?: string }>;
-    memory: NotAvailable<{ value: number | null; source: string; unit?: string }>;
-    network: NotAvailable<{ rxMbps: number | null; txMbps: number | null; source: string }>;
-    disk: NotAvailable<{ readMBps: number | null; writeMBps: number | null; source: string }>;
+    cpu: NotAvailable<{ value: number | null; source: string; unit?: string; capacity?: Capacity }>;
+    memory: NotAvailable<{ value: number | null; source: string; unit?: string; capacity?: Capacity }>;
+    network: NotAvailable<{ rxMbps: number | null; txMbps: number | null; source: string; capacityMbps?: number | null }>;
+    disk: NotAvailable<{
+      readMBps: number | null;
+      writeMBps: number | null;
+      source: string;
+      storage: { usedBytes: number | null; totalBytes: number | null; available: false };
+    }>;
     uptime: NotAvailable<{ value: number; source: string }>;
     // Whether the last OCI Monitoring API call actually succeeded — never
     // inferred from env vars being set. See OciMonitoringService.
@@ -179,12 +186,43 @@ export default function AdminHealthPage() {
                 {m.server.oci.connected ? 'connected' : 'unavailable'}
               </span>
             </div>
-            <StatRow label="CPU" na={!m.server.cpu.available} value={fmtPct(m.server.cpu.value)} note={!m.server.cpu.available ? m.server.cpu.source.toUpperCase() + ' monitoring not connected' : undefined} />
-            <StatRow label="Memory" na={!m.server.memory.available} value={fmtPct(m.server.memory.value)} note={!m.server.memory.available ? m.server.memory.source.toUpperCase() + ' monitoring not connected' : undefined} />
-            <StatRow label="Network RX" na={!m.server.network.available} value={fmtMbps(m.server.network.rxMbps)} />
-            <StatRow label="Network TX" na={!m.server.network.available} value={fmtMbps(m.server.network.txMbps)} />
+            <StatRow
+              label="CPU"
+              na={!m.server.cpu.available}
+              value={fmtPct(m.server.cpu.value)}
+              suffix={m.server.cpu.capacity ? ` / ${m.server.cpu.capacity.limit}% safe limit` : undefined}
+              note={!m.server.cpu.available ? m.server.cpu.source.toUpperCase() + ' monitoring not connected' : undefined}
+            />
+            <StatRow
+              label="Memory"
+              na={!m.server.memory.available}
+              value={
+                m.server.memory.capacity && m.server.memory.value != null
+                  ? `${fmtGB((m.server.memory.value / 100) * m.server.memory.capacity.limit)} / ${m.server.memory.capacity.limit} GB`
+                  : fmtPct(m.server.memory.value)
+              }
+              note={!m.server.memory.available ? m.server.memory.source.toUpperCase() + ' monitoring not connected' : undefined}
+            />
+            <StatRow
+              label="Network RX"
+              na={!m.server.network.available}
+              value={fmtMbps(m.server.network.rxMbps)}
+              suffix={m.server.network.capacityMbps ? ` / ${m.server.network.capacityMbps} Mbps` : undefined}
+            />
+            <StatRow
+              label="Network TX"
+              na={!m.server.network.available}
+              value={fmtMbps(m.server.network.txMbps)}
+              suffix={m.server.network.capacityMbps ? ` / ${m.server.network.capacityMbps} Mbps` : undefined}
+            />
             <StatRow label="Disk read" na={!m.server.disk.available} value={fmtMBps(m.server.disk.readMBps)} />
             <StatRow label="Disk write" na={!m.server.disk.available} value={fmtMBps(m.server.disk.writeMBps)} />
+            <StatRow
+              label="Disk storage"
+              na
+              value=""
+              note="not exposed by oci_computeagent (needs the oci_blockstore namespace)"
+            />
             <StatRow label="Uptime" na={!m.server.uptime.available} value={formatUptime(m.server.uptime.value)} />
           </StatCard>
 
@@ -326,11 +364,13 @@ function StatCard({
 function StatRow({
   label,
   value,
+  suffix,
   na,
   note,
 }: {
   label: string;
   value: string;
+  suffix?: string;
   na?: boolean;
   note?: string;
 }) {
@@ -343,7 +383,10 @@ function StatRow({
           {note && <span className="block text-[10px] text-slate-700">{note}</span>}
         </span>
       ) : (
-        <span className="text-white font-mono">{value}</span>
+        <span className="text-white font-mono">
+          {value}
+          {suffix && <span className="text-slate-500">{suffix}</span>}
+        </span>
       )}
     </div>
   );
@@ -374,15 +417,19 @@ function formatUptime(totalSeconds: number): string {
 }
 
 function fmtPct(value: number | null): string {
-  return value == null ? '' : `${value}%`;
+  return value == null ? '' : `${value.toFixed(1)}%`;
 }
 
 function fmtMbps(value: number | null): string {
-  return value == null ? '' : `${value} Mbps`;
+  return value == null ? '' : `${value.toFixed(2)} Mbps`;
 }
 
 function fmtMBps(value: number | null): string {
-  return value == null ? '' : `${value} MB/s`;
+  return value == null ? '' : `${value.toFixed(2)} MB/s`;
+}
+
+function fmtGB(value: number): string {
+  return value.toFixed(2);
 }
 
 function fmtBytes(value: number | null): string {
