@@ -1,8 +1,7 @@
 import LegalLayout, { LegalSection, LegalBullets } from "../components/LegalLayout";
+import { pageMetadata } from "../lib/seo";
 
-export const metadata = {
-  title: "Refund & Cancellation Policy | BlueCallio",
-};
+export const metadata = pageMetadata({ title: "Refund & Cancellation Policy", description: "BlueCallio's policy for cancellations, refunds, usage-based charges, and billing disputes.", path: "/refund" });
 
 export default function RefundPage() {
   return (

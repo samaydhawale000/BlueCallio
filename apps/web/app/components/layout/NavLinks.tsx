@@ -5,23 +5,19 @@ import Link from "next/link";
 const links = [
   {
     label: "Features",
-    href: "/#features",
+    href: "/features/video-calling",
   },
   {
-    label: "Products",
-    href: "/#products",
+    label: "Developers",
+    href: "/developers",
   },
   {
     label: "Pricing",
-    href: "/#pricing",
+    href: "/pricing",
   },
   {
     label: "Docs",
     href: "/docs",
-  },
-  {
-    label: "Playground",
-    href: "/dashboard/playground",
   },
   {
     label: "FAQ",

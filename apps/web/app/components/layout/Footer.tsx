@@ -12,18 +12,17 @@ import logo from "../../assets/images/logo.png";
 
 const footerLinks = {
   Product: [
-    { name: "Features", href: "/#features" },
-    { name: "Products", href: "/#products" },
-    { name: "Pricing", href: "/#pricing" },
+    { name: "Video Calling", href: "/features/video-calling" },
+    { name: "Screen Sharing", href: "/features/screen-sharing" },
+    { name: "Pricing", href: "/pricing" },
     { name: "Documentation", href: "/docs" },
-    { name: "Playground", href: "/dashboard/playground" },
   ],
 
 Resources: [
     { name: "FAQ", href: "/faq" },
     { name: "Support", href: "mailto:hello@bluecallio.com" },
     { name: "Docs", href: "/docs" },
-    { name: "Roadmap", href: "/docs#faq" },
+    { name: "Developers", href: "/developers" },
   ],
 
   Legal: [

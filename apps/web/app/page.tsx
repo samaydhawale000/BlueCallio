@@ -4,6 +4,8 @@ import logo from "./assets/images/logo.png";
 import heroPreview from "./assets/images/hero-preview.png";
 import StripeGradient from "./components/gradient/StripeGradient";
 import PricingSection from "./components/PricingSection";
+import { JsonLd } from "./components/seo/JsonLd";
+import { pageMetadata, siteUrl } from "./lib/seo";
 import { Atom, Blocks, BookOpen, BriefcaseBusiness, Globe2, Headphones, Monitor, ShoppingCart, Sparkles, Stethoscope, Target, Wrench } from 'lucide-react';
 
 const USE_CASES = [
@@ -207,9 +209,20 @@ const SUPPORT_ITEMS = [
    },
 ];
 
+export const metadata = pageMetadata({
+   title: "BlueCallio | Video Calling API & WebRTC SDK",
+   description: "Add audio, video, screen sharing, and real-time communication to your product with BlueCallio APIs, hosted UI, React components, and a headless SDK.",
+   path: "/",
+});
+
 export default function LandingPage() {
    return (
       <div className="lp-root">
+         <JsonLd data={[
+            { "@context": "https://schema.org", "@type": "Organization", name: "BlueCallio", url: siteUrl.toString(), logo: new URL("/opengraph-image", siteUrl).toString(), email: "hello@bluecallio.com" },
+            { "@context": "https://schema.org", "@type": "WebSite", name: "BlueCallio", url: siteUrl.toString() },
+            { "@context": "https://schema.org", "@type": "SoftwareApplication", name: "BlueCallio", applicationCategory: "DeveloperApplication", operatingSystem: "Web", url: siteUrl.toString(), description: "Developer-focused real-time communication platform with APIs, SDKs, React components, and hosted UI for audio, video, and screen sharing." },
+         ]} />
          {/* ── Hero ── */}
          <section className="section-base relative pt-24 pb-32 px-6 overflow-hidden">
             <div className="absolute inset-0 pointer-events-none">
@@ -231,11 +244,7 @@ export default function LandingPage() {
                </h1>
 
                <p className="text-balance text-slate-400 text-lg leading-relaxed mb-6">
-                  Integrate secure voice and video calling with just two API calls. No WebRTC expertise, no frontend SDK, no complex
-                  infrastructure — just transparent, per-minute rates on top
-                  of a generous free allowance, with no surprise fees.
-                  BlueCallio gives startups everything they need to launch
-                  communication features faster.
+                  BlueCallio is a developer-focused real-time communication platform for adding audio, video and screen sharing to software products. Use REST APIs, hosted UI, React components or a headless SDK without assembling signaling and media infrastructure from scratch.
                </p>
 
                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">

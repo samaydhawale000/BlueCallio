@@ -1,8 +1,7 @@
 import LegalLayout, { LegalSection, LegalBullets } from "../components/LegalLayout";
+import { pageMetadata } from "../lib/seo";
 
-export const metadata = {
-  title: "Terms of Service | BlueCallio",
-};
+export const metadata = pageMetadata({ title: "Terms of Service", description: "Terms governing use of BlueCallio's website, APIs, SDKs, hosted communication interfaces, and services.", path: "/terms" });
 
 export default function TermsPage() {
   return (

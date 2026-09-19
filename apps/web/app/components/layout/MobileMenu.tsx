@@ -13,7 +13,8 @@ export default function MobileMenu({
   open: boolean;
   onClose: () => void;
 }) {
-  const { token, logout } = useAuthStore();
+  const token = useAuthStore((state) => state?.token ?? null);
+  const logout = useAuthStore((state) => state?.logout);
   const isLoggedIn = !!token;
 
   return (
@@ -88,7 +89,7 @@ export default function MobileMenu({
                   <button
                     onClick={() => {
                       onClose();
-                      logout();
+                      logout?.();
                       window.location.href = "/";
                     }}
                     className="rounded-lg border border-[#1A2642] py-3 text-center text-sm text-slate-300 transition hover:border-slate-500 hover:text-white"
