@@ -11,7 +11,11 @@ import MobileMenu from "./MobileMenu";
 import { useAuthStore } from "../../store/auth.store";
 
 export default function Header() {
-  const { token, user, logout } = useAuthStore();
+  // Select fields independently so the marketing shell remains safe during
+  // server prerendering before persisted browser state is available.
+  const token = useAuthStore((state) => state?.token ?? null);
+  const user = useAuthStore((state) => state?.user ?? null);
+  const logout = useAuthStore((state) => state?.logout);
   const pathname = usePathname();
   const router = useRouter();
 
@@ -137,7 +141,7 @@ if (isCallPage || isAppPage || isAuthPage) {
 
                 <button
                   onClick={() => {
-                    logout();
+                    logout?.();
                     router.push("/");
                   }}
                   className="rounded-lg border border-[#1A2642] px-4 py-2 text-sm text-slate-300 transition hover:border-slate-500 hover:text-white"

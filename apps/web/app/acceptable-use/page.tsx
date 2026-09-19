@@ -1,8 +1,7 @@
 import LegalLayout, { LegalSection, LegalBullets } from "../components/LegalLayout";
+import { pageMetadata } from "../lib/seo";
 
-export const metadata = {
-  title: "Acceptable Use Policy | BlueCallio",
-};
+export const metadata = pageMetadata({ title: "Acceptable Use Policy", description: "Rules for using BlueCallio communication infrastructure safely, legally, and responsibly.", path: "/acceptable-use" });
 
 export default function AcceptableUsePage() {
   return (

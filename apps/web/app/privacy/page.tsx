@@ -1,8 +1,7 @@
 import LegalLayout, { LegalSection, LegalBullets } from "../components/LegalLayout";
+import { pageMetadata } from "../lib/seo";
 
-export const metadata = {
-  title: "Privacy Policy | BlueCallio",
-};
+export const metadata = pageMetadata({ title: "Privacy Policy", description: "How BlueCallio collects, uses, stores, and protects personal information for its website and services.", path: "/privacy" });
 
 export default function PrivacyPage() {
   return (
