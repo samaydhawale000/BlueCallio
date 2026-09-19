@@ -8,10 +8,6 @@ import {
 import { JsonLd } from "../../components/seo/JsonLd";
 import { pageMetadata, siteUrl } from "../../lib/seo";
 
-// Render documentation on request so the client marketing shell and its
-// persisted-session state are not evaluated during static export.
-export const dynamic = "force-dynamic";
-
 const docs = {
    quickstart: {
       title: "Quickstart: Create Your First Call",
@@ -185,6 +181,42 @@ const docs = {
    },
 } as const;
 type DocSlug = keyof typeof docs;
+const examples: Partial<Record<DocSlug, { title: string; code: string }>> = {
+   quickstart: { title: "Create a call from your backend", code: `import BlueCallio from "@bluecallio/sdk";
+
+const client = new BlueCallio({ apiKey: process.env.BLUECALLIO_API_KEY! });
+const call = await client.createCall({
+  callerId: "user_alice",
+  receiverId: "user_bob",
+});
+
+// Send each participant only their own hosted URL.` },
+   react: { title: "Compose a React meeting UI", code: `import { MeetingProvider, ParticipantGrid, CameraButton, MicrophoneButton, ScreenShareButton } from "@bluecallio/react";
+
+<MeetingProvider token={participantToken} callId={callId} signalUrl={signalUrl}>
+  <ParticipantGrid />
+  <CameraButton />
+  <MicrophoneButton />
+  <ScreenShareButton />
+</MeetingProvider>` },
+   javascript: { title: "Initialize the headless meeting engine", code: `import { BlueCallioMeeting } from "@bluecallio/sdk";
+
+const meeting = new BlueCallioMeeting({ token, callId, signalUrl });
+await meeting.join();
+// Build your own controls around the meeting instance.` },
+   "rest-api": { title: "Create a call with the REST API", code: `curl -X POST https://api.bluecallio.com/calls \\
+  -H "x-api-key: $BLUECALLIO_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"callerId":"user_alice","receiverId":"user_bob"}'` },
+   "screen-sharing": { title: "Add a screen-share control in React", code: `import { ScreenShareButton } from "@bluecallio/react";
+
+// Render inside a MeetingProvider.
+<ScreenShareButton />` },
+   "hosted-ui": { title: "Use the hosted URL returned by your backend", code: `const call = await client.createCall({ callerId, receiverId });
+
+// Authorize the participant in your own app, then send them to their URL.
+redirect(call.callerUrl);` },
+};
 export function generateStaticParams() {
    return Object.keys(docs).map((slug) => ({ slug }));
 }
@@ -242,6 +274,11 @@ export default async function DocPage({
                <p>{body}</p>
             </ContentSection>
          ))}
+         {examples[slug as DocSlug] && (
+            <ContentSection title={examples[slug as DocSlug]!.title}>
+               <pre className="overflow-x-auto rounded-xl border border-[#1A2642] bg-[#07111F] p-5 text-sm leading-6 text-slate-200"><code>{examples[slug as DocSlug]!.code}</code></pre>
+            </ContentSection>
+         )}
          <ContentSection title="Related documentation">
             <div className="flex flex-wrap gap-4">
                <Link

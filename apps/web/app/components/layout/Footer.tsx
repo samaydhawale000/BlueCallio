@@ -8,7 +8,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 
-import logo from "../../assets/images/logo.png";
+import logo from "../../assets/images/logo.webp";
 
 const footerLinks = {
   Product: [

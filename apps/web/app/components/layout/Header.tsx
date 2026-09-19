@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { Menu } from "lucide-react";
-import logo from "../../assets/images/logo.png";
+import logo from "../../assets/images/logo.webp";
 import NavLinks from "./NavLinks";
 import MobileMenu from "./MobileMenu";
 import { useAuthStore } from "../../store/auth.store";

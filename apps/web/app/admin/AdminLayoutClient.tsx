@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../store/auth.store';
 import { useRequireAuth } from '../hooks/useRequireAuth';
-import logo from '../assets/images/logo.png';
+import logo from '../assets/images/logo.webp';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },

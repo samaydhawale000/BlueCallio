@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import logo from "./assets/images/logo.png";
-import heroPreview from "./assets/images/hero-preview.png";
+import logo from "./assets/images/logo.webp";
+import heroPreview from "./assets/images/hero-preview.webp";
 import StripeGradient from "./components/gradient/StripeGradient";
 import PricingSection from "./components/PricingSection";
 import { JsonLd } from "./components/seo/JsonLd";
@@ -210,7 +210,7 @@ const SUPPORT_ITEMS = [
 ];
 
 export const metadata = pageMetadata({
-   title: "BlueCallio | Video Calling API & WebRTC SDK",
+   title: "Video Calling API & WebRTC SDK",
    description: "Add audio, video, screen sharing, and real-time communication to your product with BlueCallio APIs, hosted UI, React components, and a headless SDK.",
    path: "/",
 });
@@ -319,7 +319,7 @@ export default function LandingPage() {
                   Why BlueCallio
                </p>
                <h2 className="lp-h2 font-bold text-white mb-4">
-                  Enterprise-grade communication. Startup-friendly pricing.
+                  Real-time communication built for modern products.
                </h2>
                <p className="text-slate-400 mb-14 max-w-2xl">
                   Enterprise communication tools are powerful but expensive,

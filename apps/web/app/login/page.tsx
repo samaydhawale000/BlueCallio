@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Blocks, Monitor, Atom } from 'lucide-react';
 import { GoogleSignInButton } from '../components/ui/GoogleSignInButton';
 import { useAuthStore } from '../store/auth.store';
-import logo from '../assets/images/logo.png';
+import logo from '../assets/images/logo.webp';
 
 const ARCHITECTURE = [
   {
@@ -29,7 +29,7 @@ const ARCHITECTURE = [
 
 const TRUST_POINTS = [
   'Secure authentication',
-  'Trusted by developers',
+  'Built for developers',
   'Transparent, predictable billing',
 ];
 
