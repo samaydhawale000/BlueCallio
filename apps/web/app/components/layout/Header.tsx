@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { Menu } from "lucide-react";
+import { ChevronDown, Menu } from "lucide-react";
 import logo from "../../assets/images/logo.webp";
 import NavLinks from "./NavLinks";
 import MobileMenu from "./MobileMenu";
@@ -21,6 +21,8 @@ export default function Header() {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
 const isLoggedIn = !!token;
   const displayName = user?.name || user?.email || 'Account';
@@ -44,6 +46,14 @@ const isLoggedIn = !!token;
     window.addEventListener("scroll", handleScroll);
 
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const closeProfileMenu = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) setProfileOpen(false);
+    };
+    document.addEventListener("mousedown", closeProfileMenu);
+    return () => document.removeEventListener("mousedown", closeProfileMenu);
   }, []);
 
   useEffect(() => {
@@ -91,18 +101,14 @@ if (isCallPage || isAppPage || isAuthPage) {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 lg:px-8">
           {/* Logo */}
 
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center">
             <Image
               src={logo}
               alt="BlueCallio"
-              width={36}
-              height={36}
-              className="object-contain"
+              width={156}
+              height={38}
+              className="h-auto w-[132px] object-contain sm:w-[156px]"
             />
-
-            <span className="font-mono text-xl font-bold tracking-tight text-white">
-              BlueCallio
-            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -115,11 +121,13 @@ if (isCallPage || isAppPage || isAuthPage) {
 
           <div className="hidden items-center gap-3 lg:flex">
 {isLoggedIn ? (
-              <>
-                <Link
-                  href="/dashboard"
-                  className="flex items-center gap-2 text-sm text-slate-400 transition hover:text-white"
-                  title={displayName}
+              <div ref={profileMenuRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setProfileOpen((open) => !open)}
+                  aria-expanded={profileOpen}
+                  aria-haspopup="menu"
+                  className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-slate-300 transition hover:bg-white/5 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-300"
                 >
                   {avatarUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -136,35 +144,15 @@ if (isCallPage || isAppPage || isAuthPage) {
                       {(displayName || 'U')[0].toUpperCase()}
                     </span>
                   )}
-                  Dashboard
-                </Link>
-
-                <button
-                  onClick={() => {
-                    logout?.();
-                    router.push("/");
-                  }}
-                  className="rounded-lg border border-[#1A2642] px-4 py-2 text-sm text-slate-300 transition hover:border-slate-500 hover:text-white"
-                >
-                  Logout
+                  <ChevronDown size={15} className={`transition ${profileOpen ? "rotate-180" : ""}`} aria-hidden="true" />
                 </button>
-              </>
+                {profileOpen && <div role="menu" className="absolute right-0 top-full z-50 mt-2 w-44 rounded-xl border border-[#1A2642] bg-[#0A0F1E] p-1.5 shadow-2xl shadow-black/40">
+                  <Link href="/dashboard" role="menuitem" onClick={() => setProfileOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-slate-300 transition hover:bg-white/5 hover:text-white">Dashboard</Link>
+                  <button type="button" role="menuitem" onClick={() => { setProfileOpen(false); logout?.(); router.push("/"); }} className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-300 transition hover:bg-white/5 hover:text-white">Log out</button>
+                </div>}
+              </div>
             ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="text-sm text-slate-400 transition hover:text-white"
-                >
-                  Log In
-                </Link>
-
-                <Link
-                  href="/signup"
-                  className="btn-primary rounded-lg px-5 py-2 text-sm font-medium text-white transition hover:opacity-90"
-                >
-                  Get Started
-                </Link>
-              </>
+              <Link href="/login" className="btn-primary rounded-lg px-5 py-2 text-sm font-medium text-white transition hover:opacity-90">Get Started</Link>
             )}
           </div>
 

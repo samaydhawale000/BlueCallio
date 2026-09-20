@@ -62,15 +62,8 @@ export default function SignupPage() {
 
           {/* Top: brand */}
           <div className="relative flex items-center gap-3">
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
-            >
-              <Image src={logo} alt="BlueCallio" width={40} height={40} className="h-8 w-8 object-contain" />
-            </div>
+            <Image src={logo} alt="BlueCallio" width={176} height={42} className="h-auto w-44 object-contain" />
             <div>
-              <p className="font-mono font-bold text-white text-lg tracking-tight">
-                BlueCallio
-              </p>
               <p className="text-xs text-slate-500">Communication Infrastructure</p>
             </div>
           </div>
@@ -150,11 +143,8 @@ export default function SignupPage() {
           <div className="relative w-full max-w-sm">
             {/* Mobile brand */}
             <div className="text-center mb-8 lg:hidden">
-              <Link
-                href="/"
-                className="font-mono font-bold text-white text-xl tracking-tight"
-              >
-                BlueCallio
+              <Link href="/" className="inline-flex">
+                <Image src={logo} alt="BlueCallio" width={176} height={42} className="h-auto w-44 object-contain" />
               </Link>
               <p className="text-slate-500 text-sm mt-1">Communication Infrastructure</p>
             </div>
@@ -165,11 +155,7 @@ export default function SignupPage() {
               style={{ background: '#0D1421', boxShadow: '0 24px 60px rgba(0,0,0,0.4)' }}
             >
               <div className="flex flex-col items-center gap-2 text-center mb-6">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-1"
-                >
-                  <Image src={logo} alt="BlueCallio" width={48} height={48} className="h-9 w-9 object-contain" />
-                </div>
+                <Image src={logo} alt="BlueCallio" width={176} height={42} className="mb-2 h-auto w-40 object-contain" />
                 <h2 className="text-lg font-bold text-white">Create your account</h2>
                 <p className="text-sm text-slate-400">
                   Get started free — no credit card required.

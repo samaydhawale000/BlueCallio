@@ -63,17 +63,14 @@ export default function Footer() {
                {/* Left */}
 
                <div>
-                  <Link href="/" className="flex items-center gap-3">
+                  <Link href="/" className="flex items-center">
                      <Image
                         src={logo}
                         alt="BlueCallio"
-                        width={46}
-                        height={46}
+                        width={198}
+                        height={48}
+                        className="h-auto w-[198px]"
                      />
-
-                     <span className="text-2xl font-bold text-white">
-                        BlueCallio
-                     </span>
                   </Link>
 
                   <p className="mt-6 max-w-sm leading-8 text-slate-400">

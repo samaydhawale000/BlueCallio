@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import NavLinks from "./NavLinks";
 import { useAuthStore } from "../../store/auth.store";
+import logo from "../../assets/images/logo.webp";
 
 export default function MobileMenu({
   open,
@@ -44,9 +46,7 @@ export default function MobileMenu({
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[#1A2642] px-6 py-5">
-              <span className="font-mono text-lg font-bold text-white">
-                BlueCallio
-              </span>
+              <Image src={logo} alt="BlueCallio" width={156} height={38} className="h-auto w-[136px] object-contain" />
 
               <button
                 onClick={onClose}
@@ -75,15 +75,7 @@ export default function MobileMenu({
                   >
                     Dashboard
                   </Link>
-                ) : (
-                  <Link
-                    href="/login"
-                    onClick={onClose}
-                    className="rounded-lg border border-[#1A2642] py-3 text-center text-sm text-slate-300 transition hover:border-slate-500 hover:text-white"
-                  >
-                    Log In
-                  </Link>
-                )}
+                ) : null}
 
                 {isLoggedIn ? (
                   <button
@@ -98,11 +90,11 @@ export default function MobileMenu({
                   </button>
                 ) : (
                   <Link
-                    href="/signup"
+                    href="/login"
                     onClick={onClose}
                     className="btn-primary rounded-lg py-3 text-center text-sm font-medium text-white transition hover:opacity-90"
                   >
-                    Get Started Free
+                    Get Started
                   </Link>
                 )}
               </div>

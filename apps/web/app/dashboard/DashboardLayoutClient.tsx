@@ -133,15 +133,8 @@ const logout = useAuthStore((s) => s.logout);
         className="lg:hidden flex items-center justify-between px-4 h-14 border-b border-[#1A2642]"
         style={{ background: '#0A0F1E' }}
       >
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <span
-            className="w-7 h-7 rounded-lg flex items-center justify-center text-sm"
-          >
-            <Image src={logo} alt="BlueCallio" width={28} height={28} className="h-6 w-6 object-contain" />
-          </span>
-          <span className="font-mono font-bold text-white tracking-tight">
-            BlueCallio
-          </span>
+        <Link href="/dashboard" className="flex items-center">
+          <Image src={logo} alt="BlueCallio" width={132} height={32} className="h-auto w-[116px] object-contain" />
         </Link>
         <button
           onClick={() => setSidebarOpen(true)}
@@ -172,15 +165,8 @@ const logout = useAuthStore((s) => s.logout);
       >
         {/* Brand */}
         <div className="flex items-center justify-between px-5 h-16 border-b border-[#1A2642]">
-          <Link href="/dashboard" className="flex items-center gap-2.5">
-            <span
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-base"
-            >
-              <Image src={logo} alt="BlueCallio" width={32} height={32} className="h-7 w-7 object-contain" />
-            </span>
-            <span className="font-mono font-bold text-white tracking-tight">
-              BlueCallio
-            </span>
+          <Link href="/dashboard" className="flex items-center">
+            <Image src={logo} alt="BlueCallio" width={156} height={38} className="h-auto w-[136px] object-contain" />
           </Link>
           <button
             onClick={() => setSidebarOpen(false)}
