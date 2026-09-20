@@ -1,7 +1,8 @@
 {
   "name": "@bluecallio/sdk",
-  "version": "0.2.1",
-  "description": "Official JavaScript SDK for BlueCallio — REST API client and headless WebRTC engine",
+  "version": "0.2.2",
+  "description": "Official JavaScript and TypeScript SDK for BlueCallio, a developer-focused real-time communication infrastructure platform for audio, video, screen sharing and WebRTC applications.",
+  "homepage": "https://bluecallio.com",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -24,7 +25,11 @@
     "webrtc",
     "communication",
     "sdk",
-    "voice"
+    "voice",
+    "audio",
+    "screen-sharing",
+    "typescript",
+    "api"
   ],
   "license": "MIT",
   "dependencies": {

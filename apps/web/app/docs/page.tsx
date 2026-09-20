@@ -138,12 +138,11 @@ export default function DocsPage() {
   }, []);
 
   const paiseToINR = (p: number) => `₹${((p ?? 0) / 100).toFixed(2)}`;
-  const audio = paiseToINR(rates?.audioPaise ?? 20);
-  const video = paiseToINR(rates?.videoPaise ?? 80);
-  const screen = paiseToINR(rates?.screenSharePaise ?? 10);
-  const freeAudio = rates?.freeAudioMins ?? 500;
-  const freeVideo = rates?.freeVideoMins ?? 200;
-  const gst = rates?.taxPercent ?? 18;
+  const audio = rates ? paiseToINR(rates.audioPaise) : 'Loading…';
+  const video = rates ? paiseToINR(rates.videoPaise) : 'Loading…';
+  const screen = rates ? paiseToINR(rates.screenSharePaise) : 'Loading…';
+  const freeAudio = rates?.freeAudioMins;
+  const freeVideo = rates?.freeVideoMins;
 
   return (
     <div style={{ background: '#060B18', color: '#F1F5F9', minHeight: '100vh' }}>
@@ -898,8 +897,8 @@ meeting.microphone.enable();`} />
 {/* Free tier + rates */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
               {[
-                { media: 'Audio', rate: audio, note: `First ${freeAudio} audio min/month free` },
-                { media: 'Video', rate: video, note: `First ${freeVideo} video min/month free` },
+                { media: 'Audio', rate: audio, note: freeAudio === undefined ? 'Current allowance loading' : `First ${freeAudio} audio min/month free` },
+                { media: 'Video', rate: video, note: freeVideo === undefined ? 'Current allowance loading' : `First ${freeVideo} video min/month free` },
                 { media: 'Screen share', rate: screen, note: 'Separate usage category; no free allowance' },
               ].map((r) => (
                 <div key={r.media} className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
@@ -914,9 +913,9 @@ meeting.microphone.enable();`} />
             <p className="text-sm font-semibold text-white mb-3">How billing works</p>
             <div className="space-y-3 mb-6">
               {[
-                { t: 'Start free', d: `Every account gets ${freeAudio} audio + ${freeVideo} video minutes/month at no cost. No card required to begin.` },
+                { t: 'Start free', d: freeAudio === undefined || freeVideo === undefined ? 'Current free allowances are loaded from the billing service.' : `Every account gets ${freeAudio} audio + ${freeVideo} video minutes/month at no cost. No card required to begin.` },
                 { t: 'Add a payment method', d: 'In the dashboard, add a card only when you go to production. You are only charged for minutes beyond the free tier.' },
-                { t: 'Monthly invoice', d: `At the end of each month we generate an invoice for billable usage and auto-charge your saved card. GST of ${gst}% applies on billable usage.` },
+                { t: 'Monthly invoice', d: rates ? `At the end of each month we generate an invoice for billable usage and auto-charge your saved card. GST of ${rates.taxPercent}% applies on billable usage.` : 'Current tax information is loaded from the billing service.' },
                 { t: 'Failed payment', d: 'We retry and enter a 7-day grace period. Active calls are never interrupted, but new calls are blocked until payment succeeds.' },
               ].map((s) => (
                 <div key={s.t} className="flex gap-3 rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>

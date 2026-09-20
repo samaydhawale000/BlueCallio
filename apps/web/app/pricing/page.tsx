@@ -6,7 +6,7 @@ import { PricingAuthority } from "../components/PricingAuthority";
 import { pageMetadata } from "../lib/seo";
 
 export const metadata: Metadata = pageMetadata({
-   title: "Video Calling API Pricing",
+   title: "BlueCallio Pricing | Usage-Based Audio & Video API",
    description:
       "BlueCallio offers usage-based pricing for audio, video, and screen sharing participant-minutes, with a free monthly allowance.",
    path: "/pricing",
@@ -17,7 +17,7 @@ export default function PricingPage() {
          <PublicPage
             eyebrow="Pricing"
             title="Simple, usage-based pricing for real-time communication"
-            intro="BlueCallio bills by participant-minute. Two participants in a ten-minute call use twenty participant-minutes. Current rates and free allowances are shown below."
+            intro="BlueCallio uses usage-based participant-minute pricing. Wall-clock call duration and billable participant-minutes are different: two participants in a ten-minute call use twenty participant-minutes."
             crumbs={[
                { label: "Home", href: "/" },
                { label: "Pricing", href: "/pricing" },

@@ -347,9 +347,7 @@ export default function UsagePage() {
                      Usage by media type
                   </p>
                   <p className="text-xs text-slate-500 mt-0.5">
-                     Free tier: {free?.audioMinutes ?? 500} audio +{" "}
-                     {free?.videoMinutes ?? 200} video participant-min/month ·
-                     screen share always paid
+                     {free ? `Free tier: ${free.audioMinutes} audio + ${free.videoMinutes} video participant-min/month · screen share always paid` : 'Free allowance loading'}
                   </p>
                </div>
                <Link
@@ -367,7 +365,7 @@ export default function UsagePage() {
                   minutes={u?.audioMinutes ?? 0}
                   costPaise={cost?.audioPaise ?? 0}
                   freeOf={free?.audioMinutes ?? 0}
-                  rate={`${paiseToINRShort(rates?.audioPaise ?? 20)} / participant-min`}
+                  rate={rates ? `${paiseToINRShort(rates.audioPaise)} / participant-min` : 'Loading rate…'}
                   showCost
                />
                <TypeRow
@@ -376,7 +374,7 @@ export default function UsagePage() {
                   minutes={u?.videoMinutes ?? 0}
                   costPaise={cost?.videoPaise ?? 0}
                   freeOf={free?.videoMinutes ?? 0}
-                  rate={`${paiseToINRShort(rates?.videoPaise ?? 80)} / participant-min`}
+                  rate={rates ? `${paiseToINRShort(rates.videoPaise)} / participant-min` : 'Loading rate…'}
                   showCost
                />
                <TypeRow
@@ -385,7 +383,7 @@ export default function UsagePage() {
                   minutes={u?.screenShareMinutes ?? 0}
                   costPaise={cost?.screenSharePaise ?? 0}
                   freeOf={0}
-                  rate={`${paiseToINRShort(rates?.screenSharePaise ?? 10)} / participant-min`}
+                  rate={rates ? `${paiseToINRShort(rates.screenSharePaise)} / participant-min` : 'Loading rate…'}
                   showCost
                />
             </div>
@@ -586,9 +584,7 @@ export default function UsagePage() {
                   Usage is calculated to the second, per participant, from when
                   a call connects until it ends. Anything beyond the free
                   allowance is billed at{" "}
-                  {paiseToINRShort(rates?.audioPaise ?? 20)} (audio),{" "}
-                  {paiseToINRShort(rates?.videoPaise ?? 80)} (video), and +
-                  {paiseToINRShort(rates?.screenSharePaise ?? 10)}
+                  {rates ? `${paiseToINRShort(rates.audioPaise)} (audio), ${paiseToINRShort(rates.videoPaise)} (video), and ${paiseToINRShort(rates.screenSharePaise)} (screen sharing)` : 'current rates loading'}
                   (screen share) per participant-minute. An invoice is generated
                   and your card charged on the 1st of each month.
                </p>

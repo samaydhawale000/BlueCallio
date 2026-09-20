@@ -1,6 +1,6 @@
 # @bluecallio/react
 
-React components and hooks for **BlueCallio** — build real-time audio and video meeting experiences without having to build the WebRTC interface from scratch.
+Official React components and hooks for BlueCallio, a developer-focused real-time communication infrastructure platform.
 
 The package provides reusable React components, hooks, controls, participant layouts, device management, and meeting state.
 
@@ -1082,7 +1082,7 @@ The SDK provides:
 Current package version:
 
 ```text
-0.1.0
+0.1.2
 ```
 
 ---

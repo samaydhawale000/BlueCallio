@@ -1,7 +1,8 @@
 {
   "name": "@bluecallio/react",
-  "version": "0.1.1",
-  "description": "React UI components and hooks for BlueCallio — build a branded meeting experience without touching WebRTC",
+  "version": "0.1.2",
+  "description": "Official React components and hooks for BlueCallio, a developer-focused real-time communication infrastructure platform.",
+  "homepage": "https://bluecallio.com",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -24,7 +25,10 @@
     "video",
     "webrtc",
     "conferencing",
-    "components"
+    "components",
+    "audio",
+    "screen-sharing",
+    "typescript"
   ],
   "license": "MIT",
   "peerDependencies": {
@@ -32,7 +36,7 @@
     "react-dom": ">=18.0.0"
   },
   "dependencies": {
-    "@bluecallio/sdk": "^0.2.0"
+    "@bluecallio/sdk": "^0.2.2"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",

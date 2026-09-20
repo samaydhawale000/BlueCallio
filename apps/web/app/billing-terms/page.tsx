@@ -111,8 +111,8 @@ export default function BillingTermsPage() {
       <LegalSection num="8" title="Free Allowance">
         <p>
           Every account receives a monthly free allowance of{" "}
-          {rates?.freeAudioMins ?? 500} audio and {rates?.freeVideoMins ?? 200} video
-          participant-minutes, plus unlimited projects and developers.
+          audio and video participant-minutes as shown in the current rates
+          published by the billing service, plus unlimited projects and developers.
         </p>
         <p>
           Screen sharing has no free allowance and is always billable. Usage beyond the free allowance
