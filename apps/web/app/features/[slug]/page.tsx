@@ -86,7 +86,7 @@ const features = {
          "BlueCallio adds browser-native screen sharing to calling experiences through its hosted UI, React components, and headless SDK.",
       details: [
          "Participants select what to share through their browser's permission flow. Your interface can make the action available while the browser controls the final selection.",
-         "Screen sharing can be used alongside a call and is billed as an additional participant-minute on top of video usage.",
+         "Screen sharing can be used alongside a call and is tracked as its own participant-minute usage category.",
       ],
       useCases: [
          "Technical support",

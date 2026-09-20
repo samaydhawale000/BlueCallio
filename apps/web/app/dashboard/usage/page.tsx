@@ -385,7 +385,7 @@ export default function UsagePage() {
                   minutes={u?.screenShareMinutes ?? 0}
                   costPaise={cost?.screenSharePaise ?? 0}
                   freeOf={0}
-                  rate={`+${paiseToINRShort(rates?.screenSharePaise ?? 10)} / participant-min`}
+                  rate={`${paiseToINRShort(rates?.screenSharePaise ?? 10)} / participant-min`}
                   showCost
                />
             </div>

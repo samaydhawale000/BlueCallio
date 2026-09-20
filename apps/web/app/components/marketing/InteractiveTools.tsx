@@ -263,6 +263,7 @@ export function PricingCalculator() {
    const [minutes, setMinutes] = useState(10);
    const [video, setVideo] = useState(true);
    const [screen, setScreen] = useState(false);
+   const [screenPeople, setScreenPeople] = useState(1);
    useEffect(() => {
       api.get("/billing/rates")
          .then((response) => setRates(response.data))
@@ -275,11 +276,9 @@ export function PricingCalculator() {
          : rates.freeAudioMins
       : 0;
    const billable = Math.max(0, total - allowance);
-   const rate = rates
-      ? (video ? rates.videoPaise : rates.audioPaise) +
-        (screen ? rates.screenSharePaise : 0)
-      : 0;
-   const amount = (billable * rate) / 100;
+   const screenMinutes = screen ? screenPeople * minutes : 0;
+   const mediaRate = rates ? (video ? rates.videoPaise : rates.audioPaise) : 0;
+   const amount = rates ? ((billable * mediaRate) + (screenMinutes * rates.screenSharePaise)) / 100 : 0;
    return (
       <section className="rounded-2xl border border-[#1A2642] bg-[#0A0F1E] p-5 md:p-8">
          <h2 className="text-2xl font-bold text-white">
@@ -333,15 +332,15 @@ export function PricingCalculator() {
                <input
                   type="checkbox"
                   checked={screen}
-                  disabled={!video}
                   onChange={(event) => setScreen(event.target.checked)}
                />{" "}
                Screen sharing
             </label>
          </div>
+         {screen && <label className="mt-5 block max-w-xs text-sm text-slate-300">Screen-sharing participants <input aria-label="Screen-sharing participants" type="number" min="1" max={people} value={screenPeople} onChange={(event) => setScreenPeople(Math.min(people, Math.max(1, Number(event.target.value))))} className="mt-2 w-full rounded-lg border border-[#2A3D64] bg-[#060B18] p-3 text-white" /></label>}
          <div className="mt-6 grid gap-3 sm:grid-cols-4">
             <div className="rounded-lg bg-[#060B18] p-4">
-               <p className="text-xs text-slate-500">Participant-minutes</p>
+               <p className="text-xs text-slate-500">{video ? "Video" : "Audio"} participant-minutes</p>
                <p className="mt-1 text-xl font-bold text-white">{total}</p>
             </div>
             <div className="rounded-lg bg-[#060B18] p-4">
@@ -351,10 +350,14 @@ export function PricingCalculator() {
                </p>
             </div>
             <div className="rounded-lg bg-[#060B18] p-4">
-               <p className="text-xs text-slate-500">Billable minutes</p>
+               <p className="text-xs text-slate-500">Billable media minutes</p>
                <p className="mt-1 text-xl font-bold text-white">
                   {rates ? billable : "…"}
                </p>
+            </div>
+            <div className="rounded-lg bg-[#060B18] p-4">
+               <p className="text-xs text-slate-500">Screen-sharing minutes</p>
+               <p className="mt-1 text-xl font-bold text-white">{screenMinutes}</p>
             </div>
             <div className="rounded-lg bg-[#060B18] p-4">
                <p className="text-xs text-slate-500">Estimated pre-tax cost</p>

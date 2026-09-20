@@ -900,7 +900,7 @@ meeting.microphone.enable();`} />
               {[
                 { media: 'Audio', rate: audio, note: `First ${freeAudio} audio min/month free` },
                 { media: 'Video', rate: video, note: `First ${freeVideo} video min/month free` },
-                { media: 'Screen share', rate: `+${screen}`, note: 'Always billable, on top of video' },
+                { media: 'Screen share', rate: screen, note: 'Separate usage category; no free allowance' },
               ].map((r) => (
                 <div key={r.media} className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
                   <p className="text-xs text-slate-500">{r.media}</p>
@@ -930,7 +930,7 @@ meeting.microphone.enable();`} />
             </div>
 
             <Tip type="info">
-              Screen sharing is always billable (no free allowance). Everything else —
+              Screen sharing is a separately tracked, billable usage category with no free allowance. Everything else —
               Hosted UI, React Components, Headless SDK, REST API, signaling, and the
               dashboard — is included on the free tier.
             </Tip>
