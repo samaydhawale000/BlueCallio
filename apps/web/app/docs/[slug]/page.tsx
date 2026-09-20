@@ -7,6 +7,7 @@ import {
 } from "../../components/marketing/PublicPage";
 import { JsonLd } from "../../components/seo/JsonLd";
 import { pageMetadata, siteUrl } from "../../lib/seo";
+import { CodeBlock } from "../../components/marketing/InteractiveTools";
 
 const docs = {
    quickstart: {
@@ -182,7 +183,9 @@ const docs = {
 } as const;
 type DocSlug = keyof typeof docs;
 const examples: Partial<Record<DocSlug, { title: string; code: string }>> = {
-   quickstart: { title: "Create a call from your backend", code: `import BlueCallio from "@bluecallio/sdk";
+   quickstart: {
+      title: "Create a call from your backend",
+      code: `import BlueCallio from "@bluecallio/sdk";
 
 const client = new BlueCallio({ apiKey: process.env.BLUECALLIO_API_KEY! });
 const call = await client.createCall({
@@ -190,32 +193,48 @@ const call = await client.createCall({
   receiverId: "user_bob",
 });
 
-// Send each participant only their own hosted URL.` },
-   react: { title: "Compose a React meeting UI", code: `import { MeetingProvider, ParticipantGrid, CameraButton, MicrophoneButton, ScreenShareButton } from "@bluecallio/react";
+// Send each participant only their own hosted URL.`,
+   },
+   react: {
+      title: "Compose a React meeting UI",
+      code: `import { MeetingProvider, ParticipantGrid, CameraButton, MicrophoneButton, ScreenShareButton } from "@bluecallio/react";
 
 <MeetingProvider token={participantToken} callId={callId} signalUrl={signalUrl}>
   <ParticipantGrid />
   <CameraButton />
   <MicrophoneButton />
   <ScreenShareButton />
-</MeetingProvider>` },
-   javascript: { title: "Initialize the headless meeting engine", code: `import { BlueCallioMeeting } from "@bluecallio/sdk";
+</MeetingProvider>`,
+   },
+   javascript: {
+      title: "Initialize the headless meeting engine",
+      code: `import { BlueCallioMeeting } from "@bluecallio/sdk";
 
 const meeting = new BlueCallioMeeting({ token, callId, signalUrl });
 await meeting.join();
-// Build your own controls around the meeting instance.` },
-   "rest-api": { title: "Create a call with the REST API", code: `curl -X POST https://api.bluecallio.com/calls \\
+// Build your own controls around the meeting instance.`,
+   },
+   "rest-api": {
+      title: "Create a call with the REST API",
+      code: `curl -X POST https://api.bluecallio.com/calls \\
   -H "x-api-key: $BLUECALLIO_API_KEY" \\
   -H "Content-Type: application/json" \\
-  -d '{"callerId":"user_alice","receiverId":"user_bob"}'` },
-   "screen-sharing": { title: "Add a screen-share control in React", code: `import { ScreenShareButton } from "@bluecallio/react";
+  -d '{"callerId":"user_alice","receiverId":"user_bob"}'`,
+   },
+   "screen-sharing": {
+      title: "Add a screen-share control in React",
+      code: `import { ScreenShareButton } from "@bluecallio/react";
 
 // Render inside a MeetingProvider.
-<ScreenShareButton />` },
-   "hosted-ui": { title: "Use the hosted URL returned by your backend", code: `const call = await client.createCall({ callerId, receiverId });
+<ScreenShareButton />`,
+   },
+   "hosted-ui": {
+      title: "Use the hosted URL returned by your backend",
+      code: `const call = await client.createCall({ callerId, receiverId });
 
 // Authorize the participant in your own app, then send them to their URL.
-redirect(call.callerUrl);` },
+redirect(call.callerUrl);`,
+   },
 };
 export function generateStaticParams() {
    return Object.keys(docs).map((slug) => ({ slug }));
@@ -269,15 +288,102 @@ export default async function DocPage({
                },
             }}
          />
-         {doc.sections.map(([title, body]) => (
-            <ContentSection title={title} key={title}>
-               <p>{body}</p>
+         <nav
+            aria-label="On this page"
+            className="rounded-xl border border-[#1A2642] bg-[#0A0F1E] p-4"
+         >
+            <p className="font-mono text-xs uppercase tracking-widest text-indigo-300">
+               On this page
+            </p>
+            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+               {doc.sections.map((section) => {
+                  const title = section[0];
+                  return (
+                     <a
+                        key={title}
+                        href={`#${title
+                           .toLowerCase()
+                           .replace(/[^a-z0-9]+/g, "-")
+                           .replace(/(^-|-$)/g, "")}`}
+                        className="text-slate-400 hover:text-white"
+                     >
+                        {title}
+                     </a>
+                  );
+               })}
+               {examples[slug as DocSlug] && (
+                  <a
+                     href="#example"
+                     className="text-slate-400 hover:text-white"
+                  >
+                     Example
+                  </a>
+               )}
+            </div>
+         </nav>
+         {doc.sections.map((section) => {
+            const [title, body] = section;
+            return (
+               <section
+                  id={title
+                     .toLowerCase()
+                     .replace(/[^a-z0-9]+/g, "-")
+                     .replace(/(^-|-$)/g, "")}
+                  key={title}
+                  className="scroll-mt-24"
+               >
+                  <ContentSection title={title}>
+                     <p>{body}</p>
+                  </ContentSection>
+               </section>
+            );
+         })}
+         {slug === "authentication" && (
+            <ContentSection title="Credential hierarchy">
+               <div className="grid gap-3 sm:grid-cols-3">
+                  {[
+                     ["API key", "Your backend", "Create and manage calls."],
+                     [
+                        "Participant access",
+                        "Participant browser",
+                        "Join only the authorized call.",
+                     ],
+                     [
+                        "Dashboard JWT",
+                        "Dashboard",
+                        "Manage account and project resources.",
+                     ],
+                  ].map(([name, location, detail]) => (
+                     <article
+                        key={name}
+                        className="rounded-xl border border-[#1A2642] bg-[#0A0F1E] p-4"
+                     >
+                        <h3 className="font-semibold text-white">{name}</h3>
+                        <p className="mt-2 text-sm text-indigo-300">
+                           {location}
+                        </p>
+                        <p className="mt-2 text-sm text-slate-400">{detail}</p>
+                     </article>
+                  ))}
+               </div>
+               <p className="rounded-lg border border-amber-400/30 bg-amber-400/10 p-4 text-sm text-amber-100">
+                  <strong>Never expose your API key in browser code.</strong>{" "}
+                  Create calls and authorize participants from trusted server
+                  code.
+               </p>
             </ContentSection>
-         ))}
+         )}
          {examples[slug as DocSlug] && (
-            <ContentSection title={examples[slug as DocSlug]!.title}>
-               <pre className="overflow-x-auto rounded-xl border border-[#1A2642] bg-[#07111F] p-5 text-sm leading-6 text-slate-200"><code>{examples[slug as DocSlug]!.code}</code></pre>
-            </ContentSection>
+            <section id="example" className="scroll-mt-24">
+               <ContentSection title={examples[slug as DocSlug]!.title}>
+                  <CodeBlock
+                     code={examples[slug as DocSlug]!.code}
+                     filename={
+                        slug === "rest-api" ? "request.sh" : "example.ts"
+                     }
+                  />
+               </ContentSection>
+            </section>
          )}
          <ContentSection title="Related documentation">
             <div className="flex flex-wrap gap-4">
