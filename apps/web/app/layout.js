@@ -3,13 +3,9 @@ import SiteHeader from "./components/layout/SiteHeader";
 import SiteFooter from "./components/layout/SiteFooter";
 import { siteUrl, defaultDescription } from "./lib/seo";
 
-// The shared shell reads persisted authentication state in client components.
-// Render routes on request so static export never evaluates that browser-only state.
-export const dynamic = "force-dynamic";
-
 export const metadata = {
   metadataBase: siteUrl,
-  title: { default: "BlueCallio | Video Calling API & WebRTC SDK", template: "%s | BlueCallio" },
+  title: { default: "Video Calling API & WebRTC SDK | BlueCallio", template: "%s | BlueCallio" },
   description: defaultDescription,
   applicationName: "BlueCallio",
   authors: [{ name: "BlueCallio" }],

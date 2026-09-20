@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Zap, LockKeyhole, ChartNoAxesCombined } from 'lucide-react';
 import { GoogleSignInButton } from '../components/ui/GoogleSignInButton';
 import { useAuthStore } from '../store/auth.store';
-import logo from '../assets/images/logo.png';
+import logo from '../assets/images/logo.webp';
 
 const BENEFITS = [
   {

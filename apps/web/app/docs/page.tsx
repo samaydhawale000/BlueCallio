@@ -209,28 +209,29 @@ const { callId, callerUrl, receiverUrl } = await bj.createCall({
   callerId: 'user_alice',
   receiverId: 'user_bob',
 });`,
-                        node: `const res = await fetch('https://api.yourdomain.com/calls', {
+                        node: `const res = await fetch('https://api.bluecallio.com/calls', {
   method: 'POST',
   headers: {
-    'Authorization': 'Bearer bj_live_your_key',
+    'x-api-key': process.env.BLUECALLIO_API_KEY!,
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({ callerId: 'user_alice', receiverId: 'user_bob' }),
 });
 const { callId, callerUrl, receiverUrl } = await res.json();`,
-                        python: `import httpx
+                        python: `import os
+import httpx
 
 async with httpx.AsyncClient() as client:
     r = await client.post(
-        'https://api.yourdomain.com/calls',
-        headers={'Authorization': 'Bearer bj_live_your_key'},
+        'https://api.bluecallio.com/calls',
+        headers={'x-api-key': os.environ['BLUECALLIO_API_KEY']},
         json={'callerId': 'user_alice', 'receiverId': 'user_bob'},
     )
 data = r.json()
 caller_url  = data['callerUrl']
 receiver_url = data['receiverUrl']`,
-                        curl: `curl -X POST https://api.yourdomain.com/calls \\
-  -H "Authorization: Bearer bj_live_your_key" \\
+                        curl: `curl -X POST https://api.bluecallio.com/calls \\
+  -H "x-api-key: $BLUECALLIO_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"callerId":"user_alice","receiverId":"user_bob"}'`,
                       }} />
@@ -299,8 +300,8 @@ receiver_url = data['receiverUrl']`,
           {/* ── Authentication ───────────────────────── */}
           <Section id="authentication">
             <Heading>Authentication</Heading>
-            <p className="text-slate-400 text-sm mb-4">Every REST request needs your API key in the Authorization header.</p>
-            <Code code="Authorization: Bearer bj_live_your_key_here" label="Header" />
+            <p className="text-slate-400 text-sm mb-4">Every REST request needs your API key in the <code className="font-mono text-xs">x-api-key</code> header.</p>
+            <Code code="x-api-key: $BLUECALLIO_API_KEY" label="Header" />
             <Tip type="warn">
               Session tokens in <code className="font-mono text-xs bg-black/30 px-1 rounded">callerUrl</code> / <code className="font-mono text-xs bg-black/30 px-1 rounded">receiverUrl</code> are single-use. Do not cache or reuse them.
             </Tip>
@@ -449,7 +450,7 @@ function Status() {
 const meeting = new BlueCallioMeeting({
   token,            // bj_session_... for this participant
   callId,
-  signalUrl: 'wss://api.yourdomain.com',
+  signalUrl: 'wss://api.bluecallio.com',
 });
 
 await meeting.join();
@@ -500,7 +501,7 @@ meeting.on('remote.stream.ended', () => {});`} />
           {/* ── REST API ─────────────────────────────── */}
           <Section id="api-create">
             <Heading>REST API</Heading>
-            <p className="text-slate-400 text-sm mb-5">Base URL: <code className="font-mono text-xs px-2 py-0.5 rounded" style={{ background: '#0D1421', color: '#A5B4FC' }}>https://api.yourdomain.com</code></p>
+            <p className="text-slate-400 text-sm mb-5">Base URL: <code className="font-mono text-xs px-2 py-0.5 rounded" style={{ background: '#0D1421', color: '#A5B4FC' }}>https://api.bluecallio.com</code></p>
 
             {/* POST /calls */}
             <Endpoint method="POST" path="/calls" summary="Create a call">
@@ -531,8 +532,8 @@ meeting.on('remote.stream.ended', () => {});`} />
   callerId: 'user_alice',
   receiverId: 'user_bob',
 });`,
-                curl: `curl -X POST https://api.yourdomain.com/calls \\
-  -H "Authorization: Bearer bj_live_key" \\
+                curl: `curl -X POST https://api.bluecallio.com/calls \\
+  -H "x-api-key: $BLUECALLIO_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"callerId":"user_alice","receiverId":"user_bob"}'`,
               }} />
@@ -540,18 +541,18 @@ meeting.on('remote.stream.ended', () => {});`} />
               <p className="text-xs font-semibold text-slate-300 mb-2 mt-4">Response — 201</p>
               <Code code={`{
   "callId": "clx8f2z...",
-  "hostedUrl": "https://call.yourdomain.com/call?callId=clx8f...&token=bj_session_...",
+  "hostedUrl": "https://bluecallio.com/call?callId=clx8f...&token=bj_session_...",
   "participants": [
     {
       "participantId": "user_alice",
       "token": "bj_session_...",
-      "hostedUrl": "https://call.yourdomain.com/call?callId=clx8f...&token=bj_session_...",
+      "hostedUrl": "https://bluecallio.com/call?callId=clx8f...&token=bj_session_...",
       "expiresAt": "2026-08-02T10:00:00.000Z"
     },
     {
       "participantId": "user_bob",
       "token": "bj_session_...",
-      "hostedUrl": "https://call.yourdomain.com/call?callId=clx8f...&token=bj_session_...",
+      "hostedUrl": "https://bluecallio.com/call?callId=clx8f...&token=bj_session_...",
       "expiresAt": "2026-08-02T10:00:00.000Z"
     }
   ]
@@ -568,7 +569,7 @@ meeting.on('remote.stream.ended', () => {});`} />
 sdk: `// SDK: engine.join() does this for you
 const meeting = new BlueCallioMeeting({ token, callId, signalUrl });
 await meeting.join();`,
-                curl: `curl -X POST https://api.yourdomain.com/calls/CALL_ID/join \\
+                curl: `curl -X POST https://api.bluecallio.com/calls/CALL_ID/join \\
   -H "Authorization: Bearer bj_session_..."`,
               }} />
               <Code code={`{ "callId": "clx8f2z...", "participantId": "user_bob", "joined": true }`} />
@@ -581,7 +582,7 @@ await meeting.join();`,
               </p>
               <LangTabs tabs={{
                 sdk: `await meeting.leave();`,
-                curl: `curl -X POST https://api.yourdomain.com/calls/CALL_ID/leave \\
+                curl: `curl -X POST https://api.bluecallio.com/calls/CALL_ID/leave \\
   -H "Authorization: Bearer bj_session_..."`,
               }} />
               <Code code={`{ "callId": "clx8f2z...", "participantId": "user_bob", "left": true }`} />
@@ -590,7 +591,7 @@ await meeting.join();`,
             {/* POST accept */}
             <Endpoint method="POST" path="/calls/:callId/accept" summary="Accept a call" id="api-accept">
               <p className="text-slate-400 text-sm mb-4 mt-3">Marks a call as accepted. The hosted UI does this automatically when the receiver taps Accept.</p>
-              <LangTabs tabs={{ sdk: `await bj.acceptCall('clx8f2z...');`, curl: `curl -X POST https://api.yourdomain.com/calls/CALL_ID/accept \\
+              <LangTabs tabs={{ sdk: `await bj.acceptCall('clx8f2z...');`, curl: `curl -X POST https://api.bluecallio.com/calls/CALL_ID/accept \\
   -H "Authorization: Bearer bj_session_"` }} />
               <Code code={`{ "callId": "clx8f2z...", "status": "ACCEPTED" }`} />
             </Endpoint>
@@ -598,7 +599,7 @@ await meeting.join();`,
             {/* POST reject */}
             <Endpoint method="POST" path="/calls/:callId/reject" summary="Reject a call" id="api-reject">
               <p className="text-slate-400 text-sm mb-4 mt-3">Receiver declines. The caller's UI is notified via WebSocket.</p>
-              <LangTabs tabs={{ sdk: `await bj.rejectCall('clx8f2z...');`, curl: `curl -X POST https://api.yourdomain.com/calls/CALL_ID/reject \\
+              <LangTabs tabs={{ sdk: `await bj.rejectCall('clx8f2z...');`, curl: `curl -X POST https://api.bluecallio.com/calls/CALL_ID/reject \\
   -H "Authorization: Bearer bj_session_"` }} />
               <Code code={`{ "callId": "clx8f2z...", "status": "REJECTED" }`} />
             </Endpoint>
@@ -606,7 +607,7 @@ await meeting.join();`,
             {/* POST end */}
             <Endpoint method="POST" path="/calls/:callId/end" summary="End a call" id="api-end">
               <p className="text-slate-400 text-sm mb-4 mt-3">Ends an active call. Both participants receive a WebSocket <code className="font-mono text-xs bg-black/30 px-1 rounded">call.ended</code> event.</p>
-              <LangTabs tabs={{ sdk: `await bj.endCall('clx8f2z...');`, curl: `curl -X POST https://api.yourdomain.com/calls/CALL_ID/end \\
+              <LangTabs tabs={{ sdk: `await bj.endCall('clx8f2z...');`, curl: `curl -X POST https://api.bluecallio.com/calls/CALL_ID/end \\
   -H "Authorization: Bearer bj_session_"` }} />
               <Code code={`{ "callId": "clx8f2z...", "status": "ENDED" }`} />
             </Endpoint>
@@ -614,8 +615,8 @@ await meeting.join();`,
             {/* GET call */}
             <Endpoint method="GET" path="/calls/:callId" summary="Get call status" id="api-get">
               <p className="text-slate-400 text-sm mb-4 mt-3">Returns the current state of a call.</p>
-              <LangTabs tabs={{ sdk: `const call = await bj.getCall('clx8f2z...');`, curl: `curl https://api.yourdomain.com/calls/CALL_ID \\
-  -H "Authorization: Bearer bj_live_key"` }} />
+              <LangTabs tabs={{ sdk: `const call = await bj.getCall('clx8f2z...');`, curl: `curl https://api.bluecallio.com/calls/CALL_ID \\
+  -H "x-api-key: $BLUECALLIO_API_KEY"` }} />
               <Code code={`{
   "callId": "clx8f2z...",
   "status": "ACCEPTED",
@@ -641,7 +642,7 @@ await meeting.join();`,
 
             <Code label="connect" code={`import { io } from 'socket.io-client';
 
-const socket = io('https://api.yourdomain.com', {
+const socket = io('https://api.bluecallio.com', {
   auth: { token: 'bj_session_...' },
   transports: ['websocket'],
 });
@@ -806,7 +807,7 @@ async def webhook(request: Request):
 
 const bj = new BlueCallio({
   apiKey: process.env.BLUECALLIO_API_KEY,
-  baseUrl: 'https://api.yourdomain.com',
+  baseUrl: 'https://api.bluecallio.com',
 });
 
 // 1. Create a call from your backend

@@ -22,7 +22,7 @@ import { useAuthStore } from '../store/auth.store';
 import { useRequireAuth } from '../hooks/useRequireAuth';
 import { api } from '../lib/api';
 import { Button } from '../components/ui/Button';
-import logo from '../assets/images/logo.png';
+import logo from '../assets/images/logo.webp';
 
 /** Loose E.164 check (+ up to 15 digits) — what Razorpay requires for a contact number. */
 const isValidPhone = (value: string) => /^\+[1-9]\d{7,14}$/.test(value.trim());
