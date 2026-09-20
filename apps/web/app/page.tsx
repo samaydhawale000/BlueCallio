@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import logo from "./assets/images/logo.webp";
 import heroPreview from "./assets/images/hero-preview.webp";
 import StripeGradient from "./components/gradient/StripeGradient";
 import PricingSection from "./components/PricingSection";
