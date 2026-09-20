@@ -6,7 +6,24 @@ import StripeGradient from "./components/gradient/StripeGradient";
 import PricingSection from "./components/PricingSection";
 import { JsonLd } from "./components/seo/JsonLd";
 import { pageMetadata, siteUrl } from "./lib/seo";
-import { Atom, Blocks, BookOpen, BriefcaseBusiness, Globe2, Headphones, Monitor, ShoppingCart, Sparkles, Stethoscope, Target, Wrench } from 'lucide-react';
+import {
+   FlowDiagram,
+   IntegrationSelector,
+} from "./components/marketing/InteractiveTools";
+import {
+   Atom,
+   Blocks,
+   BookOpen,
+   BriefcaseBusiness,
+   Globe2,
+   Headphones,
+   Monitor,
+   ShoppingCart,
+   Sparkles,
+   Stethoscope,
+   Target,
+   Wrench,
+} from "lucide-react";
 
 const USE_CASES = [
    {
@@ -19,7 +36,7 @@ const USE_CASES = [
       icon: Stethoscope,
       label: "Telemedicine",
       description:
-         "Doctor-patient consultations embedded in your healthcare product. Secure, compliant, and seamless.",
+         "Doctor-patient consultations embedded in a healthcare product, with the product team controlling its own access flow.",
    },
    {
       icon: BriefcaseBusiness,
@@ -31,7 +48,7 @@ const USE_CASES = [
       icon: Headphones,
       label: "Customer Support",
       description:
-         "Agents connect to customers instantly — no hold music, no plugin downloads required.",
+         "Let agents and customers connect inside the support workflow without moving to a separate meeting product.",
    },
    {
       icon: BookOpen,
@@ -50,7 +67,7 @@ const USE_CASES = [
 const FEATURES = [
    {
       title: "Audio & Video Calls",
-      body: "1-to-1 audio and video over peer-to-peer WebRTC. Low latency, no monthly media bill.",
+      body: "Browser audio and video communication built on WebRTC, with usage-based pricing and no fixed platform subscription.",
    },
    {
       title: "Screen Sharing",
@@ -70,7 +87,7 @@ const FEATURES = [
    },
    {
       title: "React Components",
-      body: "Reusable MeetingProvider, ParticipantGrid, ControlBar components. Custom UI, zero WebRTC code.",
+      body: "Reusable MeetingProvider, ParticipantGrid, and controls for a custom UI without implementing the media engine yourself.",
    },
    {
       title: "Headless SDK",
@@ -106,7 +123,7 @@ const FEATURES = [
    },
    {
       title: "Node.js SDK",
-      body: "npm package that wraps the REST API and the communication engine. Type-safe, zero config.",
+      body: "An npm package for the REST API and headless communication engine, with TypeScript support.",
    },
 ];
 
@@ -180,10 +197,10 @@ const STEPS = [
 ];
 
 const PLAYGROUND_STEPS = [
-   { step: "1", label: 'Click "Create Call"', done: true },
-   { step: "2", label: "Two URLs appear — caller + receiver", done: true },
-   { step: "3", label: "Open each in a browser tab", done: true },
-   { step: "4", label: "Video call starts immediately", done: false },
+   { step: "1", label: "Start a demo call", done: true },
+   { step: "2", label: "Create one session", done: true },
+   { step: "3", label: "Share the invite link or QR code", done: true },
+   { step: "4", label: "Connect and test media controls", done: false },
 ];
 
 const SUPPORT_ITEMS = [
@@ -204,25 +221,49 @@ const SUPPORT_ITEMS = [
    },
    {
       icon: Globe2,
-      title: "Community",
-      body: "Ask questions, share integrations, get help.",
+      title: "Developer support",
+      body: "Get help with implementation and product questions.",
    },
 ];
 
 export const metadata = pageMetadata({
    title: "Video Calling API & WebRTC SDK",
-   description: "Add audio, video, screen sharing, and real-time communication to your product with BlueCallio APIs, hosted UI, React components, and a headless SDK.",
+   description:
+      "Add audio, video, screen sharing, and real-time communication to your product with BlueCallio APIs, hosted UI, React components, and a headless SDK.",
    path: "/",
 });
 
 export default function LandingPage() {
    return (
       <div className="lp-root">
-         <JsonLd data={[
-            { "@context": "https://schema.org", "@type": "Organization", name: "BlueCallio", url: siteUrl.toString(), logo: new URL("/opengraph-image", siteUrl).toString(), email: "hello@bluecallio.com" },
-            { "@context": "https://schema.org", "@type": "WebSite", name: "BlueCallio", url: siteUrl.toString() },
-            { "@context": "https://schema.org", "@type": "SoftwareApplication", name: "BlueCallio", applicationCategory: "DeveloperApplication", operatingSystem: "Web", url: siteUrl.toString(), description: "Developer-focused real-time communication platform with APIs, SDKs, React components, and hosted UI for audio, video, and screen sharing." },
-         ]} />
+         <JsonLd
+            data={[
+               {
+                  "@context": "https://schema.org",
+                  "@type": "Organization",
+                  name: "BlueCallio",
+                  url: siteUrl.toString(),
+                  logo: new URL("/opengraph-image", siteUrl).toString(),
+                  email: "hello@bluecallio.com",
+               },
+               {
+                  "@context": "https://schema.org",
+                  "@type": "WebSite",
+                  name: "BlueCallio",
+                  url: siteUrl.toString(),
+               },
+               {
+                  "@context": "https://schema.org",
+                  "@type": "SoftwareApplication",
+                  name: "BlueCallio",
+                  applicationCategory: "DeveloperApplication",
+                  operatingSystem: "Web",
+                  url: siteUrl.toString(),
+                  description:
+                     "Developer-focused real-time communication platform with APIs, SDKs, React components, and hosted UI for audio, video, and screen sharing.",
+               },
+            ]}
+         />
          {/* ── Hero ── */}
          <section className="section-base relative pt-24 pb-32 px-6 overflow-hidden">
             <div className="absolute inset-0 pointer-events-none">
@@ -232,19 +273,23 @@ export default function LandingPage() {
             <div className="relative max-w-6xl mx-auto">
                <div className="hero-badge inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono mb-8 border">
                   <span className="hero-badge-dot w-1.5 h-1.5 rounded-full animate-pulse" />
-                  Start free &nbsp;·&nbsp; Pay only for what you use
-                  &nbsp;·&nbsp; No hidden fees
+                  Start free &nbsp;·&nbsp; Usage-based pricing
                </div>
 
                <h1 className="lp-h1 font-bold text-white leading-tight mb-6">
                   Build real-time communication into your product
                   <span className="gradient-text-hero">
-                    {" "} in minutes, not weeks.
+                     {" "}
+                     in minutes, not weeks.
                   </span>
                </h1>
 
                <p className="text-balance text-slate-400 text-lg leading-relaxed mb-6">
-                  BlueCallio is a developer-focused real-time communication platform for adding audio, video and screen sharing to software products. Use REST APIs, hosted UI, React components or a headless SDK without assembling signaling and media infrastructure from scratch.
+                  BlueCallio is a developer-focused real-time communication
+                  platform for adding audio, video and screen sharing to
+                  software products. Use REST APIs, hosted UI, React components
+                  or a headless SDK without assembling signaling and media
+                  infrastructure from scratch.
                </p>
 
                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -312,6 +357,25 @@ export default function LandingPage() {
             </div>
          </section>
 
+         {/* ── Integration paths ── */}
+         <section className="section-alt py-24 px-6">
+            <div className="max-w-6xl mx-auto">
+               <p className="section-label font-mono text-xs tracking-widest uppercase mb-4">
+                  Choose your integration
+               </p>
+               <h2 className="lp-h2 font-bold text-white mb-4">
+                  You build the product. BlueCallio handles communication.
+               </h2>
+               <p className="text-slate-400 mb-10 max-w-3xl">
+                  Keep your authentication, business logic, permissions,
+                  branding, and database. BlueCallio provides the call
+                  lifecycle, participant sessions, signaling, WebRTC setup, TURN
+                  relay, media controls, webhooks, and usage tracking.
+               </p>
+               <IntegrationSelector />
+            </div>
+         </section>
+
          {/* ── Problem / Solution ── */}
          <section className="section-alt py-24 px-6">
             <div className="max-w-6xl mx-auto">
@@ -322,8 +386,9 @@ export default function LandingPage() {
                   Real-time communication built for modern products.
                </h2>
                <p className="text-slate-400 mb-14 max-w-2xl">
-                  Enterprise communication tools are powerful but expensive,
-                  complex, and loaded with features you never use.
+                  Building browser communication means connecting product logic
+                  to participant access, signaling, media controls, and the
+                  WebRTC connection lifecycle.
                </p>
 
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -333,11 +398,11 @@ export default function LandingPage() {
                      </p>
                      <div className="space-y-3">
                         {[
-                           "Monthly subscriptions you barely use",
-                           "Confusing pricing with hidden fees",
-                           "Complex SDKs that take weeks to integrate",
-                           "Enterprise-only documentation",
-                           "Overloaded dashboards not built for developers",
+                           "A server-controlled call and participant-access flow",
+                           "Real-time signaling alongside application state",
+                           "WebRTC connection setup and restrictive-network paths",
+                           "Media controls, device selection, and screen sharing",
+                           "Usage tracking that belongs with the product integration",
                         ].map((item) => (
                            <div key={item} className="flex items-start gap-3">
                               <span className="text-red-500 mt-0.5 text-sm">
@@ -355,11 +420,11 @@ export default function LandingPage() {
                      </p>
                      <div className="space-y-3">
                         {[
-                           "Start free with 500 audio + 200 video minutes",
-                           "Pay only for what you use — no monthly subscription",
-                           "Integration in minutes with a simple REST API",
-                           "Documentation treated as a product",
-                           "Developer-first dashboard with your usage & invoices",
+                           "Server APIs for call creation and participant access",
+                           "Hosted UI, React components, or a headless SDK",
+                           "WebSocket signaling and TURN relay around browser WebRTC",
+                           "Documentation and copyable integration examples",
+                           "Usage and billing tools in the developer dashboard",
                         ].map((item) => (
                            <div key={item} className="flex items-start gap-3">
                               <span className="text-green-400 mt-0.5 text-sm">
@@ -371,6 +436,22 @@ export default function LandingPage() {
                      </div>
                   </div>
                </div>
+            </div>
+         </section>
+
+         <section className="section-base py-24 px-6">
+            <div className="max-w-6xl mx-auto">
+               <p className="section-label font-mono text-xs tracking-widest uppercase mb-4">
+                  How it works
+               </p>
+               <h2 className="lp-h2 font-bold text-white mb-4">
+                  A clear path from backend call creation to browser media.
+               </h2>
+               <p className="text-slate-400 mb-10 max-w-3xl">
+                  Select a step to see where BlueCallio fits into the
+                  communication flow.
+               </p>
+               <FlowDiagram />
             </div>
          </section>
 
@@ -393,7 +474,9 @@ export default function LandingPage() {
                         key={uc.label}
                         className="card-gradient rounded-xl border border-[#1A2642] p-6 transition-all hover:border-[#2A3D64]"
                      >
-                        <div className="mb-4 text-indigo-300"><uc.icon size={24} /></div>
+                        <div className="mb-4 text-indigo-300">
+                           <uc.icon size={24} />
+                        </div>
                         <p className="font-semibold text-white mb-2 text-sm">
                            {uc.label}
                         </p>
@@ -546,15 +629,15 @@ export default function LandingPage() {
                         Test before you integrate
                      </h2>
                      <p className="text-slate-400 mb-8 leading-relaxed">
-                        Create a call, open two browser tabs, start the call —
-                        see everything working before you write a single line of
-                        integration code.
+                        Start a demo session, then share its invite link or QR
+                        code with another device. Test audio, video, and screen
+                        sharing before integrating.
                      </p>
                      <Link
-                        href="/dashboard/playground"
+                        href="/signup"
                         className="btn-primary inline-flex items-center gap-2 text-white font-medium text-sm px-6 py-3 rounded-lg transition-all hover:opacity-90"
                      >
-                        Open playground →
+                        Start building →
                      </Link>
                   </div>
 
@@ -586,7 +669,7 @@ export default function LandingPage() {
                            ))}
                         </div>
                         <div className="feature-cell mt-6 rounded-lg p-3 border border-[#1A2642] text-center text-xs text-slate-500 font-mono">
-                           No API key required. No code required.
+                           Sign in to create and manage a demo session.
                         </div>
                      </div>
                   </div>
@@ -621,7 +704,9 @@ export default function LandingPage() {
                            key={item.title}
                            className="card-surface rounded-xl border border-[#1A2642] p-5"
                         >
-                           <div className="mb-3 text-indigo-300"><item.icon size={20} /></div>
+                           <div className="mb-3 text-indigo-300">
+                              <item.icon size={20} />
+                           </div>
                            <p className="font-semibold text-white text-sm mb-1">
                               {item.title}
                            </p>
