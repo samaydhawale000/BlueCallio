@@ -287,7 +287,7 @@ const u = usage?.usage;
             minutes={u?.audioMinutes ?? 0}
             costPaise={cost?.audioPaise ?? 0}
             freeOf={free?.audioMinutes ?? 0}
-            rate={`${paiseToINRShort(rates?.audioPaise ?? 20)} / participant-min`}
+            rate={rates ? `${paiseToINRShort(rates.audioPaise)} / participant-min` : 'Loading rate…'}
             color="#818CF8"
           />
           <TypeRow
@@ -296,7 +296,7 @@ const u = usage?.usage;
             minutes={u?.videoMinutes ?? 0}
             costPaise={cost?.videoPaise ?? 0}
             freeOf={free?.videoMinutes ?? 0}
-            rate={`${paiseToINRShort(rates?.videoPaise ?? 80)} / participant-min`}
+            rate={rates ? `${paiseToINRShort(rates.videoPaise)} / participant-min` : 'Loading rate…'}
             color="#C084FC"
           />
           <TypeRow
@@ -305,7 +305,7 @@ const u = usage?.usage;
             minutes={u?.screenShareMinutes ?? 0}
             costPaise={cost?.screenSharePaise ?? 0}
             freeOf={0}
-                rate={`${paiseToINRShort(rates?.screenSharePaise ?? 10)} / participant-min`}
+                rate={rates ? `${paiseToINRShort(rates.screenSharePaise)} / participant-min` : 'Loading rate…'}
             color="#34D399"
           />
         </div>

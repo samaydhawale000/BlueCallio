@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
+import {
+  BLUECALLIO_DESCRIPTION,
+  BLUECALLIO_NAME,
+  BLUECALLIO_URL,
+} from "./brand";
 
-export const siteUrl = new URL("https://bluecallio.com");
-export const siteName = "BlueCallio";
-export const defaultDescription =
-  "BlueCallio is a developer-focused real-time communication platform with video and audio calling, screen sharing, WebRTC APIs, React components, JavaScript SDKs, and hosted call UI.";
+export const siteUrl = new URL(BLUECALLIO_URL);
+export const siteName = BLUECALLIO_NAME;
+export const defaultDescription = BLUECALLIO_DESCRIPTION;
 
 type PageMetadata = {
   title: string;

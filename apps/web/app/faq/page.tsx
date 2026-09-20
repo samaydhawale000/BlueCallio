@@ -148,19 +148,19 @@ export default function FaqPage() {
   }, []);
 
   const paiseToINR = (p: number) => `₹${((p ?? 0) / 100).toFixed(2)}`;
-  const freeAudio = rates?.freeAudioMins ?? 500;
-  const freeVideo = rates?.freeVideoMins ?? 200;
-  const gst = rates?.taxPercent ?? 18;
-  const audioRate = paiseToINR(rates?.audioPaise ?? 20);
-  const videoRate = paiseToINR(rates?.videoPaise ?? 80);
-  const screenRate = paiseToINR(rates?.screenSharePaise ?? 10);
+  const freeAudio = rates?.freeAudioMins;
+  const freeVideo = rates?.freeVideoMins;
+  const gst = rates?.taxPercent;
+  const audioRate = rates ? paiseToINR(rates.audioPaise) : null;
+  const videoRate = rates ? paiseToINR(rates.videoPaise) : null;
+  const screenRate = rates ? paiseToINR(rates.screenSharePaise) : null;
 
   const pricingItems = [
-    { q: 'Is there a free tier?', a: `Yes. You get ${freeAudio} audio and ${freeVideo} video participant-minutes free every month, plus unlimited projects and developers. No credit card is required to start.` },
-    { q: 'How does usage-based pricing work?', a: `There are no subscriptions or up-front fees. Audio (${audioRate}/min), video (${videoRate}/min), and screen sharing (${screenRate}/min) are separate participant-minute usage categories. Free allowances apply to audio and video; screen sharing has no free allowance.` },
-    { q: 'Is screen sharing billable separately?', a: `Yes. Screen sharing is tracked as its own usage category at ${screenRate} per participant-minute. It is not automatically added as a surcharge to video minutes and has no free allowance.` },
+    { q: 'Is there a free tier?', a: freeAudio === undefined || freeVideo === undefined ? 'Current free allowances are loading from the billing service.' : `Yes. You get ${freeAudio} audio and ${freeVideo} video participant-minutes free every month, plus unlimited projects and developers. No credit card is required to start.` },
+    { q: 'How does usage-based pricing work?', a: !audioRate || !videoRate || !screenRate ? 'Current rates are loading from the billing service.' : `There are no subscriptions or up-front fees. Audio (${audioRate}/min), video (${videoRate}/min), and screen sharing (${screenRate}/min) are separate participant-minute usage categories. Free allowances apply to audio and video; screen sharing has no free allowance.` },
+    { q: 'Is screen sharing billable separately?', a: !screenRate ? 'Current screen-sharing pricing is loading from the billing service.' : `Yes. Screen sharing is tracked as its own usage category at ${screenRate} per participant-minute. It is not automatically added as a surcharge to video minutes and has no free allowance.` },
     { q: 'Do I need to add a payment method to start?', a: 'No. Your free allowance covers development and prototyping. You only add a payment method when you go to production and exceed the free minutes.' },
-    { q: 'When and how am I charged?', a: `At the end of each billing cycle (monthly, anchored to the date you started your plan) we generate an invoice for your billable usage and charge your saved card automatically. A GST of ${gst}% applies on billable usage.` },
+    { q: 'When and how am I charged?', a: gst === undefined ? 'Current tax information is loading from the billing service.' : `At the end of each billing cycle (monthly, anchored to the date you started your plan) we generate an invoice for your billable usage and charge your saved card automatically. A GST of ${gst}% applies on billable usage.` },
     { q: 'What happens if a payment fails?', a: 'We retry, notify you, and enter a 7-day grace period. During grace you can keep existing calls, but you cannot start new ones until the payment succeeds. Active calls are never interrupted.' },
     { q: 'Can I see my usage and invoices?', a: 'Yes. The dashboard Usage page shows per-type minutes and estimated month-end cost, and the Billing page lists your payment methods and past invoices.' },
     { q: 'Is every feature included on the free tier?', a: 'Yes. Hosted UI, React Components, Headless SDK, REST API, WebSocket signaling, and the developer dashboard are all available. You only pay for minutes beyond the free allowance.' },

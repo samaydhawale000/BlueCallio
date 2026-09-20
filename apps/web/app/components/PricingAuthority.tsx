@@ -2,18 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
-
-export type BillingRates = {
-   audioPaise: number;
-   videoPaise: number;
-   screenSharePaise: number;
-   freeAudioMins: number;
-   freeVideoMins: number;
-   taxPercent: number;
-};
-
-const price = (paise: number) =>
-   `₹${(paise / 100).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
+import { formatPaise, type BillingRates } from "../lib/pricing";
 
 /** The public display of record for rates. Values always come from GET /billing/rates. */
 export function PricingAuthority({ className = "" }: { className?: string }) {
@@ -46,9 +35,7 @@ export function PricingAuthority({ className = "" }: { className?: string }) {
             billed as its own usage category and is not automatically added as a
             surcharge to video minutes.
          </p>
-         {rates ? (
-            <>
-               <div className="mt-5 overflow-x-auto">
+         {rates ? <><div className="mt-5 overflow-x-auto">
                   <table className="w-full min-w-[500px] text-left text-sm">
                      <thead className="border-b border-[#2A3D64] text-xs uppercase tracking-wider text-slate-500">
                         <tr>
@@ -63,7 +50,7 @@ export function PricingAuthority({ className = "" }: { className?: string }) {
                               Audio
                            </th>
                            <td className="py-3 pr-4">
-                              {price(rates.audioPaise)} / participant-minute
+                              {formatPaise(rates.audioPaise)} / participant-minute
                            </td>
                            <td className="py-3">
                               First {rates.freeAudioMins} participant-minutes
@@ -75,7 +62,7 @@ export function PricingAuthority({ className = "" }: { className?: string }) {
                               Video
                            </th>
                            <td className="py-3 pr-4">
-                              {price(rates.videoPaise)} / participant-minute
+                              {formatPaise(rates.videoPaise)} / participant-minute
                            </td>
                            <td className="py-3">
                               First {rates.freeVideoMins} participant-minutes
@@ -87,15 +74,15 @@ export function PricingAuthority({ className = "" }: { className?: string }) {
                               Screen sharing
                            </th>
                            <td className="py-3 pr-4">
-                              {price(rates.screenSharePaise)} /
+                              {formatPaise(rates.screenSharePaise)} /
                               participant-minute
                            </td>
                            <td className="py-3">No free allowance</td>
                         </tr>
                      </tbody>
                   </table>
-               </div>
-               <div className="mt-5 space-y-2 text-sm leading-6 text-slate-400">
+         </div>
+         <div className="mt-5 space-y-2 text-sm leading-6 text-slate-400">
                   <p>
                      <strong className="text-slate-200">Example:</strong> 2
                      participants in a 10-minute video call use 20 video
@@ -109,15 +96,7 @@ export function PricingAuthority({ className = "" }: { className?: string }) {
                      participant-minutes, independently of video usage.
                   </p>
                   <p>GST of {rates.taxPercent}% applies to billable usage.</p>
-               </div>
-            </>
-         ) : (
-            <p className="mt-4 text-sm text-slate-400">
-               {unavailable
-                  ? "Current rates are temporarily unavailable. Please check back before relying on a price estimate."
-                  : "Loading current rates…"}
-            </p>
-         )}
+         </div></> : <p className="mt-4 text-sm text-slate-400">{unavailable ? "Current rates are temporarily unavailable. Please check back before relying on pricing." : "Loading current rates…"}</p>}
       </section>
    );
 }

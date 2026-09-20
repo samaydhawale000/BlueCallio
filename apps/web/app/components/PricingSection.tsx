@@ -75,12 +75,12 @@ export default function PricingSection() {
     };
   }, []);
 
-  const audio = paiseToINR(rates?.audioPaise ?? 20);
-  const video = paiseToINR(rates?.videoPaise ?? 80);
-  const screen = paiseToINR(rates?.screenSharePaise ?? 10);
-  const freeAudio = rates?.freeAudioMins ?? 500;
-  const freeVideo = rates?.freeVideoMins ?? 200;
-  const gst = rates?.taxPercent ?? 18;
+  const audio = rates ? paiseToINR(rates.audioPaise) : 'Loading…';
+  const video = rates ? paiseToINR(rates.videoPaise) : 'Loading…';
+  const screen = rates ? paiseToINR(rates.screenSharePaise) : 'Loading…';
+  const freeAudio = rates?.freeAudioMins;
+  const freeVideo = rates?.freeVideoMins;
+  const gst = rates?.taxPercent;
 
   const RATES = [
     {
@@ -88,14 +88,14 @@ export default function PricingSection() {
       icon: Mic,
       price: audio,
       unit: '/ participant-minute',
-      note: `Free tier: first ${freeAudio} audio min/month included.`,
+      note: freeAudio === undefined ? 'Loading current allowance…' : `Free tier: first ${freeAudio} audio min/month included.`,
     },
     {
       media: 'Video',
       icon: Video,
       price: video,
       unit: '/ participant-minute',
-      note: `Free tier: first ${freeVideo} video min/month included.`,
+      note: freeVideo === undefined ? 'Loading current allowance…' : `Free tier: first ${freeVideo} video min/month included.`,
       highlight: true,
     },
     {
@@ -108,8 +108,8 @@ export default function PricingSection() {
   ];
 
   const freeTierItems = [
-    `${freeAudio} audio participant-minutes / month`,
-    `${freeVideo} video participant-minutes / month`,
+    freeAudio === undefined ? 'Current audio allowance loading' : `${freeAudio} audio participant-minutes / month`,
+    freeVideo === undefined ? 'Current video allowance loading' : `${freeVideo} video participant-minutes / month`,
     ...FREE_TIER,
   ];
 
@@ -126,8 +126,7 @@ export default function PricingSection() {
           </h2>
           <p className="text-slate-400 mb-14 max-w-2xl">
             Audio, video, and screen sharing are tracked as separate participant-minute
-            categories. Get {freeAudio} audio + {freeVideo} video minutes free every month;
-            screen sharing has its own rate and no free allowance.
+            categories. Current rates and allowances are loaded from BlueCallio's billing service.
           </p>
 
           {/* Free tier + rates */}

@@ -7,7 +7,7 @@ import {
 } from "../../components/marketing/PublicPage";
 import { JsonLd } from "../../components/seo/JsonLd";
 import { pageMetadata, siteUrl } from "../../lib/seo";
-import { CodeBlock } from "../../components/marketing/InteractiveTools";
+import { CodeBlock, QuickstartStepper, ReactMeetingPreview } from "../../components/marketing/InteractiveTools";
 import { PricingAuthority } from "../../components/PricingAuthority";
 
 const docs = {
@@ -130,6 +130,48 @@ const docs = {
          ],
       ],
    },
+   audio: {
+      title: "Add Audio Calling with BlueCallio",
+      meta: "Audio Calling API & SDK",
+      description:
+         "Add browser audio calling with BlueCallio's hosted UI, React components, or headless JavaScript SDK.",
+      lead: "BlueCallio supports 1:1 browser audio calls through hosted UI, React components, and the headless JavaScript SDK.",
+      sections: [
+         [
+            "Permissions and devices",
+            "Participants grant microphone permission in their browser. Use the React device tools or your own headless SDK interface to select available audio devices.",
+         ],
+         [
+            "Mute and connection state",
+            "Audio controls can mute or unmute the microphone while the meeting connection state shows whether the participant is connected.",
+         ],
+         [
+            "Audio billing",
+            "Audio usage is measured in audio participant-minutes. It is tracked separately from video and screen-sharing usage.",
+         ],
+      ],
+   },
+   video: {
+      title: "Add Video Calling with BlueCallio",
+      meta: "Video Calling API & SDK",
+      description:
+         "Add browser video calling with BlueCallio's hosted UI, React components, or headless JavaScript SDK.",
+      lead: "BlueCallio supports 1:1 browser video calls with camera controls, participant streams, and device selection across its integration surfaces.",
+      sections: [
+         [
+            "Camera permissions and tracks",
+            "Participants grant camera permission in their browser. The meeting engine manages the media track while your hosted or custom interface exposes the camera control.",
+         ],
+         [
+            "Participant streams and layouts",
+            "Use hosted UI for a ready-made layout, React components such as ParticipantGrid for a composable interface, or the headless SDK for a fully custom layout.",
+         ],
+         [
+            "Video billing",
+            "Video usage is measured in video participant-minutes. Video participant-minutes are separate from screen-sharing participant-minutes.",
+         ],
+      ],
+   },
    "hosted-ui": {
       title: "Hosted Call UI",
       meta: "Hosted Video Call UI",
@@ -186,15 +228,15 @@ type DocSlug = keyof typeof docs;
 const examples: Partial<Record<DocSlug, { title: string; code: string }>> = {
    quickstart: {
       title: "Create a call from your backend",
-      code: `import BlueCallio from "@bluecallio/sdk";
+      code: `import { BlueCallioClient } from "@bluecallio/sdk";
 
-const client = new BlueCallio({ apiKey: process.env.BLUECALLIO_API_KEY! });
+const client = new BlueCallioClient({ apiKey: process.env.BLUECALLIO_API_KEY! });
 const call = await client.createCall({
   callerId: "user_alice",
   receiverId: "user_bob",
 });
 
-// Send each participant only their own hosted URL.`,
+`,
    },
    react: {
       title: "Compose a React meeting UI",
@@ -228,6 +270,23 @@ await meeting.join();
 
 // Render inside a MeetingProvider.
 <ScreenShareButton />`,
+   },
+   audio: {
+      title: "Start an audio-focused headless meeting",
+      code: `import { BlueCallioMeeting } from "@bluecallio/sdk";
+
+const meeting = new BlueCallioMeeting({ token, callId, signalUrl, video: false });
+await meeting.join();
+await meeting.microphone.enable();`,
+   },
+   video: {
+      title: "Render a React video meeting",
+      code: `import { MeetingProvider, ParticipantGrid, CameraButton } from "@bluecallio/react";
+
+<MeetingProvider token={participantToken} callId={callId} signalUrl={signalUrl}>
+  <ParticipantGrid />
+  <CameraButton />
+</MeetingProvider>`,
    },
    "hosted-ui": {
       title: "Use the hosted URL returned by your backend",
@@ -377,6 +436,16 @@ export default async function DocPage({
          {slug === "usage-billing" && (
             <ContentSection title="Current rates and examples">
                <PricingAuthority />
+            </ContentSection>
+         )}
+         {slug === "quickstart" && (
+            <ContentSection title="First successful call in minutes">
+               <QuickstartStepper />
+            </ContentSection>
+         )}
+         {slug === "react" && (
+            <ContentSection title="React meeting preview">
+               <ReactMeetingPreview />
             </ContentSection>
          )}
          {examples[slug as DocSlug] && (

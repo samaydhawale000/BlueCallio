@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { api } from "../../lib/api";
 import { useEffect } from "react";
+import { formatPaise, type BillingRates } from "../../lib/pricing";
 
 const paths = [
    {
@@ -13,7 +14,8 @@ const paths = [
       builds: "Your backend creates the call and decides who can join.",
       handles:
          "Meeting UI, media controls, signaling, WebRTC setup, and TURN relay.",
-      code: `const call = await client.createCall({ callerId, receiverId });\nredirect(call.callerUrl);`,
+      install: "No frontend package required.",
+      code: `import { BlueCallioClient } from "@bluecallio/sdk";\n\nconst client = new BlueCallioClient({ apiKey: process.env.BLUECALLIO_API_KEY! });\nconst call = await client.createCall({ callerId, receiverId });\nredirect(call.callerUrl);`,
       href: "/docs/hosted-ui",
    },
    {
@@ -23,6 +25,7 @@ const paths = [
       builds: "Your product layout, business logic, and branded experience.",
       handles:
          "Participant state, media streams, controls, signaling, and connection lifecycle.",
+      install: "npm install @bluecallio/react",
       code: `import { MeetingProvider, ParticipantGrid } from "@bluecallio/react";\n\n<MeetingProvider token={token} callId={callId} signalUrl={signalUrl}>\n  <ParticipantGrid />\n</MeetingProvider>`,
       href: "/docs/react",
    },
@@ -33,8 +36,19 @@ const paths = [
       builds: "The full interface and product-specific call interactions.",
       handles:
          "The communication engine, WebRTC media lifecycle, signaling, and TURN relay.",
+      install: "npm install @bluecallio/sdk",
       code: `import { BlueCallioMeeting } from "@bluecallio/sdk";\n\nconst meeting = new BlueCallioMeeting({ token, callId, signalUrl });\nawait meeting.join();`,
       href: "/docs/javascript",
+   },
+   {
+      id: "rest",
+      label: "REST API",
+      audience: "Use BlueCallio from any trusted backend environment.",
+      builds: "Your authorization rules and application-specific call flow.",
+      handles: "Call creation and the participant session information returned by the API.",
+      install: "No SDK required.",
+      code: `const response = await fetch("https://api.bluecallio.com/calls", {\n  method: "POST",\n  headers: {\n    "Content-Type": "application/json",\n    "x-api-key": process.env.BLUECALLIO_API_KEY!,\n  },\n  body: JSON.stringify({ callerId, receiverId, type: "VIDEO" }),\n});`,
+      href: "/docs/rest-api",
    },
 ] as const;
 
@@ -124,14 +138,18 @@ export function IntegrationSelector({
                </h3>
                <dl className="mt-5 space-y-4 text-sm leading-6">
                   <div>
-                     <dt className="font-semibold text-slate-200">You build</dt>
+                     <dt className="font-semibold text-slate-200">Best for</dt>
                      <dd className="text-slate-400">{item.builds}</dd>
                   </div>
                   <div>
                      <dt className="font-semibold text-slate-200">
-                        BlueCallio handles
+                        What you get
                      </dt>
                      <dd className="text-slate-400">{item.handles}</dd>
+                  </div>
+                  <div>
+                     <dt className="font-semibold text-slate-200">Installation</dt>
+                     <dd className="font-mono text-slate-400">{item.install}</dd>
                   </div>
                </dl>
                <Link
@@ -250,35 +268,28 @@ export function ArchitectureExplorer() {
    );
 }
 
-type Rates = {
-   audioPaise: number;
-   videoPaise: number;
-   screenSharePaise: number;
-   freeAudioMins: number;
-   freeVideoMins: number;
-};
 export function PricingCalculator() {
-   const [rates, setRates] = useState<Rates | null>(null);
+   const [rates, setRates] = useState<BillingRates | null>(null);
    const [people, setPeople] = useState(2);
    const [minutes, setMinutes] = useState(10);
+   const [audio, setAudio] = useState(true);
    const [video, setVideo] = useState(true);
    const [screen, setScreen] = useState(false);
    const [screenPeople, setScreenPeople] = useState(1);
+   const [screenDuration, setScreenDuration] = useState(5);
    useEffect(() => {
       api.get("/billing/rates")
          .then((response) => setRates(response.data))
          .catch(() => {});
    }, []);
-   const total = people * minutes;
-   const allowance = rates
-      ? video
-         ? rates.freeVideoMins
-         : rates.freeAudioMins
-      : 0;
-   const billable = Math.max(0, total - allowance);
-   const screenMinutes = screen ? screenPeople * minutes : 0;
-   const mediaRate = rates ? (video ? rates.videoPaise : rates.audioPaise) : 0;
-   const amount = rates ? ((billable * mediaRate) + (screenMinutes * rates.screenSharePaise)) / 100 : 0;
+   const audioMinutes = audio ? people * minutes : 0;
+   const videoMinutes = video ? people * minutes : 0;
+   const screenMinutes = screen ? screenPeople * screenDuration : 0;
+   const billableAudio = rates ? Math.max(0, audioMinutes - rates.freeAudioMins) : null;
+   const billableVideo = rates ? Math.max(0, videoMinutes - rates.freeVideoMins) : null;
+   const amountPaise = rates && billableAudio !== null && billableVideo !== null
+      ? billableAudio * rates.audioPaise + billableVideo * rates.videoPaise + screenMinutes * rates.screenSharePaise
+      : null;
    return (
       <section className="rounded-2xl border border-[#1A2642] bg-[#0A0F1E] p-5 md:p-8">
          <h2 className="text-2xl font-bold text-white">
@@ -305,7 +316,7 @@ export function PricingCalculator() {
                />
             </label>
             <label className="text-sm text-slate-300">
-               Call duration (minutes){" "}
+               Wall-clock call duration (minutes){" "}
                <input
                   aria-label="Call duration in minutes"
                   type="number"
@@ -323,6 +334,14 @@ export function PricingCalculator() {
             <label>
                <input
                   type="checkbox"
+                  checked={audio}
+                  onChange={(event) => setAudio(event.target.checked)}
+               />{" "}
+               Audio
+            </label>
+            <label>
+               <input
+                  type="checkbox"
                   checked={video}
                   onChange={(event) => setVideo(event.target.checked)}
                />{" "}
@@ -337,37 +356,75 @@ export function PricingCalculator() {
                Screen sharing
             </label>
          </div>
-         {screen && <label className="mt-5 block max-w-xs text-sm text-slate-300">Screen-sharing participants <input aria-label="Screen-sharing participants" type="number" min="1" max={people} value={screenPeople} onChange={(event) => setScreenPeople(Math.min(people, Math.max(1, Number(event.target.value))))} className="mt-2 w-full rounded-lg border border-[#2A3D64] bg-[#060B18] p-3 text-white" /></label>}
-         <div className="mt-6 grid gap-3 sm:grid-cols-4">
-            <div className="rounded-lg bg-[#060B18] p-4">
-               <p className="text-xs text-slate-500">{video ? "Video" : "Audio"} participant-minutes</p>
-               <p className="mt-1 text-xl font-bold text-white">{total}</p>
+         {screen && (
+            <div className="mt-5 grid max-w-xl gap-5 sm:grid-cols-2">
+               <label className="text-sm text-slate-300">
+                  Screen-sharing participants
+                  <input aria-label="Screen-sharing participants" type="number" min="1" max={people} value={screenPeople} onChange={(event) => setScreenPeople(Math.min(people, Math.max(1, Number(event.target.value))))} className="mt-2 w-full rounded-lg border border-[#2A3D64] bg-[#060B18] p-3 text-white" />
+               </label>
+               <label className="text-sm text-slate-300">
+                  Screen-share duration (minutes)
+                  <input aria-label="Screen-share duration in minutes" type="number" min="1" max={minutes} value={screenDuration} onChange={(event) => setScreenDuration(Math.min(minutes, Math.max(1, Number(event.target.value))))} className="mt-2 w-full rounded-lg border border-[#2A3D64] bg-[#060B18] p-3 text-white" />
+               </label>
             </div>
-            <div className="rounded-lg bg-[#060B18] p-4">
-               <p className="text-xs text-slate-500">Included allowance</p>
-               <p className="mt-1 text-xl font-bold text-white">
-                  {rates ? allowance : "…"}
-               </p>
-            </div>
-            <div className="rounded-lg bg-[#060B18] p-4">
-               <p className="text-xs text-slate-500">Billable media minutes</p>
-               <p className="mt-1 text-xl font-bold text-white">
-                  {rates ? billable : "…"}
-               </p>
+         )}
+         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+           <div className="rounded-lg bg-[#060B18] p-4">
+               <p className="text-xs text-slate-500">Wall-clock duration</p>
+               <p className="mt-1 text-xl font-bold text-white">{minutes} minutes</p>
+           </div>
+           <div className="rounded-lg bg-[#060B18] p-4">
+               <p className="text-xs text-slate-500">Audio participant-minutes</p>
+               <p className="mt-1 text-xl font-bold text-white">{audioMinutes}</p>
+           </div>
+           <div className="rounded-lg bg-[#060B18] p-4">
+               <p className="text-xs text-slate-500">Video participant-minutes</p>
+               <p className="mt-1 text-xl font-bold text-white">{videoMinutes}</p>
             </div>
             <div className="rounded-lg bg-[#060B18] p-4">
                <p className="text-xs text-slate-500">Screen-sharing minutes</p>
                <p className="mt-1 text-xl font-bold text-white">{screenMinutes}</p>
             </div>
             <div className="rounded-lg bg-[#060B18] p-4">
-               <p className="text-xs text-slate-500">Estimated pre-tax cost</p>
+               <p className="text-xs text-slate-500">Billable participant-minutes</p>
+               <p className="mt-1 text-xl font-bold text-white">{billableAudio === null || billableVideo === null ? "Loading…" : billableAudio + billableVideo + screenMinutes}</p>
+            </div>
+            <div className="rounded-lg bg-[#060B18] p-4">
+               <p className="text-xs text-slate-500">Estimated usage cost (pre-tax)</p>
                <p className="mt-1 text-xl font-bold text-white">
-                  {rates ? `₹${amount.toFixed(2)}` : "Loading rates…"}
+                  {amountPaise === null ? "Loading rates…" : formatPaise(amountPaise)}
                </p>
             </div>
          </div>
       </section>
    );
+}
+
+const quickstartSteps = [
+   ["Create a BlueCallio account", "Create an account and sign in to the dashboard.", "You can access the dashboard.", "Create a project."],
+   ["Create a project", "Add a project for the application that will create calls.", "A project appears in your dashboard.", "Generate a project API key."],
+   ["Generate an API key", "Create a project API key and store it in your server environment.", "You have a server-side secret.", "Install the SDK."],
+   ["Install the SDK", "npm install @bluecallio/sdk", "The SDK is available to your backend.", "Create a call from your backend."],
+   ["Create a call", "const call = await client.createCall({ callerId: \"user_alice\", receiverId: \"user_bob\" });", "The API returns a call ID and participant session information.", "Return session information to the frontend."],
+   ["Return session information", "Return only the authenticated participant's token, callId, and signalUrl to the browser.", "The browser has participant-scoped connection information.", "Join the call."],
+   ["Join the call", "const meeting = new BlueCallioMeeting({ token, callId, signalUrl });\nawait meeting.join();", "The participant joins the call.", "Test microphone and camera."],
+   ["Test audio and video", "await meeting.microphone.enable();\nawait meeting.camera.enable();", "The browser asks for media permission.", "Test screen sharing."],
+   ["Test screen sharing", "await meeting.screenShare.start();", "The browser presents its display-selection picker.", "Inspect usage."],
+   ["Inspect usage", "Open Dashboard → Usage to review audio, video, and screen-sharing participant-minutes.", "Usage is shown by category.", "Review pricing and billing."],
+] as const;
+
+export function QuickstartStepper() {
+   const [active, setActive] = useState(0);
+   const [title, instruction, result, next] = quickstartSteps[active];
+   return <section className="rounded-2xl border border-[#1A2642] bg-[#0A0F1E] p-5 md:p-8"><div className="flex flex-wrap gap-2">{quickstartSteps.map(([step], index) => <button key={step} type="button" onClick={() => setActive(index)} className={`rounded-lg px-3 py-2 text-sm ${active === index ? "bg-indigo-500/20 text-white" : "text-slate-400 hover:text-white"}`}>Step {index + 1}</button>)}</div><div className="mt-6"><p className="font-mono text-xs uppercase tracking-widest text-indigo-300">Step {active + 1} of {quickstartSteps.length}</p><h3 className="mt-2 text-xl font-bold text-white">{title}</h3><p className="mt-3 text-slate-400">{instruction}</p><CodeBlock code={instruction} filename="quickstart.ts" /><dl className="mt-5 grid gap-4 sm:grid-cols-2"><div><dt className="font-semibold text-slate-200">Expected result</dt><dd className="mt-1 text-sm text-slate-400">{result}</dd></div><div><dt className="font-semibold text-slate-200">Next action</dt><dd className="mt-1 text-sm text-slate-400">{next}</dd></div></dl></div></section>;
+}
+
+export function ReactMeetingPreview() {
+   const [microphone, setMicrophone] = useState(true);
+   const [camera, setCamera] = useState(true);
+   const [sharing, setSharing] = useState(false);
+   const [connected, setConnected] = useState(true);
+   return <section className="rounded-2xl border border-[#1A2642] bg-[#0A0F1E] p-5 md:p-8"><div className="flex items-center justify-between"><h3 className="font-semibold text-white">Simulated React meeting UI</h3><span className={`rounded-full px-3 py-1 text-xs ${connected ? "bg-emerald-500/15 text-emerald-300" : "bg-slate-500/15 text-slate-300"}`}>{connected ? "Connected" : "Left"}</span></div><div className="mt-5 grid gap-3 sm:grid-cols-2"><div className="aspect-video rounded-xl bg-indigo-500/15 p-4 text-sm text-indigo-200">Local participant<br /><span className="text-slate-400">{camera ? "Camera on" : "Camera off"}</span></div><div className="aspect-video rounded-xl bg-[#07111F] p-4 text-sm text-slate-200">Remote participant<br /><span className="text-slate-500">Participant stream</span></div></div><div className="mt-4 flex flex-wrap gap-3"><button type="button" onClick={() => setMicrophone((value) => !value)} className="rounded-lg border border-[#2A3D64] px-3 py-2 text-sm">{microphone ? "Mute microphone" : "Unmute microphone"}</button><button type="button" onClick={() => setCamera((value) => !value)} className="rounded-lg border border-[#2A3D64] px-3 py-2 text-sm">{camera ? "Turn camera off" : "Turn camera on"}</button><button type="button" onClick={() => setSharing((value) => !value)} className="rounded-lg border border-[#2A3D64] px-3 py-2 text-sm">{sharing ? "Stop sharing" : "Share screen"}</button><button type="button" onClick={() => setConnected(false)} className="rounded-lg border border-rose-400/40 px-3 py-2 text-sm text-rose-200">Leave</button></div>{sharing && <p className="mt-4 text-sm text-indigo-300">Screen sharing is active.</p>}</section>;
 }
 
 const featureFlows = {

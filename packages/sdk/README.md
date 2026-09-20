@@ -1,6 +1,6 @@
 # @bluecallio/sdk
 
-Official JavaScript and TypeScript SDK for **BlueCallio** — a developer-first real-time communication platform for audio, video, screen sharing, and WebRTC applications.
+Official JavaScript and TypeScript SDK for BlueCallio, a developer-focused real-time communication infrastructure platform for audio, video, screen sharing and WebRTC applications.
 
 The SDK provides:
 
@@ -735,7 +735,7 @@ npm install @bluecallio/react
 Current package version:
 
 ```text
-0.2.0
+0.2.2
 ```
 
 ---

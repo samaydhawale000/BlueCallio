@@ -9,7 +9,7 @@ import { JsonLd } from "../components/seo/JsonLd";
 import { pageMetadata, siteUrl } from "../lib/seo";
 
 export const metadata: Metadata = pageMetadata({
-   title: "WebRTC APIs & SDKs for Developers",
+   title: "BlueCallio Developer Platform | Audio, Video & WebRTC",
    description:
       "Choose BlueCallio hosted UI, React components, or a headless SDK to add audio, video, screen sharing, and WebRTC communication to your application.",
    path: "/developers",
@@ -53,7 +53,7 @@ export default function DevelopersPage() {
       <PublicPage
          eyebrow="For developers"
          title="Build real-time communication into your application."
-         intro="Choose a hosted UI, React components, or a headless WebRTC SDK—with server-side APIs and communication infrastructure underneath."
+         intro="Add audio, video and screen sharing using BlueCallio's hosted UI, React components, headless SDK or REST APIs."
          crumbs={[
             { label: "Home", href: "/" },
             { label: "Developers", href: "/developers" },
@@ -90,6 +90,11 @@ export default function DevelopersPage() {
                   "Headless SDK",
                   "Full control",
                   "The engine beneath your own interface.",
+               ],
+               [
+                  "REST API",
+                  "Backend integration",
+                  "Create and manage calls from any trusted server environment.",
                ],
             ].map(([name, label, description]) => (
                <article
