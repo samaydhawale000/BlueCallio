@@ -8,6 +8,7 @@ import {
 import { JsonLd } from "../../components/seo/JsonLd";
 import { pageMetadata, siteUrl } from "../../lib/seo";
 import { CodeBlock } from "../../components/marketing/InteractiveTools";
+import { PricingAuthority } from "../../components/PricingAuthority";
 
 const docs = {
    quickstart: {
@@ -125,7 +126,7 @@ const docs = {
          ],
          [
             "Understand usage",
-            "Screen sharing is an additional billable participant-minute on top of video usage. Check pricing and billing terms for details.",
+            "Screen sharing is tracked and billed as its own participant-minute category. Check the current rates and billing terms for details.",
          ],
       ],
    },
@@ -176,7 +177,7 @@ const docs = {
          ],
          [
             "Track usage",
-            "Use the dashboard to review usage and invoices. Screen sharing is billed in addition to video usage as described in the billing terms.",
+            "Use the dashboard to review usage and invoices. Audio, video, and screen sharing each appear as separate usage categories.",
          ],
       ],
    },
@@ -371,6 +372,11 @@ export default async function DocPage({
                   Create calls and authorize participants from trusted server
                   code.
                </p>
+            </ContentSection>
+         )}
+         {slug === "usage-billing" && (
+            <ContentSection title="Current rates and examples">
+               <PricingAuthority />
             </ContentSection>
          )}
          {examples[slug as DocSlug] && (

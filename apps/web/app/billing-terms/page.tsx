@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import LegalLayout, { LegalSection, LegalBullets } from "../components/LegalLayout";
 import { api } from "../lib/api";
+import { PricingAuthority } from "../components/PricingAuthority";
 
 export default function BillingTermsPage() {
   const [rates, setRates] = useState<{
@@ -23,7 +24,6 @@ export default function BillingTermsPage() {
     return () => { active = false; };
   }, []);
 
-  const paiseToINR = (p: number) => `₹${((p ?? 0) / 100).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
   const gst = rates?.taxPercent ?? 18;
 
   return (
@@ -38,6 +38,7 @@ export default function BillingTermsPage() {
           displayed on the applicable pricing page.
         </p>
         <p>There are no subscription fees or up-front costs — you only pay for what you use.</p>
+        <PricingAuthority className="mt-5" />
       </LegalSection>
 
       <LegalSection num="2" title="Participant-Minute Billing">
@@ -51,8 +52,7 @@ export default function BillingTermsPage() {
           "Video: 3 participants × 20 minutes = 60 video participant-minutes",
         ]} />
         <p>
-          This is important because the per-minute rate (e.g. {rates ? paiseToINR(rates.videoPaise) : "₹0.80"} for
-          video) applies per participant, not per room.
+          This is important because the applicable per-minute rate applies per participant, not per room.
         </p>
       </LegalSection>
 
@@ -68,9 +68,8 @@ export default function BillingTermsPage() {
           product, or service.
         </p>
         <p>
-          Current rates: Audio {rates ? paiseToINR(rates.audioPaise) : "₹0.20"}/participant-min, Video{" "}
-          {rates ? paiseToINR(rates.videoPaise) : "₹0.80"}/participant-min, Screen share +{" "}
-          {rates ? paiseToINR(rates.screenSharePaise) : "₹0.10"}/participant-min on top of Video.
+          Audio, video, and screen sharing are independently tracked usage categories. Screen-sharing
+          participant-minutes are not automatically added as a surcharge to video participant-minutes.
         </p>
       </LegalSection>
 

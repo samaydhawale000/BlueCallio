@@ -101,9 +101,9 @@ export default function PricingSection() {
     {
       media: 'Screen Share',
       icon: Monitor,
-      price: `+${screen}`,
+      price: screen,
       unit: '/ participant-minute',
-      note: 'Added on top of video. Screen share is always billable.',
+      note: 'A separate usage category. No free allowance.',
     },
   ];
 
@@ -125,9 +125,9 @@ export default function PricingSection() {
             Start free. Pay only for what you use.
           </h2>
           <p className="text-slate-400 mb-14 max-w-2xl">
-            No subscriptions, no up-front fees. Get {freeAudio} audio + {freeVideo} video
-            minutes free every month, then pay a simple per-participant-minute
-            rate only for what goes beyond the free allowance.
+            Audio, video, and screen sharing are tracked as separate participant-minute
+            categories. Get {freeAudio} audio + {freeVideo} video minutes free every month;
+            screen sharing has its own rate and no free allowance.
           </p>
 
           {/* Free tier + rates */}
@@ -280,8 +280,8 @@ export default function PricingSection() {
           </div>
 
           <p className="text-center text-xs text-slate-600 mt-10">
-            All rates in INR, charged per participant-minute beyond the free
-            allowance. GST of {gst}% applies on billable usage. No hidden charges.
+            All rates in INR. Audio, video, and screen sharing are billed as separate
+            participant-minute categories. GST of {gst}% applies on billable usage.
           </p>
         </div>
       </section>

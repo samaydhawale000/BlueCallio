@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
+import { PricingAuthority } from '../components/PricingAuthority';
 
 // Kept in sync with the visible, static product answers below. Dynamic billing
 // answers are intentionally excluded because their values are loaded at runtime.
@@ -156,8 +157,8 @@ export default function FaqPage() {
 
   const pricingItems = [
     { q: 'Is there a free tier?', a: `Yes. You get ${freeAudio} audio and ${freeVideo} video participant-minutes free every month, plus unlimited projects and developers. No credit card is required to start.` },
-    { q: 'How does usage-based pricing work?', a: `There are no subscriptions or up-front fees. You pay a simple per-participant-minute rate only for minutes beyond the free allowance: audio ${audioRate}/min, video ${videoRate}/min, and screen share +${screenRate}/min (added on top of video).` },
-    { q: 'Is screen sharing billable separately?', a: `Yes. Screen sharing is always billable at +${screenRate} per participant-minute on top of the video rate, and has no free allowance.` },
+    { q: 'How does usage-based pricing work?', a: `There are no subscriptions or up-front fees. Audio (${audioRate}/min), video (${videoRate}/min), and screen sharing (${screenRate}/min) are separate participant-minute usage categories. Free allowances apply to audio and video; screen sharing has no free allowance.` },
+    { q: 'Is screen sharing billable separately?', a: `Yes. Screen sharing is tracked as its own usage category at ${screenRate} per participant-minute. It is not automatically added as a surcharge to video minutes and has no free allowance.` },
     { q: 'Do I need to add a payment method to start?', a: 'No. Your free allowance covers development and prototyping. You only add a payment method when you go to production and exceed the free minutes.' },
     { q: 'When and how am I charged?', a: `At the end of each billing cycle (monthly, anchored to the date you started your plan) we generate an invoice for your billable usage and charge your saved card automatically. A GST of ${gst}% applies on billable usage.` },
     { q: 'What happens if a payment fails?', a: 'We retry, notify you, and enter a 7-day grace period. During grace you can keep existing calls, but you cannot start new ones until the payment succeeds. Active calls are never interrupted.' },
@@ -207,6 +208,7 @@ export default function FaqPage() {
               <span className="gradient-text font-mono text-xs tracking-widest uppercase mr-3">Pricing &amp; Billing</span>
             </h2>
             <div className="flex flex-col gap-3">
+              <PricingAuthority />
               {pricingItems.map((item) => (
                 <FaqItem key={item.q} q={item.q} a={item.a} />
               ))}
