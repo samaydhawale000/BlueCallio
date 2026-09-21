@@ -62,7 +62,7 @@ export default function SignupPage() {
 
           {/* Top: brand */}
           <div className="relative flex items-center gap-3">
-            <Image src={logo} alt="BlueCallio" width={176} height={42} className="h-auto w-44 object-contain" />
+            <Image src={logo} alt="PurpleCallio" width={176} height={42} className="h-auto w-44 object-contain" />
             <div>
               <p className="text-xs text-slate-500">Communication Infrastructure</p>
             </div>
@@ -144,7 +144,7 @@ export default function SignupPage() {
             {/* Mobile brand */}
             <div className="text-center mb-8 lg:hidden">
               <Link href="/" className="inline-flex">
-                <Image src={logo} alt="BlueCallio" width={176} height={42} className="h-auto w-44 object-contain" />
+                <Image src={logo} alt="PurpleCallio" width={176} height={42} className="h-auto w-44 object-contain" />
               </Link>
               <p className="text-slate-500 text-sm mt-1">Communication Infrastructure</p>
             </div>
@@ -155,7 +155,7 @@ export default function SignupPage() {
               style={{ background: '#0D1421', boxShadow: '0 24px 60px rgba(0,0,0,0.4)' }}
             >
               <div className="flex flex-col items-center gap-2 text-center mb-6">
-                <Image src={logo} alt="BlueCallio" width={176} height={42} className="mb-2 h-auto w-40 object-contain" />
+                <Image src={logo} alt="PurpleCallio" width={176} height={42} className="mb-2 h-auto w-40 object-contain" />
                 <h2 className="text-lg font-bold text-white">Create your account</h2>
                 <p className="text-sm text-slate-400">
                   Get started free — no credit card required.

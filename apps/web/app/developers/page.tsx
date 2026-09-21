@@ -9,9 +9,9 @@ import { JsonLd } from "../components/seo/JsonLd";
 import { pageMetadata, siteUrl } from "../lib/seo";
 
 export const metadata: Metadata = pageMetadata({
-   title: "BlueCallio Developer Platform | Audio, Video & WebRTC",
+   title: "PurpleCallio Developer Platform | Audio, Video & WebRTC",
    description:
-      "Choose BlueCallio hosted UI, React components, or a headless SDK to add audio, video, screen sharing, and WebRTC communication to your application.",
+      "Choose PurpleCallio hosted UI, React components, or a headless SDK to add audio, video, screen sharing, and WebRTC communication to your application.",
    path: "/developers",
 });
 
@@ -53,7 +53,7 @@ export default function DevelopersPage() {
       <PublicPage
          eyebrow="For developers"
          title="Build real-time communication into your application."
-         intro="Add audio, video and screen sharing using BlueCallio's hosted UI, React components, headless SDK or REST APIs."
+         intro="Add audio, video and screen sharing using PurpleCallio's hosted UI, React components, headless SDK or REST APIs."
          crumbs={[
             { label: "Home", href: "/" },
             { label: "Developers", href: "/developers" },
@@ -63,7 +63,7 @@ export default function DevelopersPage() {
             data={{
                "@context": "https://schema.org",
                "@type": "SoftwareApplication",
-               name: "BlueCallio",
+               name: "PurpleCallio",
                applicationCategory: "DeveloperApplication",
                operatingSystem: "Web",
                url: new URL("/developers", siteUrl).toString(),
@@ -121,7 +121,7 @@ export default function DevelopersPage() {
          <ContentSection title="How the pieces connect">
             <p>
                Select a node to see its role in a production communication flow.
-               BlueCallio works around browser WebRTC; it does not replace the
+               PurpleCallio works around browser WebRTC; it does not replace the
                browser media layer.
             </p>
             <ArchitectureExplorer />
@@ -132,17 +132,17 @@ export default function DevelopersPage() {
                   [
                      "Hosted UI",
                      "You build authentication, business logic, and call creation.",
-                     "BlueCallio handles the meeting UI, media controls, signaling, WebRTC setup, and TURN relay.",
+                     "PurpleCallio handles the meeting UI, media controls, signaling, WebRTC setup, and TURN relay.",
                   ],
                   [
                      "React",
                      "You build your product layout, business logic, and branded UI.",
-                     "BlueCallio handles participant state, media streams, controls, and the connection lifecycle.",
+                     "PurpleCallio handles participant state, media streams, controls, and the connection lifecycle.",
                   ],
                   [
                      "Headless SDK",
                      "You control the full UI, interactions, and application state.",
-                     "BlueCallio provides the communication engine, signaling, WebRTC media lifecycle, and relay path.",
+                     "PurpleCallio provides the communication engine, signaling, WebRTC media lifecycle, and relay path.",
                   ],
                ].map(([name, build, handles]) => (
                   <article
@@ -156,7 +156,7 @@ export default function DevelopersPage() {
                      </p>
                      <p className="mt-3 text-sm text-slate-400">
                         <strong className="text-slate-200">
-                           BlueCallio handles:
+                           PurpleCallio handles:
                         </strong>{" "}
                         {handles}
                      </p>

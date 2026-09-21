@@ -1,8 +1,8 @@
 import type { MetadataRoute } from "next";
-import { BLUECALLIO_URL } from "./lib/brand";
+import { PURPLECALLIO_URL } from "./lib/brand";
 
-const publicPaths = ["", "/what-is-bluecallio", "/features/video-calling", "/features/audio-calling", "/features/screen-sharing", "/features/webrtc", "/developers", "/docs", "/docs/quickstart", "/docs/authentication", "/docs/javascript", "/docs/react", "/docs/rest-api", "/docs/audio", "/docs/video", "/docs/calls", "/docs/screen-sharing", "/docs/hosted-ui", "/docs/webhooks", "/docs/security", "/docs/usage-billing", "/examples", "/examples/javascript-video", "/examples/javascript-audio", "/examples/react-video", "/examples/react-audio", "/examples/screen-sharing", "/examples/hosted-ui", "/pricing", "/faq", "/privacy", "/terms", "/refund", "/billing-terms", "/acceptable-use"];
+const publicPaths = ["", "/what-is-purplecallio", "/features/video-calling", "/features/audio-calling", "/features/screen-sharing", "/features/webrtc", "/developers", "/docs", "/docs/quickstart", "/docs/authentication", "/docs/javascript", "/docs/react", "/docs/rest-api", "/docs/audio", "/docs/video", "/docs/calls", "/docs/screen-sharing", "/docs/hosted-ui", "/docs/webhooks", "/docs/security", "/docs/usage-billing", "/examples", "/examples/javascript-video", "/examples/javascript-audio", "/examples/react-video", "/examples/react-audio", "/examples/screen-sharing", "/examples/hosted-ui", "/pricing", "/faq", "/privacy", "/terms", "/refund", "/billing-terms", "/acceptable-use"];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return publicPaths.map((path) => ({ url: `${BLUECALLIO_URL}${path}`, changeFrequency: path.startsWith("/docs") ? "monthly" : "weekly", priority: path === "" ? 1 : 0.7 }));
+  return publicPaths.map((path) => ({ url: `${PURPLECALLIO_URL}${path}`, changeFrequency: path.startsWith("/docs") ? "monthly" : "weekly", priority: path === "" ? 1 : 0.7 }));
 }

@@ -125,11 +125,11 @@ export interface ExchangeResult {
   branding: Branding;
 }
 
-export interface BlueCallioConfig {
+export interface PurpleCallioConfig {
   apiKey: string;
-  /** BlueCallio API base URL. Default: https://api.bluecallio.com */
+  /** PurpleCallio API base URL. Default: https://api.purplecallio.com */
   baseUrl?: string;
-  /** Hosted call UI base URL. Default: https://call.bluecallio.com */
+  /** Hosted call UI base URL. Default: https://call.purplecallio.com */
   callBaseUrl?: string;
 }
 

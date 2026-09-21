@@ -1,8 +1,8 @@
 {
-  "name": "@bluecallio/react",
-  "version": "0.1.2",
-  "description": "Official React components and hooks for BlueCallio, a developer-focused real-time communication infrastructure platform.",
-  "homepage": "https://bluecallio.com",
+  "name": "@purplecallio/react",
+  "version": "0.1.0",
+  "description": "Official React components and hooks for PurpleCallio, a developer-focused real-time communication infrastructure platform.",
+  "homepage": "https://purplecallio.com",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -20,7 +20,7 @@
     "dev": "tsc --watch"
   },
   "keywords": [
-    "bluecallio",
+    "purplecallio",
     "react",
     "video",
     "webrtc",
@@ -36,7 +36,7 @@
     "react-dom": ">=18.0.0"
   },
   "dependencies": {
-    "@bluecallio/sdk": "^0.2.2"
+    "@purplecallio/sdk": "^0.1.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",

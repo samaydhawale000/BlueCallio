@@ -104,7 +104,7 @@ if (isCallPage || isAppPage || isAuthPage) {
           <Link href="/" className="flex items-center">
             <Image
               src={logo}
-              alt="BlueCallio"
+              alt="PurpleCallio"
               width={156}
               height={38}
               className="h-auto w-[132px] object-contain sm:w-[156px]"

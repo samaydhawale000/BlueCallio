@@ -124,12 +124,12 @@ export class WebhookService {
     const body = JSON.stringify(payload);
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'X-BlueCall-Event': payload.event,
+      'X-PurpleCallio-Event': payload.event,
     };
 
     if (secret) {
       const sig = createHmac('sha256', secret).update(body).digest('hex');
-      headers['X-BlueCall-Signature'] = `sha256=${sig}`;
+      headers['X-PurpleCallio-Signature'] = `sha256=${sig}`;
     }
 
     const controller = new AbortController();

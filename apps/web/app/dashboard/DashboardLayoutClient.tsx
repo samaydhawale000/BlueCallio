@@ -134,7 +134,7 @@ const logout = useAuthStore((s) => s.logout);
         style={{ background: '#0A0F1E' }}
       >
         <Link href="/dashboard" className="flex items-center">
-          <Image src={logo} alt="BlueCallio" width={132} height={32} className="h-auto w-[116px] object-contain" />
+          <Image src={logo} alt="PurpleCallio" width={132} height={32} className="h-auto w-[116px] object-contain" />
         </Link>
         <button
           onClick={() => setSidebarOpen(true)}
@@ -166,7 +166,7 @@ const logout = useAuthStore((s) => s.logout);
         {/* Brand */}
         <div className="flex items-center justify-between px-5 h-16 border-b border-[#1A2642]">
           <Link href="/dashboard" className="flex items-center">
-            <Image src={logo} alt="BlueCallio" width={156} height={38} className="h-auto w-[136px] object-contain" />
+            <Image src={logo} alt="PurpleCallio" width={156} height={38} className="h-auto w-[136px] object-contain" />
           </Link>
           <button
             onClick={() => setSidebarOpen(false)}

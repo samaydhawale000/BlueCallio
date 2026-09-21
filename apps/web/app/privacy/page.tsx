@@ -1,17 +1,17 @@
 import LegalLayout, { LegalSection, LegalBullets } from "../components/LegalLayout";
 import { pageMetadata } from "../lib/seo";
 
-export const metadata = pageMetadata({ title: "Privacy Policy", description: "How BlueCallio collects, uses, stores, and protects personal information for its website and services.", path: "/privacy" });
+export const metadata = pageMetadata({ title: "Privacy Policy", description: "How PurpleCallio collects, uses, stores, and protects personal information for its website and services.", path: "/privacy" });
 
 export default function PrivacyPage() {
   return (
     <LegalLayout
       title="Privacy Policy"
       lastUpdated="24 August 2025"
-      intro="This Privacy Policy explains how BlueCallio collects, uses, stores, and protects personal information when you use our website and services."
+      intro="This Privacy Policy explains how PurpleCallio collects, uses, stores, and protects personal information when you use our website and services."
     >
       <LegalSection num="1" title="Information We Collect">
-        <p>Depending on how you use BlueCallio, we may collect:</p>
+        <p>Depending on how you use PurpleCallio, we may collect:</p>
         <p className="font-semibold text-slate-300">Account Information</p>
         <LegalBullets items={[
           "Name",
@@ -38,7 +38,7 @@ export default function PrivacyPage() {
         ]} />
         <p>
           Payment card details may be processed directly by our payment provider and may not be
-          stored directly by BlueCallio.
+          stored directly by PurpleCallio.
         </p>
         <p className="font-semibold text-slate-300">Usage Information</p>
         <LegalBullets items={[
@@ -67,15 +67,15 @@ export default function PrivacyPage() {
 
       <LegalSection num="2" title="Communication Data">
         <p>
-          BlueCallio provides communication infrastructure. Depending on the implementation,
+          PurpleCallio provides communication infrastructure. Depending on the implementation,
           communication data may pass through or be processed by infrastructure necessary to
           establish and maintain calls.
         </p>
         <p>
-          BlueCallio does not intentionally use customer communication content for advertising.
+          PurpleCallio does not intentionally use customer communication content for advertising.
         </p>
         <p>
-          BlueCallio provides real-time communication infrastructure and does not store recorded
+          PurpleCallio provides real-time communication infrastructure and does not store recorded
           call audio or video content on our servers.
         </p>
       </LegalSection>
@@ -111,15 +111,15 @@ export default function PrivacyPage() {
 
       <LegalSection num="5" title="Google Authentication">
         <p>
-          If you use Google authentication, BlueCallio may receive information provided by Google,
+          If you use Google authentication, PurpleCallio may receive information provided by Google,
           such as your name, email address, and profile information permitted by the authentication
           flow.
         </p>
-        <p>We use this information to create and manage your BlueCallio account.</p>
+        <p>We use this information to create and manage your PurpleCallio account.</p>
       </LegalSection>
 
       <LegalSection num="6" title="Cookies">
-        <p>BlueCallio may use cookies and similar technologies for:</p>
+        <p>PurpleCallio may use cookies and similar technologies for:</p>
         <LegalBullets items={[
           "Authentication",
           "Session management",
@@ -134,7 +134,7 @@ export default function PrivacyPage() {
       </LegalSection>
 
       <LegalSection num="7" title="Data Sharing">
-        <p>BlueCallio may share information with service providers necessary to operate the Service.</p>
+        <p>PurpleCallio may share information with service providers necessary to operate the Service.</p>
         <p>Examples include:</p>
         <LegalBullets items={[
           "Cloud infrastructure providers",
@@ -169,10 +169,10 @@ export default function PrivacyPage() {
 
       <LegalSection num="10" title="International Data Transfers">
         <p>
-          Because BlueCallio may use infrastructure and service providers located in different
+          Because PurpleCallio may use infrastructure and service providers located in different
           countries, information may be processed outside the country where you live.
         </p>
-        <p>Where required, BlueCallio will take appropriate measures for international transfers.</p>
+        <p>Where required, PurpleCallio will take appropriate measures for international transfers.</p>
       </LegalSection>
 
       <LegalSection num="11" title="Your Rights">
@@ -185,12 +185,12 @@ export default function PrivacyPage() {
           "Object to certain processing",
           "Request data portability",
         ]} />
-        <p>Requests can be submitted to: hello@bluecallio.com</p>
+        <p>Requests can be submitted to: hello@purplecallio.com</p>
       </LegalSection>
 
       <LegalSection num="12" title="Children's Privacy">
         <p>
-          BlueCallio is intended for businesses and developers and is not directed toward children.
+          PurpleCallio is intended for businesses and developers and is not directed toward children.
         </p>
         <p>
           We do not knowingly collect personal information from children in violation of applicable
@@ -205,9 +205,9 @@ export default function PrivacyPage() {
 
       <LegalSection num="14" title="Contact">
         <LegalBullets items={[
-          "BlueCallio",
-          "Privacy Email: hello@bluecallio.com",
-          "Website: https://bluecallio.com",
+          "PurpleCallio",
+          "Privacy Email: hello@purplecallio.com",
+          "Website: https://purplecallio.com",
         ]} />
       </LegalSection>
     </LegalLayout>

@@ -12,7 +12,7 @@ api.interceptors.request.use((config) => {
   // during the window between page load and hydration completing.
   if (!token && typeof window !== 'undefined') {
     try {
-      const raw = localStorage.getItem('BlueCallio-auth');
+      const raw = localStorage.getItem('PurpleCallio-auth');
       token = raw ? JSON.parse(raw)?.state?.token ?? null : null;
     } catch {
       // ignore malformed data

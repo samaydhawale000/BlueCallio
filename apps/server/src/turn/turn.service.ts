@@ -14,7 +14,7 @@ export class TurnService {
     // Format understood by coturn --use-auth-secret mode (RFC 5766)
     const ttl = 86400;
     const expires = Math.floor(Date.now() / 1000) + ttl;
-    const username = `${expires}:bluecall`;
+    const username = `${expires}:purplecallio`;
 
     const credential = secret
       ? createHmac('sha1', secret).update(username).digest('base64')

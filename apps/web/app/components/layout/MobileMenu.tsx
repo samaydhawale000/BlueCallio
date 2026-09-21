@@ -46,7 +46,7 @@ export default function MobileMenu({
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[#1A2642] px-6 py-5">
-              <Image src={logo} alt="BlueCallio" width={156} height={38} className="h-auto w-[136px] object-contain" />
+              <Image src={logo} alt="PurpleCallio" width={156} height={38} className="h-auto w-[136px] object-contain" />
 
               <button
                 onClick={onClose}

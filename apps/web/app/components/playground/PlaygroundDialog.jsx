@@ -68,7 +68,7 @@ const [callStatus, setCallStatus] = useState("RINGING");
     const onMessage = (event) => {
       if (event.origin !== window.location.origin) return;
       if (
-        event.data?.source === "bluecallio-call" &&
+        event.data?.source === "purplecallio-call" &&
         event.data?.type === "started" &&
         event.data?.callId === session.callId
       ) {
@@ -164,7 +164,7 @@ const connected = callStatus === "ACCEPTED";
                 >
                   <div>
                     <h2 className="text-2xl sm:text-3xl font-bold text-white">
-                      Try BlueCallio
+                      Try PurpleCallio
                     </h2>
                     <p className="text-indigo-100 mt-1.5 text-sm sm:text-base">
                       Test a real-time video call in seconds.

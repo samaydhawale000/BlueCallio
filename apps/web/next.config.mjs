@@ -7,6 +7,16 @@ const nextConfig = {
   turbopack: {
     root: path.resolve(process.cwd(), '../..'),
   },
+
+  async redirects() {
+    return [
+      {
+        source: '/what-is-bluecallio',
+        destination: '/what-is-purplecallio',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

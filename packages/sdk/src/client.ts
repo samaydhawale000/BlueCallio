@@ -1,5 +1,5 @@
 import type {
-  BlueCallioConfig,
+  PurpleCallioConfig,
   Call,
   CallDetails,
   CreateCallParams,
@@ -8,17 +8,17 @@ import type {
 } from './types';
 
 /**
- * Low-level REST client for the BlueCallio API.
+ * Low-level REST client for the PurpleCallio API.
  * Server-side only — never expose an API key to the browser.
  */
-export class BlueCallioClient {
+export class PurpleCallioClient {
   private readonly apiKey: string;
   private readonly baseUrl: string;
 
-  constructor(config: BlueCallioConfig) {
-    if (!config.apiKey) throw new Error('BlueCallio: apiKey is required');
+  constructor(config: PurpleCallioConfig) {
+    if (!config.apiKey) throw new Error('PurpleCallio: apiKey is required');
     this.apiKey = config.apiKey;
-    this.baseUrl = config.baseUrl ?? 'https://api.bluecallio.com';
+    this.baseUrl = config.baseUrl ?? 'https://api.purplecallio.com';
   }
 
   private async request<T>(
@@ -39,7 +39,7 @@ export class BlueCallioClient {
 
     if (!res.ok) {
       const err = (await res.json().catch(() => ({}))) as { message?: string };
-      throw new Error(err.message ?? `BlueCallio error ${res.status}: ${path}`);
+      throw new Error(err.message ?? `PurpleCallio error ${res.status}: ${path}`);
     }
 
     return res.json() as Promise<T>;

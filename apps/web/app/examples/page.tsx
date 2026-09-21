@@ -4,9 +4,9 @@ import { ContentSection, PublicPage } from "../components/marketing/PublicPage";
 import { pageMetadata } from "../lib/seo";
 
 export const metadata: Metadata = pageMetadata({
-   title: "BlueCallio Integration Examples",
+   title: "PurpleCallio Integration Examples",
    description:
-      "Official BlueCallio examples for JavaScript, React, audio, video, screen sharing, and hosted UI integrations.",
+      "Official PurpleCallio examples for JavaScript, React, audio, video, screen sharing, and hosted UI integrations.",
    path: "/examples",
 });
 
@@ -20,5 +20,5 @@ const examples = [
 ] as const;
 
 export default function ExamplesPage() {
-   return <PublicPage eyebrow="Examples" title="BlueCallio integration examples" intro="Use these official, minimal examples as a starting point for a BlueCallio integration." crumbs={[{ label: "Home", href: "/" }, { label: "Examples", href: "/examples" }]}><ContentSection title="Choose an example"><div className="grid gap-4 sm:grid-cols-2">{examples.map(([label, href]) => <Link key={href} href={href} className="rounded-xl border border-[#1A2642] bg-[#0A0F1E] p-5 font-medium text-indigo-300 hover:text-white">{label} →</Link>)}</div></ContentSection></PublicPage>;
+   return <PublicPage eyebrow="Examples" title="PurpleCallio integration examples" intro="Use these official, minimal examples as a starting point for a PurpleCallio integration." crumbs={[{ label: "Home", href: "/" }, { label: "Examples", href: "/examples" }]}><ContentSection title="Choose an example"><div className="grid gap-4 sm:grid-cols-2">{examples.map(([label, href]) => <Link key={href} href={href} className="rounded-xl border border-[#1A2642] bg-[#0A0F1E] p-5 font-medium text-indigo-300 hover:text-white">{label} →</Link>)}</div></ContentSection></PublicPage>;
 }

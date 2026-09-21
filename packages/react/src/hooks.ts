@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   ConnectionState,
   Participant,
-} from '@bluecallio/sdk';
+} from '@purplecallio/sdk';
 
 import { useMeetingContext } from './context';
 

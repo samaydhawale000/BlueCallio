@@ -28,7 +28,7 @@ export interface BillingRates {
 }
 
 /**
- * Usage-based, per-participant-minute billing engine (BlueCallio v2).
+ * Usage-based, per-participant-minute billing engine (PurpleCallio v2).
  *
  * Rates:
  *  - Audio       ₹0.20 / participant-minute

@@ -1,8 +1,8 @@
 {
-  "name": "@bluecallio/sdk",
-  "version": "0.2.2",
-  "description": "Official JavaScript and TypeScript SDK for BlueCallio, a developer-focused real-time communication infrastructure platform for audio, video, screen sharing and WebRTC applications.",
-  "homepage": "https://bluecallio.com",
+  "name": "@purplecallio/sdk",
+  "version": "0.1.0",
+  "description": "Official JavaScript and TypeScript SDK for PurpleCallio, a developer-focused real-time communication infrastructure platform for audio, video, screen sharing and WebRTC applications.",
+  "homepage": "https://purplecallio.com",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -20,7 +20,7 @@
     "dev": "tsc --watch"
   },
   "keywords": [
-    "bluecallio",
+    "purplecallio",
     "video",
     "webrtc",
     "communication",

@@ -15,7 +15,7 @@ const paths = [
       handles:
          "Meeting UI, media controls, signaling, WebRTC setup, and TURN relay.",
       install: "No frontend package required.",
-      code: `import { BlueCallioClient } from "@bluecallio/sdk";\n\nconst client = new BlueCallioClient({ apiKey: process.env.BLUECALLIO_API_KEY! });\nconst call = await client.createCall({ callerId, receiverId });\nredirect(call.callerUrl);`,
+      code: `import { PurpleCallioClient } from "@purplecallio/sdk";\n\nconst client = new PurpleCallioClient({ apiKey: process.env.PURPLECALLIO_API_KEY! });\nconst call = await client.createCall({ callerId, receiverId });\nredirect(call.callerUrl);`,
       href: "/docs/hosted-ui",
    },
    {
@@ -25,8 +25,8 @@ const paths = [
       builds: "Your product layout, business logic, and branded experience.",
       handles:
          "Participant state, media streams, controls, signaling, and connection lifecycle.",
-      install: "npm install @bluecallio/react",
-      code: `import { MeetingProvider, ParticipantGrid } from "@bluecallio/react";\n\n<MeetingProvider token={token} callId={callId} signalUrl={signalUrl}>\n  <ParticipantGrid />\n</MeetingProvider>`,
+      install: "npm install @purplecallio/react",
+      code: `import { MeetingProvider, ParticipantGrid } from "@purplecallio/react";\n\n<MeetingProvider token={token} callId={callId} signalUrl={signalUrl}>\n  <ParticipantGrid />\n</MeetingProvider>`,
       href: "/docs/react",
    },
    {
@@ -36,18 +36,18 @@ const paths = [
       builds: "The full interface and product-specific call interactions.",
       handles:
          "The communication engine, WebRTC media lifecycle, signaling, and TURN relay.",
-      install: "npm install @bluecallio/sdk",
-      code: `import { BlueCallioMeeting } from "@bluecallio/sdk";\n\nconst meeting = new BlueCallioMeeting({ token, callId, signalUrl });\nawait meeting.join();`,
+      install: "npm install @purplecallio/sdk",
+      code: `import { PurpleCallioMeeting } from "@purplecallio/sdk";\n\nconst meeting = new PurpleCallioMeeting({ token, callId, signalUrl });\nawait meeting.join();`,
       href: "/docs/javascript",
    },
    {
       id: "rest",
       label: "REST API",
-      audience: "Use BlueCallio from any trusted backend environment.",
+      audience: "Use PurpleCallio from any trusted backend environment.",
       builds: "Your authorization rules and application-specific call flow.",
       handles: "Call creation and the participant session information returned by the API.",
       install: "No SDK required.",
-      code: `const response = await fetch("https://api.bluecallio.com/calls", {\n  method: "POST",\n  headers: {\n    "Content-Type": "application/json",\n    "x-api-key": process.env.BLUECALLIO_API_KEY!,\n  },\n  body: JSON.stringify({ callerId, receiverId, type: "VIDEO" }),\n});`,
+      code: `const response = await fetch("https://api.purplecallio.com/calls", {\n  method: "POST",\n  headers: {\n    "Content-Type": "application/json",\n    "x-api-key": process.env.PURPLECALLIO_API_KEY!,\n  },\n  body: JSON.stringify({ callerId, receiverId, type: "VIDEO" }),\n});`,
       href: "/docs/rest-api",
    },
 ] as const;
@@ -245,7 +245,7 @@ export function ArchitectureExplorer() {
          </div>
          <div className="mx-auto h-6 w-px bg-indigo-400/50" />
          <div className="mx-auto max-w-xs rounded-xl border border-indigo-400/40 bg-indigo-500/10 p-3 text-center font-semibold text-white">
-            BlueCallio
+            PurpleCallio
          </div>
          <div className="mx-auto h-6 w-px bg-indigo-400/50" />
          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -401,13 +401,13 @@ export function PricingCalculator() {
 }
 
 const quickstartSteps = [
-   ["Create a BlueCallio account", "Create an account and sign in to the dashboard.", "You can access the dashboard.", "Create a project."],
+   ["Create a PurpleCallio account", "Create an account and sign in to the dashboard.", "You can access the dashboard.", "Create a project."],
    ["Create a project", "Add a project for the application that will create calls.", "A project appears in your dashboard.", "Generate a project API key."],
    ["Generate an API key", "Create a project API key and store it in your server environment.", "You have a server-side secret.", "Install the SDK."],
-   ["Install the SDK", "npm install @bluecallio/sdk", "The SDK is available to your backend.", "Create a call from your backend."],
+   ["Install the SDK", "npm install @purplecallio/sdk", "The SDK is available to your backend.", "Create a call from your backend."],
    ["Create a call", "const call = await client.createCall({ callerId: \"user_alice\", receiverId: \"user_bob\" });", "The API returns a call ID and participant session information.", "Return session information to the frontend."],
    ["Return session information", "Return only the authenticated participant's token, callId, and signalUrl to the browser.", "The browser has participant-scoped connection information.", "Join the call."],
-   ["Join the call", "const meeting = new BlueCallioMeeting({ token, callId, signalUrl });\nawait meeting.join();", "The participant joins the call.", "Test microphone and camera."],
+   ["Join the call", "const meeting = new PurpleCallioMeeting({ token, callId, signalUrl });\nawait meeting.join();", "The participant joins the call.", "Test microphone and camera."],
    ["Test audio and video", "await meeting.microphone.enable();\nawait meeting.camera.enable();", "The browser asks for media permission.", "Test screen sharing."],
    ["Test screen sharing", "await meeting.screenShare.start();", "The browser presents its display-selection picker.", "Inspect usage."],
    ["Inspect usage", "Open Dashboard → Usage to review audio, video, and screen-sharing participant-minutes.", "Usage is shown by category.", "Review pricing and billing."],
@@ -479,7 +479,7 @@ export function FeatureFlow({ kind }: { kind: keyof typeof featureFlows }) {
                ? "The browser, not your application, presents the permission picker and determines what a participant can share."
                : kind === "webrtc" && active === 3
                  ? "TURN is a relay option for networks where a direct peer connection cannot be established."
-                 : "BlueCallio keeps this stage connected to your server-controlled call lifecycle while your product retains control of its own experience."}
+                 : "PurpleCallio keeps this stage connected to your server-controlled call lifecycle while your product retains control of its own experience."}
          </p>
       </section>
    );

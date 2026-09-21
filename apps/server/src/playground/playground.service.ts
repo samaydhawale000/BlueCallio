@@ -4,7 +4,7 @@ import { CallType } from '@prisma/client';
 import { CallService } from '../call/services/call.service';
 import { PrismaService } from '../prisma/prisma.service';
 
-const PLAYGROUND_PROJECT_NAME = 'BlueCallio Playground';
+const PLAYGROUND_PROJECT_NAME = 'PurpleCallio Playground';
 
 @Injectable()
 export class PlaygroundService {

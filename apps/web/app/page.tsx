@@ -5,7 +5,7 @@ import StripeGradient from "./components/gradient/StripeGradient";
 import PricingSection from "./components/PricingSection";
 import { JsonLd } from "./components/seo/JsonLd";
 import { pageMetadata, siteUrl } from "./lib/seo";
-import { BLUECALLIO_DESCRIPTION, BLUECALLIO_NAME } from "./lib/brand";
+import { PURPLECALLIO_DESCRIPTION, PURPLECALLIO_NAME } from "./lib/brand";
 import {
    FlowDiagram,
    IntegrationSelector,
@@ -91,7 +91,7 @@ const FEATURES = [
    },
    {
       title: "Headless SDK",
-      body: "meeting.join(), camera.enable(), screenShare.start() — complete control with the @bluecallio/sdk engine.",
+      body: "meeting.join(), camera.enable(), screenShare.start() — complete control with the @purplecallio/sdk engine.",
    },
    {
       title: "Waiting Room",
@@ -132,8 +132,8 @@ const PRODUCTS = [
       icon: Monitor,
       tag: "5-minute integration",
       name: "Hosted UI",
-      tagline: "The fastest way to integrate BlueCallio.",
-      body: "Create a call from your backend and redirect users to a BlueCallio-hosted meeting page. No frontend implementation required.",
+      tagline: "The fastest way to integrate PurpleCallio.",
+      body: "Create a call from your backend and redirect users to a PurpleCallio-hosted meeting page. No frontend implementation required.",
       features: [
          "Ready-made meeting interface",
          "Video, audio & screen sharing",
@@ -167,7 +167,7 @@ const PRODUCTS = [
       tag: "Full control",
       name: "Headless SDK",
       tagline: "Complete control over the meeting experience.",
-      body: "Just the communication engine — no UI included. You build the interface, BlueCallio handles signaling, auth, and media infrastructure.",
+      body: "Just the communication engine — no UI included. You build the interface, PurpleCallio handles signaling, auth, and media infrastructure.",
       features: [
          "join() / leave()",
          "camera & microphone controls",
@@ -176,7 +176,7 @@ const PRODUCTS = [
          "Full event system",
          "Type-safe TypeScript",
       ],
-      code: "const meeting = new BlueCallio({ token }); await meeting.join();",
+      code: "const meeting = new PurpleCallio({ token }); await meeting.join();",
       cta: "Build your own UI on a proven engine.",
    },
 ];
@@ -184,14 +184,14 @@ const PRODUCTS = [
 const STEPS = [
    {
       step: "Create a call",
-      body: "Your backend sends POST /calls with a caller ID and receiver ID. BlueCallio returns a secure token for each participant.",
+      body: "Your backend sends POST /calls with a caller ID and receiver ID. PurpleCallio returns a secure token for each participant.",
    },
    {
       step: "Redirect your users",
-      body: "Send each participant to the BlueCallio hosted URL with their token. That's the only frontend work you do.",
+      body: "Send each participant to the PurpleCallio hosted URL with their token. That's the only frontend work you do.",
    },
    {
-      step: "BlueCallio takes over",
+      step: "PurpleCallio takes over",
       body: "Signaling, WebRTC negotiation, media controls, screen sharing, and the call UI — all handled.",
    },
 ];
@@ -227,8 +227,8 @@ const SUPPORT_ITEMS = [
 ];
 
 export const metadata = pageMetadata({
-   title: "BlueCallio | Real-Time Communication Infrastructure for Developers",
-   description: BLUECALLIO_DESCRIPTION,
+   title: "PurpleCallio | Real-Time Communication Infrastructure for Developers",
+   description: PURPLECALLIO_DESCRIPTION,
    path: "/",
 });
 
@@ -240,26 +240,26 @@ export default function LandingPage() {
                {
                   "@context": "https://schema.org",
                   "@type": "Organization",
-                  name: BLUECALLIO_NAME,
+                  name: PURPLECALLIO_NAME,
                   url: siteUrl.toString(),
                   logo: new URL("/opengraph-image", siteUrl).toString(),
-                  description: BLUECALLIO_DESCRIPTION,
-                  email: "hello@bluecallio.com",
+                  description: PURPLECALLIO_DESCRIPTION,
+                  email: "hello@purplecallio.com",
                },
                {
                   "@context": "https://schema.org",
                   "@type": "WebSite",
-                  name: BLUECALLIO_NAME,
+                  name: PURPLECALLIO_NAME,
                   url: siteUrl.toString(),
                },
                {
                   "@context": "https://schema.org",
                   "@type": "SoftwareApplication",
-                  name: BLUECALLIO_NAME,
+                  name: PURPLECALLIO_NAME,
                   applicationCategory: "DeveloperApplication",
                   operatingSystem: "Web",
                   url: siteUrl.toString(),
-                  description: BLUECALLIO_DESCRIPTION,
+                  description: PURPLECALLIO_DESCRIPTION,
                },
             ]}
          />
@@ -284,9 +284,9 @@ export default function LandingPage() {
                </h1>
 
                <p className="text-balance text-slate-400 text-lg leading-relaxed mb-6">
-                  {BLUECALLIO_DESCRIPTION} Instead of building WebRTC
+                  {PURPLECALLIO_DESCRIPTION} Instead of building WebRTC
                   signaling, authentication, participant sessions, and calling
-                  interfaces from scratch, developers can integrate BlueCallio
+                  interfaces from scratch, developers can integrate PurpleCallio
                   through hosted UI, React components, a headless SDK, or REST
                   APIs.
                </p>
@@ -328,7 +328,7 @@ export default function LandingPage() {
                               {"{ callId, hostedUrl, participants } = "}
                            </span>
                            <span className="tok-async">{"await "}</span>
-                           <span className="tok-base">{"BlueCallio."}</span>
+                           <span className="tok-base">{"PurpleCallio."}</span>
                            <span className="tok-fn">{"createCall"}</span>
                            <span className="tok-base">
                               {"({ callerId, receiverId })\n\n"}
@@ -346,7 +346,7 @@ export default function LandingPage() {
                   <div className="relative mx-auto w-full max-w-lg lg:max-w-none">
                      <Image
                         src={heroPreview}
-                        alt="BlueCallio video call interface with quick integration code and API response preview"
+                        alt="PurpleCallio video call interface with quick integration code and API response preview"
                         className="w-full h-auto"
                         priority
                         sizes="(min-width: 1024px) 42vw, (min-width: 640px) 80vw, 100vw"
@@ -363,11 +363,11 @@ export default function LandingPage() {
                   Choose your integration
                </p>
                <h2 className="lp-h2 font-bold text-white mb-4">
-                  You build the product. BlueCallio handles communication.
+                  You build the product. PurpleCallio handles communication.
                </h2>
                <p className="text-slate-400 mb-10 max-w-3xl">
                   Keep your authentication, business logic, permissions,
-                  branding, and database. BlueCallio provides the call
+                  branding, and database. PurpleCallio provides the call
                   lifecycle, participant sessions, signaling, WebRTC setup, TURN
                   relay, media controls, webhooks, and usage tracking.
                </p>
@@ -379,7 +379,7 @@ export default function LandingPage() {
          <section className="section-alt py-24 px-6">
             <div className="max-w-6xl mx-auto">
                <p className="section-label font-mono text-xs tracking-widest uppercase mb-4">
-                  Why BlueCallio
+                  Why PurpleCallio
                </p>
                <h2 className="lp-h2 font-bold text-white mb-4">
                   Real-time communication built for modern products.
@@ -415,7 +415,7 @@ export default function LandingPage() {
 
                   <div className="card-gradient rounded-xl border border-[#2A3D64] p-8">
                      <p className="section-label font-mono text-xs tracking-widest uppercase mb-6">
-                        The BlueCallio way
+                        The PurpleCallio way
                      </p>
                      <div className="space-y-3">
                         {[
@@ -447,7 +447,7 @@ export default function LandingPage() {
                   A clear path from backend call creation to browser media.
                </h2>
                <p className="text-slate-400 mb-10 max-w-3xl">
-                  Select a step to see where BlueCallio fits into the
+                  Select a step to see where PurpleCallio fits into the
                   communication flow.
                </p>
                <FlowDiagram />
@@ -464,7 +464,7 @@ export default function LandingPage() {
                   Any product that needs real-time video between two people
                </h2>
                <p className="text-slate-400 mb-14 max-w-2xl">
-                  BlueCallio is B2B infrastructure. Your customers never know it
+                  PurpleCallio is B2B infrastructure. Your customers never know it
                   exists — it just works, invisibly, inside your product.
                </p>
                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -644,7 +644,7 @@ export default function LandingPage() {
                      <div className="px-5 py-4 border-b border-[#1A2642] flex items-center gap-2">
                         <span className="hero-badge-dot w-2 h-2 rounded-full" />
                         <span className="text-xs text-slate-400 font-mono">
-                           BlueCallio Playground
+                           PurpleCallio Playground
                         </span>
                      </div>
                      <div className="p-6">
@@ -693,7 +693,7 @@ export default function LandingPage() {
                      <p className="text-slate-400 leading-relaxed">
                         When something breaks, you need a fast answer from
                         someone who actually knows the stack — not a chatbot
-                        pointing to a FAQ. BlueCallio support is run by the
+                        pointing to a FAQ. PurpleCallio support is run by the
                         engineers who built it.
                      </p>
                   </div>
