@@ -14,6 +14,8 @@ export const metadata: Metadata = pageMetadata({
 
 const faqs = [
    ["What is BlueCallio?", BLUECALLIO_DESCRIPTION],
+   ["How do I integrate video calling using BlueCallio?", "Use the BlueCallio REST API or @bluecallio/sdk from your backend to create a call and generate participant session information. Your frontend can then join with @bluecallio/react components, the headless SDK, or hosted UI. See the quickstart at bluecallio.com/docs/quickstart and the video guide at bluecallio.com/docs/video."],
+   ["How do I integrate audio calling using BlueCallio?", "Create a call from your backend with the REST API or @bluecallio/sdk, then join from the browser with @bluecallio/react, the headless JavaScript SDK, or hosted UI. See bluecallio.com/docs/audio for a full walkthrough."],
    ["What can I build with BlueCallio?", "Developers can build 1:1 audio calls, 1:1 video calls, screen sharing, custom communication interfaces, and embedded calling experiences."],
    ["Does BlueCallio support video calls?", "Yes. BlueCallio supports video calling."],
    ["Does BlueCallio support audio calls?", "Yes. BlueCallio supports audio calling and audio participant usage tracking."],

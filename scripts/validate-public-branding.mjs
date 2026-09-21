@@ -1,9 +1,8 @@
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync, existsSync } from "node:fs";
 import { join, relative } from "node:path";
 
-const publicRoot = join(process.cwd(), "apps/web/app");
 const excludedSegments = new Set(["admin", "auth", "call", "dashboard", "login", "signup"]);
-const matches = [/\bBluecall\b/, /\bBlue Call(?: IO)?\b/, /\bBlueCall\.io\b/, /\bbluecall\.io\b/];
+const matches = [/\bBlue[Cc]all\b/, /\bBlue Call(?: IO)?\b/, /\bBlue[Cc]all\.io\b/, /\bbluecall\.io\b/];
 
 function filesIn(directory) {
    return readdirSync(directory).flatMap((entry) => {
@@ -15,8 +14,20 @@ function filesIn(directory) {
    });
 }
 
+// Public-facing surfaces only: website content, plus published npm/repo metadata.
+// Backend implementation detail (headers, internal identifiers) is a separate,
+// breaking-change concern and is intentionally out of scope here.
+const targets = [
+   ...filesIn(join(process.cwd(), "apps/web/app")),
+   join(process.cwd(), "package.json"),
+   join(process.cwd(), "packages/sdk/package.json"),
+   join(process.cwd(), "packages/sdk/README.md"),
+   join(process.cwd(), "packages/react/package.json"),
+   join(process.cwd(), "packages/react/README.md"),
+].filter((path) => existsSync(path));
+
 const findings = [];
-for (const file of filesIn(publicRoot)) {
+for (const file of targets) {
    readFileSync(file, "utf8").split("\n").forEach((text, index) => {
       if (!matches.some((pattern) => pattern.test(text))) return;
       const classification = /third.party/i.test(text)

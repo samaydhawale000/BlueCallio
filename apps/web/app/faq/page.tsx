@@ -5,22 +5,18 @@ import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 import { PricingAuthority } from '../components/PricingAuthority';
 
-// Kept in sync with the visible, static product answers below. Dynamic billing
-// answers are intentionally excluded because their values are loaded at runtime.
-const FAQ_SCHEMA = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: [
-    { '@type': 'Question', name: 'Which integration should I pick?', acceptedAnswer: { '@type': 'Answer', text: 'Hosted UI is the fastest path: create a call and redirect users. React Components let you build a branded custom interface without implementing WebRTC. The Headless SDK gives you complete UI control while BlueCallio handles signaling, authentication, and media infrastructure.' } },
-    { '@type': 'Question', name: 'Does BlueCallio support screen sharing?', acceptedAnswer: { '@type': 'Answer', text: 'Yes. Screen sharing works in hosted UI, React Components, and the Headless SDK.' } },
-    { '@type': 'Question', name: 'Are webhooks signed?', acceptedAnswer: { '@type': 'Answer', text: 'Yes. Every webhook POST includes an X-BlueCallio-Signature header using HMAC-SHA256 with the project secret. Verify it before processing the payload.' } },
-  ],
-};
-
 const FAQ_GROUPS = [
   {
     group: 'Products & Integration',
     items: [
+      {
+        q: 'How do I integrate video calling using BlueCallio?',
+        a: 'Create a call from your backend with the REST API or @bluecallio/sdk, then join from the browser with @bluecallio/react components, the headless JavaScript SDK, or hosted UI. See the quickstart and video docs at bluecallio.com/docs/quickstart and bluecallio.com/docs/video.',
+      },
+      {
+        q: 'How do I integrate audio calling using BlueCallio?',
+        a: 'Create a call from your backend with the REST API or @bluecallio/sdk, then join from the browser with @bluecallio/react, the headless SDK, or hosted UI. See bluecallio.com/docs/audio for a full walkthrough.',
+      },
       {
         q: 'Which integration should I pick?',
         a: 'Hosted UI is the fastest path (5 minutes — just create a call and redirect your users). React Components let you build a branded custom interface without implementing WebRTC. Headless SDK gives you complete control over the UI while BlueCallio handles signaling, authentication, and media infrastructure.',
@@ -99,6 +95,17 @@ const FAQ_GROUPS = [
     ],
   },
 ];
+
+
+const FAQ_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQ_GROUPS.flatMap((group) => group.items).map((item) => ({
+    '@type': 'Question',
+    name: item.q,
+    acceptedAnswer: { '@type': 'Answer', text: item.a },
+  })),
+};
 
 function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
