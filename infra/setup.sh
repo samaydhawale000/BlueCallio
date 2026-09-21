@@ -1,5 +1,5 @@
 #!/bin/bash
-# BlueCallio VPS Setup Script
+# PurpleCallio VPS Setup Script
 # Run once on a fresh Ubuntu 22.04 / Debian 12 VPS.
 # Usage: bash setup.sh yourdomain.com your@email.com
 
@@ -10,7 +10,7 @@ EMAIL=$2
 
 if [ -z "$DOMAIN" ] || [ -z "$EMAIL" ]; then
   echo "Usage: bash setup.sh <domain> <email>"
-  echo "Example: bash setup.sh bluecall.io admin@bluecall.io"
+  echo "Example: bash setup.sh purplecallio.com admin@purplecallio.com"
   exit 1
 fi
 

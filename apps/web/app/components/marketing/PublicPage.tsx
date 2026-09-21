@@ -10,7 +10,7 @@ export function PublicPage({ eyebrow, title, intro, crumbs, children }: { eyebro
       <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-400">{intro}</p>
       <div className="mt-14 space-y-14">{children}</div>
       <section className="mt-16 rounded-2xl border border-[#2A3D64] bg-indigo-500/5 p-8">
-        <h2 className="text-2xl font-bold text-white">Build with BlueCallio</h2>
+        <h2 className="text-2xl font-bold text-white">Build with PurpleCallio</h2>
         <p className="mt-3 max-w-2xl text-slate-400">Explore the documentation to choose hosted UI, React components, or the headless SDK for your integration.</p>
         <div className="mt-6 flex flex-wrap gap-3"><Link href="/docs/quickstart" className="btn-primary rounded-lg px-5 py-3 text-sm font-medium text-white">Read the quickstart</Link><Link href="/signup" className="rounded-lg border border-[#2A3D64] px-5 py-3 text-sm font-medium text-slate-200">Create an account</Link></div>
       </section>

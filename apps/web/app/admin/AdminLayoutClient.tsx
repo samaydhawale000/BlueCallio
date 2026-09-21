@@ -66,7 +66,7 @@ export default function AdminLayout({
         style={{ background: '#0A0F1E' }}
       >
         <Link href="/admin" className="flex items-center gap-2">
-          <Image src={logo} alt="BlueCallio" width={132} height={32} className="h-auto w-[116px] object-contain" />
+          <Image src={logo} alt="PurpleCallio" width={132} height={32} className="h-auto w-[116px] object-contain" />
           <span className="font-mono font-bold text-white tracking-tight">
             Admin
           </span>
@@ -101,7 +101,7 @@ export default function AdminLayout({
         {/* Brand */}
         <div className="flex items-center justify-between px-5 h-16 border-b border-[#1A2642]">
           <Link href="/admin" className="flex items-center gap-2.5">
-            <Image src={logo} alt="BlueCallio" width={156} height={38} className="h-auto w-[136px] object-contain" />
+            <Image src={logo} alt="PurpleCallio" width={156} height={38} className="h-auto w-[136px] object-contain" />
             <span className="font-mono font-bold text-white tracking-tight">
               Admin
             </span>

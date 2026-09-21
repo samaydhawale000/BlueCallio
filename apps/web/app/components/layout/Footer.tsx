@@ -28,7 +28,7 @@ const footerLinks = {
 
    Resources: [
       { name: "FAQ", href: "/faq" },
-      { name: "Support", href: "mailto:hello@bluecallio.com" },
+      { name: "Support", href: "mailto:hello@purplecallio.com" },
       { name: "Docs", href: "/docs" },
    ],
 
@@ -66,7 +66,7 @@ export default function Footer() {
                   <Link href="/" className="flex items-center">
                      <Image
                         src={logo}
-                        alt="BlueCallio"
+                        alt="PurpleCallio"
                         width={198}
                         height={48}
                         className="h-auto w-[198px]"
@@ -80,7 +80,7 @@ export default function Footer() {
                   </p>
 
                   <div className="mt-8 flex gap-3">
-                     <Social href="mailto:hello@bluecallio.com">
+                     <Social href="mailto:hello@purplecallio.com">
                         <Mail size={18} />
                      </Social>
                   </div>
@@ -114,7 +114,7 @@ export default function Footer() {
 
             <div className="flex flex-col items-center justify-between gap-4 text-sm text-slate-500 md:flex-row">
                <span>
-                  © {new Date().getFullYear()} BlueCallio. All rights reserved.
+                  © {new Date().getFullYear()} PurpleCallio. All rights reserved.
                </span>
 
                <div className="flex items-center gap-6">

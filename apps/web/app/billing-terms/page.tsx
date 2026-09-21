@@ -30,11 +30,11 @@ export default function BillingTermsPage() {
     <LegalLayout
       title="Billing & Usage Terms"
       lastUpdated="24 August 2025"
-      intro="These Billing & Usage Terms explain how BlueCallio measures, calculates, and charges for usage-based services."
+      intro="These Billing & Usage Terms explain how PurpleCallio measures, calculates, and charges for usage-based services."
     >
       <LegalSection num="1" title="Usage-Based Pricing">
         <p>
-          BlueCallio charges customers based on the services they consume according to the rates
+          PurpleCallio charges customers based on the services they consume according to the rates
           displayed on the applicable pricing page.
         </p>
         <p>There are no subscription fees or up-front costs — you only pay for what you use.</p>
@@ -57,7 +57,7 @@ export default function BillingTermsPage() {
       </LegalSection>
 
       <LegalSection num="3" title="Different Communication Types">
-        <p>BlueCallio may apply different rates to:</p>
+        <p>PurpleCallio may apply different rates to:</p>
         <LegalBullets items={[
           "Audio",
           "Video",
@@ -75,7 +75,7 @@ export default function BillingTermsPage() {
 
       <LegalSection num="4" title="Usage Transitions">
         <p>
-          If a session changes communication modes during a call, BlueCallio may calculate usage
+          If a session changes communication modes during a call, PurpleCallio may calculate usage
           separately for the applicable periods.
         </p>
         <p>For example: 10 minutes of Audio + 5 minutes of Video + 3 minutes of Screen Sharing.</p>
@@ -93,15 +93,15 @@ export default function BillingTermsPage() {
       </LegalSection>
 
       <LegalSection num="6" title="Usage Records">
-        <p>BlueCallio's backend usage records are the authoritative source for billing calculations.</p>
+        <p>PurpleCallio's backend usage records are the authoritative source for billing calculations.</p>
         <p>
           Customer dashboards may display estimated or current usage, but final invoices are generated
-          from BlueCallio's billing records.
+          from PurpleCallio's billing records.
         </p>
       </LegalSection>
 
       <LegalSection num="7" title="Usage Rounding">
-        <p>BlueCallio tracks usage in per-second increments.</p>
+        <p>PurpleCallio tracks usage in per-second increments.</p>
         <p>
           For invoice display, usage is rounded up to the nearest minute per usage segment. Billing is
           calculated on the underlying per-second usage.
@@ -122,7 +122,7 @@ export default function BillingTermsPage() {
 
       <LegalSection num="9" title="Usage Alerts">
         <p>
-          BlueCallio may provide usage notifications when customers approach configured usage or
+          PurpleCallio may provide usage notifications when customers approach configured usage or
           spending thresholds.
         </p>
         <p>Customers are responsible for monitoring their usage.</p>
@@ -131,7 +131,7 @@ export default function BillingTermsPage() {
       <LegalSection num="10" title="Payment Authorization">
         <p>Customers must maintain a valid payment method for paid usage.</p>
         <p>
-          Where supported, BlueCallio may automatically charge the customer's payment method for
+          Where supported, PurpleCallio may automatically charge the customer's payment method for
           billable usage.
         </p>
         <p>A {gst}% GST applies on billable usage.</p>
@@ -139,7 +139,7 @@ export default function BillingTermsPage() {
 
       <LegalSection num="11" title="Failed Payments">
         <p>
-          If a payment fails, BlueCallio retries and notifies you, then enters a 7-day grace period.
+          If a payment fails, PurpleCallio retries and notifies you, then enters a 7-day grace period.
         </p>
         <p>
           During the grace period existing calls continue uninterrupted, but new calls are paused until
@@ -149,7 +149,7 @@ export default function BillingTermsPage() {
 
       <LegalSection num="12" title="Billing Disputes">
         <p>Customers should report suspected billing errors within 30 days of the applicable invoice.</p>
-        <p>BlueCallio may review:</p>
+        <p>PurpleCallio may review:</p>
         <LegalBullets items={[
           "Call records",
           "Participant events",

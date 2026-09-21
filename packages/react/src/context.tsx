@@ -9,10 +9,10 @@ import React, {
 } from 'react';
 
 import {
-  BlueCallioMeeting,
+  PurpleCallioMeeting,
   ConnectionState,
   Participant,
-} from '@bluecallio/sdk';
+} from '@purplecallio/sdk';
 
 export interface MeetingProviderProps {
   token: string;
@@ -27,7 +27,7 @@ export interface MeetingProviderProps {
 }
 
 export interface MeetingContextValue {
-  engine: BlueCallioMeeting | null;
+  engine: PurpleCallioMeeting | null;
   callId: string;
   participantId: string | null;
   connectionState: ConnectionState;
@@ -74,7 +74,7 @@ export function MeetingProvider({
   onStateChange,
   children,
 }: MeetingProviderProps) {
-  const engineRef = useRef<BlueCallioMeeting | null>(null);
+  const engineRef = useRef<PurpleCallioMeeting | null>(null);
 
   const [connectionState, setConnectionState] =
     useState<ConnectionState>('idle');
@@ -90,7 +90,7 @@ export function MeetingProvider({
 
   // Create the engine once.
   if (!engineRef.current) {
-engineRef.current = new BlueCallioMeeting({
+engineRef.current = new PurpleCallioMeeting({
       token,
       callId,
       signalUrl,

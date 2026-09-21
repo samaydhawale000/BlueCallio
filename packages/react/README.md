@@ -1,6 +1,6 @@
-# @bluecallio/react
+# @purplecallio/react
 
-Official React components and hooks for BlueCallio, a developer-focused real-time communication infrastructure platform.
+Official React components and hooks for PurpleCallio, a developer-focused real-time communication infrastructure platform.
 
 The package provides reusable React components, hooks, controls, participant layouts, device management, and meeting state.
 
@@ -30,15 +30,15 @@ The package provides reusable React components, hooks, controls, participant lay
 # Installation
 
 ```bash
-npm install @bluecallio/react
+npm install @purplecallio/react
 ```
 
-`@bluecallio/react` uses the BlueCallio SDK internally.
+`@purplecallio/react` uses the PurpleCallio SDK internally.
 
 If you are also using the SDK directly in your application:
 
 ```bash
-npm install @bluecallio/react @bluecallio/sdk
+npm install @purplecallio/react @purplecallio/sdk
 ```
 
 ---
@@ -58,19 +58,19 @@ npm install @bluecallio/react @bluecallio/sdk
 Your React Application
           │
           ▼
-   @bluecallio/react
+   @purplecallio/react
           │
           ▼
-    @bluecallio/sdk
+    @purplecallio/sdk
           │
           ▼
-      BlueCallio
+      PurpleCallio
           │
           ▼
         WebRTC
 ```
 
-`@bluecallio/react` provides the React layer while `@bluecallio/sdk` provides the underlying BlueCallio communication engine.
+`@purplecallio/react` provides the React layer while `@purplecallio/sdk` provides the underlying PurpleCallio communication engine.
 
 ---
 
@@ -84,7 +84,7 @@ Basic usage:
 import {
   MeetingProvider,
   MeetingRoom
-} from "@bluecallio/react";
+} from "@purplecallio/react";
 
 export default function Meeting() {
   return (
@@ -108,7 +108,7 @@ Components and hooks that depend on meeting state should be rendered inside `Mee
 Returns the complete meeting context.
 
 ```tsx
-import { useMeeting } from "@bluecallio/react";
+import { useMeeting } from "@purplecallio/react";
 
 function MeetingControls() {
   const {
@@ -166,7 +166,7 @@ stopScreenShare
 Returns the current participants.
 
 ```tsx
-import { useParticipants } from "@bluecallio/react";
+import { useParticipants } from "@purplecallio/react";
 
 function Participants() {
   const participants = useParticipants();
@@ -196,7 +196,7 @@ Participant[]
 Retrieve a specific participant by participant ID.
 
 ```tsx
-import { useParticipant } from "@bluecallio/react";
+import { useParticipant } from "@purplecallio/react";
 
 function ParticipantInfo() {
   const participant = useParticipant("participant-123");
@@ -226,7 +226,7 @@ Participant | undefined
 Provides access to available audio and video devices.
 
 ```tsx
-import { useDevices } from "@bluecallio/react";
+import { useDevices } from "@purplecallio/react";
 
 function Devices() {
   const {
@@ -299,10 +299,10 @@ interface DevicesResult {
 
 # `useConnection()`
 
-Returns the current BlueCallio connection state.
+Returns the current PurpleCallio connection state.
 
 ```tsx
-import { useConnection } from "@bluecallio/react";
+import { useConnection } from "@purplecallio/react";
 
 function Connection() {
   const connectionState = useConnection();
@@ -333,7 +333,7 @@ A high-level meeting container.
 import {
   MeetingProvider,
   MeetingRoom
-} from "@bluecallio/react";
+} from "@purplecallio/react";
 
 function App() {
   return (
@@ -371,7 +371,7 @@ waitingRoomLabel = "Waiting for the other participant…"
 Displays multiple participant streams.
 
 ```tsx
-import { ParticipantGrid } from "@bluecallio/react";
+import { ParticipantGrid } from "@purplecallio/react";
 
 <ParticipantGrid
   streams={streams}
@@ -406,7 +406,7 @@ localId = "me"
 Displays an individual participant.
 
 ```tsx
-import { ParticipantTile } from "@bluecallio/react";
+import { ParticipantTile } from "@purplecallio/react";
 
 <ParticipantTile
   participantId="participant-123"
@@ -436,7 +436,7 @@ interface ParticipantTileProps {
 Displays a primary active speaker.
 
 ```tsx
-import { ActiveSpeakerView } from "@bluecallio/react";
+import { ActiveSpeakerView } from "@purplecallio/react";
 
 <ActiveSpeakerView
   stream={speakerStream}
@@ -470,7 +470,7 @@ participantId = "speaker"
 Displays a participant avatar.
 
 ```tsx
-import { Avatar } from "@bluecallio/react";
+import { Avatar } from "@purplecallio/react";
 
 <Avatar
   id="participant-123"
@@ -500,7 +500,7 @@ size = 48
 Generic reusable meeting control.
 
 ```tsx
-import { ControlButton } from "@bluecallio/react";
+import { ControlButton } from "@purplecallio/react";
 
 <ControlButton
   label="Camera"
@@ -535,7 +535,7 @@ interface ControlButtonProps {
 Built-in camera toggle control.
 
 ```tsx
-import { CameraButton } from "@bluecallio/react";
+import { CameraButton } from "@purplecallio/react";
 
 <CameraButton />
 ```
@@ -573,7 +573,7 @@ Camera off
 Built-in microphone toggle control.
 
 ```tsx
-import { MicrophoneButton } from "@bluecallio/react";
+import { MicrophoneButton } from "@purplecallio/react";
 
 <MicrophoneButton />
 ```
@@ -610,7 +610,7 @@ Mute
 Built-in screen sharing control.
 
 ```tsx
-import { ScreenShareButton } from "@bluecallio/react";
+import { ScreenShareButton } from "@purplecallio/react";
 
 <ScreenShareButton />
 ```
@@ -631,7 +631,7 @@ Stop share
 Built-in call leave/end control.
 
 ```tsx
-import { LeaveButton } from "@bluecallio/react";
+import { LeaveButton } from "@purplecallio/react";
 
 <LeaveButton />
 ```
@@ -670,7 +670,7 @@ End call
 Use the built-in device selector:
 
 ```tsx
-import { DeviceSelector } from "@bluecallio/react";
+import { DeviceSelector } from "@purplecallio/react";
 
 <DeviceSelector />
 ```
@@ -697,7 +697,7 @@ interface DeviceSelectorProps {
 Display a waiting room while waiting for another participant.
 
 ```tsx
-import { WaitingRoom } from "@bluecallio/react";
+import { WaitingRoom } from "@purplecallio/react";
 
 <WaitingRoom
   title="Waiting for participant"
@@ -724,7 +724,7 @@ interface WaitingRoomProps {
 Display the current connection state.
 
 ```tsx
-import { ConnectionStatus } from "@bluecallio/react";
+import { ConnectionStatus } from "@purplecallio/react";
 
 <ConnectionStatus />
 ```
@@ -736,7 +736,7 @@ import { ConnectionStatus } from "@bluecallio/react";
 Display an indicator when a participant is speaking.
 
 ```tsx
-import { SpeakingIndicator } from "@bluecallio/react";
+import { SpeakingIndicator } from "@purplecallio/react";
 
 <SpeakingIndicator
   active={true}
@@ -761,7 +761,7 @@ interface SpeakingIndicatorProps {
 Display the local camera stream.
 
 ```tsx
-import { LocalVideoPreview } from "@bluecallio/react";
+import { LocalVideoPreview } from "@purplecallio/react";
 
 <LocalVideoPreview />
 ```
@@ -794,7 +794,7 @@ import {
   VideoOffIcon,
   PhoneDownIcon,
   ScreenShareIcon
-} from "@bluecallio/react";
+} from "@purplecallio/react";
 ```
 
 Available icons:
@@ -825,7 +825,7 @@ import {
   LeaveButton,
   ConnectionStatus,
   DeviceSelector
-} from "@bluecallio/react";
+} from "@purplecallio/react";
 
 export default function Meeting() {
   return (
@@ -852,7 +852,7 @@ export default function Meeting() {
 }
 ```
 
-The exact meeting configuration and session information depend on how your application creates and joins BlueCallio calls.
+The exact meeting configuration and session information depend on how your application creates and joins PurpleCallio calls.
 
 ---
 
@@ -867,7 +867,7 @@ import {
   useMeeting,
   useParticipants,
   useConnection
-} from "@bluecallio/react";
+} from "@purplecallio/react";
 
 function CustomMeetingUI() {
   const meeting = useMeeting();
@@ -902,7 +902,7 @@ function CustomMeetingUI() {
 }
 ```
 
-This approach lets you keep your own application design while using BlueCallio's meeting state and WebRTC functionality.
+This approach lets you keep your own application design while using PurpleCallio's meeting state and WebRTC functionality.
 
 ---
 
@@ -949,7 +949,7 @@ const {
 
 # Browser Permissions
 
-BlueCallio uses browser media APIs for real-time communication.
+PurpleCallio uses browser media APIs for real-time communication.
 
 Depending on the functionality you use, the browser may request access to:
 
@@ -965,12 +965,12 @@ Your application should handle permission errors and provide an appropriate user
 
 # API Keys
 
-Do not put your BlueCallio project API key inside React components or browser code.
+Do not put your PurpleCallio project API key inside React components or browser code.
 
 Bad:
 
 ```tsx
-const client = new BlueCallioClient({
+const client = new PurpleCallioClient({
   apiKey: "YOUR_SECRET_API_KEY"
 });
 ```
@@ -988,10 +988,10 @@ Your Backend
    │
    │ API key
    ▼
-BlueCallio API
+PurpleCallio API
 ```
 
-The BlueCallio API key should remain server-side.
+The PurpleCallio API key should remain server-side.
 
 ---
 
@@ -1008,7 +1008,7 @@ import {
   ParticipantGrid,
   CameraButton,
   MicrophoneButton
-} from "@bluecallio/react";
+} from "@purplecallio/react";
 ```
 
 ---
@@ -1057,10 +1057,10 @@ LocalVideoPreview
 
 # Related Package
 
-BlueCallio JavaScript/TypeScript SDK:
+PurpleCallio JavaScript/TypeScript SDK:
 
 ```bash
-npm install @bluecallio/sdk
+npm install @purplecallio/sdk
 ```
 
 The SDK provides:
@@ -1076,13 +1076,13 @@ The SDK provides:
 # Package
 
 ```text
-@bluecallio/react
+@purplecallio/react
 ```
 
 Current package version:
 
 ```text
-0.1.2
+0.1.0
 ```
 
 ---

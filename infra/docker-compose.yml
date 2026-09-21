@@ -14,7 +14,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
     networks:
-      - bluecall
+      - purplecallio
 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
@@ -60,7 +60,7 @@ services:
       RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET}
 
     networks:
-      - bluecall
+      - purplecallio
 
     expose:
       - "3005"
@@ -87,7 +87,7 @@ services:
       NEXT_PUBLIC_RAZORPAY_KEY_ID: ${NEXT_PUBLIC_RAZORPAY_KEY_ID}
 
     networks:
-      - bluecall
+      - purplecallio
 
     expose:
       - "5173"
@@ -128,12 +128,12 @@ services:
       - nginx_cache:/var/cache/nginx
 
     networks:
-      - bluecall
+      - purplecallio
 
 volumes:
   postgres_data:
   nginx_cache:
 
 networks:
-  bluecall:
+  purplecallio:
     driver: bridge

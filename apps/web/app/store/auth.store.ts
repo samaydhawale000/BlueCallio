@@ -36,7 +36,7 @@ export const useAuthStore = create<AuthState>()(
         set({ token: null, refreshToken: null, user: null }),
     }),
     {
-      name: 'BlueCallio-auth',
+      name: 'PurpleCallio-auth',
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
       },

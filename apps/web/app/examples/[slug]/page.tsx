@@ -8,9 +8,9 @@ const examples = {
    "javascript-video": {
       title: "JavaScript video calling example",
       intro: "Create a video call on a trusted backend, then join it with the headless meeting engine in the browser.",
-      code: `import { BlueCallioClient } from "@bluecallio/sdk";
+      code: `import { PurpleCallioClient } from "@purplecallio/sdk";
 
-const client = new BlueCallioClient({ apiKey: process.env.BLUECALLIO_API_KEY! });
+const client = new PurpleCallioClient({ apiKey: process.env.PURPLECALLIO_API_KEY! });
 const call = await client.createCall({ callerId: "user_alice", receiverId: "user_bob", type: "VIDEO" });
 
 // Return only the participant-specific token, call ID, and signal URL to the browser.`,
@@ -18,16 +18,16 @@ const call = await client.createCall({ callerId: "user_alice", receiverId: "user
    "javascript-audio": {
       title: "JavaScript audio calling example",
       intro: "Create an audio call from the backend and initialize the browser meeting with video disabled.",
-      code: `import { BlueCallioMeeting } from "@bluecallio/sdk";
+      code: `import { PurpleCallioMeeting } from "@purplecallio/sdk";
 
-const meeting = new BlueCallioMeeting({ token, callId, signalUrl, video: false });
+const meeting = new PurpleCallioMeeting({ token, callId, signalUrl, video: false });
 await meeting.join();
 await meeting.microphone.enable();`,
    },
    "react-video": {
       title: "React video calling example",
-      intro: "Compose a video meeting UI from official BlueCallio React components.",
-      code: `import { MeetingProvider, ParticipantGrid, CameraButton, MicrophoneButton } from "@bluecallio/react";
+      intro: "Compose a video meeting UI from official PurpleCallio React components.",
+      code: `import { MeetingProvider, ParticipantGrid, CameraButton, MicrophoneButton } from "@purplecallio/react";
 
 <MeetingProvider token={participantToken} callId={callId} signalUrl={signalUrl}>
   <ParticipantGrid />
@@ -38,7 +38,7 @@ await meeting.microphone.enable();`,
    "react-audio": {
       title: "React audio calling example",
       intro: "Use the React provider and microphone control in an audio-focused calling interface.",
-      code: `import { MeetingProvider, MicrophoneButton, ConnectionStatus } from "@bluecallio/react";
+      code: `import { MeetingProvider, MicrophoneButton, ConnectionStatus } from "@purplecallio/react";
 
 <MeetingProvider token={participantToken} callId={callId} signalUrl={signalUrl}>
   <ConnectionStatus />
@@ -48,7 +48,7 @@ await meeting.microphone.enable();`,
    "screen-sharing": {
       title: "Screen sharing example",
       intro: "Add the official React screen-share control inside an authenticated meeting provider.",
-      code: `import { MeetingProvider, ScreenShareButton } from "@bluecallio/react";
+      code: `import { MeetingProvider, ScreenShareButton } from "@purplecallio/react";
 
 <MeetingProvider token={participantToken} callId={callId} signalUrl={signalUrl}>
   <ScreenShareButton />
@@ -57,9 +57,9 @@ await meeting.microphone.enable();`,
    "hosted-ui": {
       title: "Hosted UI example",
       intro: "Create a call from trusted backend code and direct an authorized participant to their returned hosted URL.",
-      code: `import { BlueCallioClient } from "@bluecallio/sdk";
+      code: `import { PurpleCallioClient } from "@purplecallio/sdk";
 
-const client = new BlueCallioClient({ apiKey: process.env.BLUECALLIO_API_KEY! });
+const client = new PurpleCallioClient({ apiKey: process.env.PURPLECALLIO_API_KEY! });
 const call = await client.createCall({ callerId: "user_alice", receiverId: "user_bob" });
 
 redirect(call.callerUrl);`,
@@ -75,12 +75,12 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
    const { slug } = await params;
    const example = examples[slug as ExampleSlug];
-   return example ? pageMetadata({ title: `${example.title} | BlueCallio`, description: example.intro, path: `/examples/${slug}` }) : {};
+   return example ? pageMetadata({ title: `${example.title} | PurpleCallio`, description: example.intro, path: `/examples/${slug}` }) : {};
 }
 
 export default async function ExamplePage({ params }: { params: Promise<{ slug: string }> }) {
    const { slug } = await params;
    const example = examples[slug as ExampleSlug];
    if (!example) notFound();
-   return <PublicPage eyebrow="Official example" title={example.title} intro={example.intro} crumbs={[{ label: "Home", href: "/" }, { label: "Examples", href: "/examples" }, { label: example.title, href: `/examples/${slug}` }]}><ContentSection title="Example"><CodeBlock code={example.code} /></ContentSection><ContentSection title="Security"><p>Keep <code>BLUECALLIO_API_KEY</code> on a trusted backend. Return participant-specific session information to the browser instead of exposing the project API key.</p></ContentSection></PublicPage>;
+   return <PublicPage eyebrow="Official example" title={example.title} intro={example.intro} crumbs={[{ label: "Home", href: "/" }, { label: "Examples", href: "/examples" }, { label: example.title, href: `/examples/${slug}` }]}><ContentSection title="Example"><CodeBlock code={example.code} /></ContentSection><ContentSection title="Security"><p>Keep <code>PURPLECALLIO_API_KEY</code> on a trusted backend. Return participant-specific session information to the browser instead of exposing the project API key.</p></ContentSection></PublicPage>;
 }

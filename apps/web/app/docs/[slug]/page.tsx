@@ -19,8 +19,8 @@ const docs = {
       title: "Quickstart: Create Your First Call",
       meta: "Video Calling API Quickstart",
       description:
-         "Start a BlueCallio call integration: create a call from your backend and choose hosted UI, React components, or the headless SDK.",
-      lead: "Create a call from your backend, then direct each participant to the integration surface that fits your product. BlueCallio provides a hosted call UI, React components, and a headless SDK.",
+         "Start a PurpleCallio call integration: create a call from your backend and choose hosted UI, React components, or the headless SDK.",
+      lead: "Create a call from your backend, then direct each participant to the integration surface that fits your product. PurpleCallio provides a hosted call UI, React components, and a headless SDK.",
       sections: [
          [
             "Start with a call",
@@ -36,8 +36,8 @@ const docs = {
       title: "Authentication",
       meta: "API Authentication",
       description:
-         "Learn how BlueCallio authentication separates server API credentials from participant access for calls.",
-      lead: "BlueCallio integrations use server-side credentials for API requests and scoped participant access for joining a call.",
+         "Learn how PurpleCallio authentication separates server API credentials from participant access for calls.",
+      lead: "PurpleCallio integrations use server-side credentials for API requests and scoped participant access for joining a call.",
       sections: [
          [
             "Keep API keys on your server",
@@ -53,8 +53,8 @@ const docs = {
       title: "Build Video Calling with JavaScript",
       meta: "JavaScript Video Calling SDK",
       description:
-         "Use the BlueCallio JavaScript headless SDK to build a custom video, audio, and screen sharing experience.",
-      lead: "The BlueCallio headless SDK gives JavaScript applications control over the meeting experience while the platform handles the call engine, signaling, authentication, and media infrastructure.",
+         "Use the PurpleCallio JavaScript headless SDK to build a custom video, audio, and screen sharing experience.",
+      lead: "The PurpleCallio headless SDK gives JavaScript applications control over the meeting experience while the platform handles the call engine, signaling, authentication, and media infrastructure.",
       sections: [
          [
             "Build your own interface",
@@ -70,8 +70,8 @@ const docs = {
       title: "Add Video Calling to React",
       meta: "React Video Calling SDK",
       description:
-         "Use BlueCallio React components to add a video, audio, and screen sharing experience to a React application.",
-      lead: "BlueCallio React components let product teams compose a branded calling experience without implementing WebRTC negotiation and signaling UI from scratch.",
+         "Use PurpleCallio React components to add a video, audio, and screen sharing experience to a React application.",
+      lead: "PurpleCallio React components let product teams compose a branded calling experience without implementing WebRTC negotiation and signaling UI from scratch.",
       sections: [
          [
             "Compose the meeting UI",
@@ -87,8 +87,8 @@ const docs = {
       title: "REST API for Calls",
       meta: "Video Calling REST API",
       description:
-         "Create, accept, reject, end, join, leave, and inspect BlueCallio calls through the REST API.",
-      lead: "The BlueCallio REST API gives your backend a clear call lifecycle: create, accept, reject, join, leave, end, and inspect calls.",
+         "Create, accept, reject, end, join, leave, and inspect PurpleCallio calls through the REST API.",
+      lead: "The PurpleCallio REST API gives your backend a clear call lifecycle: create, accept, reject, join, leave, end, and inspect calls.",
       sections: [
          [
             "Call lifecycle",
@@ -104,8 +104,8 @@ const docs = {
       title: "Calls and Participants",
       meta: "Calls API Guide",
       description:
-         "Understand the BlueCallio call lifecycle, participant access, hosted call URLs, and call management.",
-      lead: "A BlueCallio call represents the shared real-time session your application creates and manages for its participants.",
+         "Understand the PurpleCallio call lifecycle, participant access, hosted call URLs, and call management.",
+      lead: "A PurpleCallio call represents the shared real-time session your application creates and manages for its participants.",
       sections: [
          [
             "Create and manage calls",
@@ -121,8 +121,8 @@ const docs = {
       title: "Add Screen Sharing with WebRTC",
       meta: "WebRTC Screen Sharing API",
       description:
-         "Add browser screen sharing with BlueCallio's hosted UI, React components, or headless JavaScript SDK.",
-      lead: "BlueCallio supports browser screen sharing across hosted UI, React components, and the headless SDK.",
+         "Add browser screen sharing with PurpleCallio's hosted UI, React components, or headless JavaScript SDK.",
+      lead: "PurpleCallio supports browser screen sharing across hosted UI, React components, and the headless SDK.",
       sections: [
          [
             "Respect browser permissions",
@@ -135,11 +135,11 @@ const docs = {
       ],
    },
    audio: {
-      title: "Add Audio Calling with BlueCallio",
+      title: "Add Audio Calling with PurpleCallio",
       meta: "Audio Calling API & SDK",
       description:
-         "Add browser audio calling with BlueCallio's hosted UI, React components, or headless JavaScript SDK.",
-      lead: "BlueCallio supports 1:1 browser audio calls through hosted UI, React components, and the headless JavaScript SDK.",
+         "Add browser audio calling with PurpleCallio's hosted UI, React components, or headless JavaScript SDK.",
+      lead: "PurpleCallio supports 1:1 browser audio calls through hosted UI, React components, and the headless JavaScript SDK.",
       sections: [
          [
             "Permissions and devices",
@@ -156,11 +156,11 @@ const docs = {
       ],
    },
    video: {
-      title: "Add Video Calling with BlueCallio",
+      title: "Add Video Calling with PurpleCallio",
       meta: "Video Calling API & SDK",
       description:
-         "Add browser video calling with BlueCallio's hosted UI, React components, or headless JavaScript SDK.",
-      lead: "BlueCallio supports 1:1 browser video calls with camera controls, participant streams, and device selection across its integration surfaces.",
+         "Add browser video calling with PurpleCallio's hosted UI, React components, or headless JavaScript SDK.",
+      lead: "PurpleCallio supports 1:1 browser video calls with camera controls, participant streams, and device selection across its integration surfaces.",
       sections: [
          [
             "Camera permissions and tracks",
@@ -180,8 +180,8 @@ const docs = {
       title: "Hosted Call UI",
       meta: "Hosted Video Call UI",
       description:
-         "Use BlueCallio hosted UI to add a ready-made audio, video, and screen sharing call experience to your product.",
-      lead: "Hosted UI is the fastest BlueCallio integration: create a call from your backend and direct participants to the returned hosted call URL.",
+         "Use PurpleCallio hosted UI to add a ready-made audio, video, and screen sharing call experience to your product.",
+      lead: "Hosted UI is the fastest PurpleCallio integration: create a call from your backend and direct participants to the returned hosted call URL.",
       sections: [
          [
             "A ready-made call experience",
@@ -197,8 +197,8 @@ const docs = {
       title: "Webhooks",
       meta: "Call Event Webhooks",
       description:
-         "Receive and verify BlueCallio webhook events for changes in call state.",
-      lead: "BlueCallio can notify your backend when call state changes so your application can synchronize its own workflows.",
+         "Receive and verify PurpleCallio webhook events for changes in call state.",
+      lead: "PurpleCallio can notify your backend when call state changes so your application can synchronize its own workflows.",
       sections: [
          [
             "Verify every request",
@@ -214,8 +214,8 @@ const docs = {
       title: "Security",
       meta: "API & Call Security",
       description:
-         "Understand how BlueCallio separates API keys, participant access, and TURN credentials, and how to keep your integration secure.",
-      lead: "BlueCallio separates credentials by trust boundary: your backend, the participant's browser, and the media relay each receive only the access they need.",
+         "Understand how PurpleCallio separates API keys, participant access, and TURN credentials, and how to keep your integration secure.",
+      lead: "PurpleCallio separates credentials by trust boundary: your backend, the participant's browser, and the media relay each receive only the access they need.",
       sections: [
          [
             "API key: server only",
@@ -243,8 +243,8 @@ const docs = {
       title: "Usage and Billing",
       meta: "Video Calling API Usage & Billing",
       description:
-         "Understand BlueCallio participant-minute usage, free allowances, billing cycles, invoices, and the usage dashboard.",
-      lead: "BlueCallio uses participant-minutes: each participant's time in a call is measured. For example, two participants in a ten-minute call use twenty participant-minutes.",
+         "Understand PurpleCallio participant-minute usage, free allowances, billing cycles, invoices, and the usage dashboard.",
+      lead: "PurpleCallio uses participant-minutes: each participant's time in a call is measured. For example, two participants in a ten-minute call use twenty participant-minutes.",
       sections: [
          [
             "What is included",
@@ -261,9 +261,9 @@ type DocSlug = keyof typeof docs;
 const examples: Partial<Record<DocSlug, { title: string; code: string }>> = {
    quickstart: {
       title: "Create a call from your backend",
-      code: `import { BlueCallioClient } from "@bluecallio/sdk";
+      code: `import { PurpleCallioClient } from "@purplecallio/sdk";
 
-const client = new BlueCallioClient({ apiKey: process.env.BLUECALLIO_API_KEY! });
+const client = new PurpleCallioClient({ apiKey: process.env.PURPLECALLIO_API_KEY! });
 const call = await client.createCall({
   callerId: "user_alice",
   receiverId: "user_bob",
@@ -273,7 +273,7 @@ const call = await client.createCall({
    },
    react: {
       title: "Compose a React meeting UI",
-      code: `import { MeetingProvider, ParticipantGrid, CameraButton, MicrophoneButton, ScreenShareButton } from "@bluecallio/react";
+      code: `import { MeetingProvider, ParticipantGrid, CameraButton, MicrophoneButton, ScreenShareButton } from "@purplecallio/react";
 
 <MeetingProvider token={participantToken} callId={callId} signalUrl={signalUrl}>
   <ParticipantGrid />
@@ -284,37 +284,37 @@ const call = await client.createCall({
    },
    javascript: {
       title: "Initialize the headless meeting engine",
-      code: `import { BlueCallioMeeting } from "@bluecallio/sdk";
+      code: `import { PurpleCallioMeeting } from "@purplecallio/sdk";
 
-const meeting = new BlueCallioMeeting({ token, callId, signalUrl });
+const meeting = new PurpleCallioMeeting({ token, callId, signalUrl });
 await meeting.join();
 // Build your own controls around the meeting instance.`,
    },
    "rest-api": {
       title: "Create a call with the REST API",
-      code: `curl -X POST https://api.bluecallio.com/calls \\
-  -H "x-api-key: $BLUECALLIO_API_KEY" \\
+      code: `curl -X POST https://api.purplecallio.com/calls \\
+  -H "x-api-key: $PURPLECALLIO_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"callerId":"user_alice","receiverId":"user_bob"}'`,
    },
    "screen-sharing": {
       title: "Add a screen-share control in React",
-      code: `import { ScreenShareButton } from "@bluecallio/react";
+      code: `import { ScreenShareButton } from "@purplecallio/react";
 
 // Render inside a MeetingProvider.
 <ScreenShareButton />`,
    },
    audio: {
       title: "Start an audio-focused headless meeting",
-      code: `import { BlueCallioMeeting } from "@bluecallio/sdk";
+      code: `import { PurpleCallioMeeting } from "@purplecallio/sdk";
 
-const meeting = new BlueCallioMeeting({ token, callId, signalUrl, video: false });
+const meeting = new PurpleCallioMeeting({ token, callId, signalUrl, video: false });
 await meeting.join();
 await meeting.microphone.enable();`,
    },
    video: {
       title: "Render a React video meeting",
-      code: `import { MeetingProvider, ParticipantGrid, CameraButton } from "@bluecallio/react";
+      code: `import { MeetingProvider, ParticipantGrid, CameraButton } from "@purplecallio/react";
 
 <MeetingProvider token={participantToken} callId={callId} signalUrl={signalUrl}>
   <ParticipantGrid />
@@ -358,7 +358,7 @@ export default async function DocPage({
    const path = `/docs/${slug}`;
    return (
       <PublicPage
-         eyebrow="BlueCallio documentation"
+         eyebrow="PurpleCallio documentation"
          title={doc.title}
          intro={doc.lead}
          crumbs={[
@@ -376,7 +376,7 @@ export default async function DocPage({
                url: new URL(path, siteUrl).toString(),
                publisher: {
                   "@type": "Organization",
-                  name: "BlueCallio",
+                  name: "PurpleCallio",
                   url: siteUrl.toString(),
                },
             }}

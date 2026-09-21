@@ -1,5 +1,5 @@
 {
-  "name": "bluecallio",
+  "name": "purplecallio",
   "private": true,
   "workspaces": [
     "apps/*",

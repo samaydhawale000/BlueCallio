@@ -26,11 +26,11 @@ export function PricingAuthority({ className = "" }: { className?: string }) {
    return (
       <section
          className={`rounded-xl border border-[#2A3D64] bg-indigo-500/5 p-5 ${className}`}
-         aria-label="Current BlueCallio pricing"
+         aria-label="Current PurpleCallio pricing"
       >
          <p className="font-semibold text-white">Authoritative pricing</p>
          <p className="mt-2 text-sm leading-6 text-slate-300">
-            <strong>BlueCallio uses participant-minute billing.</strong> Audio,
+            <strong>PurpleCallio uses participant-minute billing.</strong> Audio,
             video, and screen sharing are tracked separately. Screen sharing is
             billed as its own usage category and is not automatically added as a
             surcharge to video minutes.

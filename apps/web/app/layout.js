@@ -5,12 +5,12 @@ import { siteUrl, defaultDescription } from "./lib/seo";
 
 export const metadata = {
   metadataBase: siteUrl,
-  title: { default: "Video Calling API & WebRTC SDK | BlueCallio", template: "%s | BlueCallio" },
+  title: { default: "Video Calling API & WebRTC SDK | PurpleCallio", template: "%s | PurpleCallio" },
   description: defaultDescription,
-  applicationName: "BlueCallio",
-  authors: [{ name: "BlueCallio" }],
+  applicationName: "PurpleCallio",
+  authors: [{ name: "PurpleCallio" }],
   robots: { index: true, follow: true },
-  openGraph: { type: "website", siteName: "BlueCallio", locale: "en_US", images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "BlueCallio" }] },
+  openGraph: { type: "website", siteName: "PurpleCallio", locale: "en_US", images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "PurpleCallio" }] },
   twitter: { card: "summary_large_image", images: ["/opengraph-image"] },
 };
 

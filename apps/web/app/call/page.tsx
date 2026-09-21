@@ -56,7 +56,7 @@ interface DeviceInfo {
 }
 
 const DEFAULT_BRANDING: Branding = {
-   companyName: "BlueCallio",
+   companyName: "PurpleCallio",
    logoUrl: null,
    primaryColor: "#2563EB",
    theme: "DARK",
@@ -161,7 +161,7 @@ function useDeviceEnumerate() {
 }
 
 /**
- * Loops one of BlueCallio's original call-sound assets (see
+ * Loops one of PurpleCallio's original call-sound assets (see
  * public/sounds/SOURCE.md — synthesized in-house, no third-party audio).
  * Driven entirely by call state (the caller waiting_effect below), never by
  * an independent timer. play() always stops any existing instance first, so
@@ -377,7 +377,7 @@ function CallPageContent() {
                }
                if (data.branding) {
                   setBranding({
-                     companyName: data.branding.companyName ?? "BlueCallio",
+                     companyName: data.branding.companyName ?? "PurpleCallio",
                      logoUrl: data.branding.logoUrl ?? null,
                      primaryColor: data.branding.primaryColor ?? "#2563EB",
                      theme: data.branding.theme ?? "DARK",
@@ -954,7 +954,7 @@ function CallPageContent() {
       // opened.
       if (window.opener) {
          window.opener.postMessage(
-            { source: "bluecallio-call", type: "started", callId: urlCallId },
+            { source: "purplecallio-call", type: "started", callId: urlCallId },
             window.location.origin,
          );
       }

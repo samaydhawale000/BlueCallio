@@ -17,12 +17,12 @@ const features = {
       title: "Video Calling API for Your Application",
       meta: "Video Calling API | WebRTC Video SDK",
       description:
-         "Add browser-based video calling with BlueCallio's WebRTC API, hosted UI, React components, and headless SDK.",
+         "Add browser-based video calling with PurpleCallio's WebRTC API, hosted UI, React components, and headless SDK.",
       summary:
-         "BlueCallio is a developer-focused video calling API for products that need browser-based calls without assembling signaling, authentication, TURN, and meeting UI independently.",
+         "PurpleCallio is a developer-focused video calling API for products that need browser-based calls without assembling signaling, authentication, TURN, and meeting UI independently.",
       details: [
          "Create and manage calls through REST APIs, then connect participants with hosted UI or an interface built with the React or headless SDK.",
-         "Video calls use WebRTC for browser media. BlueCallio provides the surrounding call lifecycle, access, signaling, and relay infrastructure.",
+         "Video calls use WebRTC for browser media. PurpleCallio provides the surrounding call lifecycle, access, signaling, and relay infrastructure.",
       ],
       useCases: [
          "SaaS products",
@@ -49,9 +49,9 @@ const features = {
       title: "Audio Calling API for Web Applications",
       meta: "Audio Calling API | WebRTC Voice SDK",
       description:
-         "Add browser audio calling with BlueCallio's WebRTC APIs, hosted UI, React components, and headless SDK.",
+         "Add browser audio calling with PurpleCallio's WebRTC APIs, hosted UI, React components, and headless SDK.",
       summary:
-         "BlueCallio provides a practical API path for adding real-time browser audio to web applications, with hosted UI and SDK choices for different product needs.",
+         "PurpleCallio provides a practical API path for adding real-time browser audio to web applications, with hosted UI and SDK choices for different product needs.",
       details: [
          "Audio calling follows the same server-controlled call lifecycle as video: your backend creates the call and issues participant access.",
          "Choose hosted UI for a ready-made meeting experience or use the React and headless SDKs to keep control of your product interface.",
@@ -65,7 +65,7 @@ const features = {
       faq: [
          [
             "Does audio calling use WebRTC?",
-            "BlueCallio uses WebRTC for browser media and provides the supporting signaling and connection infrastructure.",
+            "PurpleCallio uses WebRTC for browser media and provides the supporting signaling and connection infrastructure.",
          ],
          [
             "Can I start with hosted UI?",
@@ -81,9 +81,9 @@ const features = {
       title: "Add Screen Sharing to Your Application",
       meta: "Screen Sharing API | WebRTC Screen Sharing SDK",
       description:
-         "Add browser screen sharing to a calling experience with BlueCallio's hosted UI, React components, and headless SDK.",
+         "Add browser screen sharing to a calling experience with PurpleCallio's hosted UI, React components, and headless SDK.",
       summary:
-         "BlueCallio adds browser-native screen sharing to calling experiences through its hosted UI, React components, and headless SDK.",
+         "PurpleCallio adds browser-native screen sharing to calling experiences through its hosted UI, React components, and headless SDK.",
       details: [
          "Participants select what to share through their browser's permission flow. Your interface can make the action available while the browser controls the final selection.",
          "Screen sharing can be used alongside a call and is tracked as its own participant-minute usage category.",
@@ -96,7 +96,7 @@ const features = {
       ],
       faq: [
          [
-            "Does BlueCallio support screen sharing?",
+            "Does PurpleCallio support screen sharing?",
             "Yes. Screen sharing is available with hosted UI, React components, and the headless SDK.",
          ],
          [
@@ -113,12 +113,12 @@ const features = {
       title: "WebRTC Infrastructure Without the Infrastructure Headache",
       meta: "WebRTC API & Infrastructure",
       description:
-         "Use BlueCallio's WebRTC APIs, signaling, TURN relay, hosted UI, React components, and headless SDK for real-time communication.",
+         "Use PurpleCallio's WebRTC APIs, signaling, TURN relay, hosted UI, React components, and headless SDK for real-time communication.",
       summary:
-         "BlueCallio is a developer-focused real-time communication platform that combines WebRTC media with APIs, authentication, signaling, TURN relay, SDKs, and optional hosted UI.",
+         "PurpleCallio is a developer-focused real-time communication platform that combines WebRTC media with APIs, authentication, signaling, TURN relay, SDKs, and optional hosted UI.",
       details: [
          "WebRTC handles peer media in the browser, but production integrations also need call state, access control, signaling, and reliable connectivity paths.",
-         "BlueCallio provides WebSocket signaling and time-limited TURN credentials, while letting teams choose hosted UI, React components, or a headless SDK.",
+         "PurpleCallio provides WebSocket signaling and time-limited TURN credentials, while letting teams choose hosted UI, React components, or a headless SDK.",
       ],
       useCases: [
          "Video calling products",
@@ -128,8 +128,8 @@ const features = {
       ],
       faq: [
          [
-            "What does BlueCallio provide around WebRTC?",
-            "BlueCallio provides call APIs, authentication, WebSocket signaling, TURN relay, SDKs, and hosted UI around browser WebRTC media.",
+            "What does PurpleCallio provide around WebRTC?",
+            "PurpleCallio provides call APIs, authentication, WebSocket signaling, TURN relay, SDKs, and hosted UI around browser WebRTC media.",
          ],
          [
             "Do I need to build a call UI?",
@@ -182,7 +182,7 @@ export default async function FeaturePage({
              : "webrtc";
    return (
       <PublicPage
-         eyebrow="BlueCallio features"
+         eyebrow="PurpleCallio features"
          title={item.title}
          intro={item.summary}
          crumbs={[
@@ -201,7 +201,7 @@ export default async function FeaturePage({
                   description: item.description,
                   about: {
                      "@type": "Organization",
-                     name: "BlueCallio",
+                     name: "PurpleCallio",
                      url: siteUrl.toString(),
                   },
                },
@@ -217,7 +217,7 @@ export default async function FeaturePage({
             ]}
          />
          <ContentSection
-            title={`What is BlueCallio ${item.title.replace(" for Your Application", "").replace("Add ", "")}?`}
+            title={`What is PurpleCallio ${item.title.replace(" for Your Application", "").replace("Add ", "")}?`}
          >
             <p>{item.summary}</p>
          </ContentSection>
@@ -244,7 +244,7 @@ export default async function FeaturePage({
                <p key={detail}>{detail}</p>
             ))}
             <p>
-               BlueCallio supports REST API call management, WebSocket
+               PurpleCallio supports REST API call management, WebSocket
                signaling, authentication, TURN relay, camera and microphone
                controls, device selection, and screen sharing where applicable.
             </p>

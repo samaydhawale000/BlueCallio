@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import {
-  BLUECALLIO_DESCRIPTION,
-  BLUECALLIO_NAME,
-  BLUECALLIO_URL,
+  PURPLECALLIO_DESCRIPTION,
+  PURPLECALLIO_NAME,
+  PURPLECALLIO_URL,
 } from "./brand";
 
-export const siteUrl = new URL(BLUECALLIO_URL);
-export const siteName = BLUECALLIO_NAME;
-export const defaultDescription = BLUECALLIO_DESCRIPTION;
+export const siteUrl = new URL(PURPLECALLIO_URL);
+export const siteName = PURPLECALLIO_NAME;
+export const defaultDescription = PURPLECALLIO_DESCRIPTION;
 
 type PageMetadata = {
   title: string;
@@ -28,7 +28,7 @@ export function pageMetadata({ title, description, path, type = "website" }: Pag
       siteName,
       title,
       description,
-      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "BlueCallio" }],
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "PurpleCallio" }],
     },
     twitter: {
       card: "summary_large_image",

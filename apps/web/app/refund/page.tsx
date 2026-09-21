@@ -1,26 +1,26 @@
 import LegalLayout, { LegalSection, LegalBullets } from "../components/LegalLayout";
 import { pageMetadata } from "../lib/seo";
 
-export const metadata = pageMetadata({ title: "Refund & Cancellation Policy", description: "BlueCallio's policy for cancellations, refunds, usage-based charges, and billing disputes.", path: "/refund" });
+export const metadata = pageMetadata({ title: "Refund & Cancellation Policy", description: "PurpleCallio's policy for cancellations, refunds, usage-based charges, and billing disputes.", path: "/refund" });
 
 export default function RefundPage() {
   return (
     <LegalLayout
       title="Refund & Cancellation Policy"
-      intro="This policy explains how cancellations and refunds work for BlueCallio usage-based services."
+      intro="This policy explains how cancellations and refunds work for PurpleCallio usage-based services."
     >
       <LegalSection num="1" title="Cancellation">
         <p>
-          Customers may cancel their BlueCallio account or paid services through the available
+          Customers may cancel their PurpleCallio account or paid services through the available
           billing controls or by contacting support.
         </p>
         <p>Cancellation does not automatically erase charges already incurred.</p>
       </LegalSection>
 
       <LegalSection num="2" title="Usage-Based Charges">
-        <p>BlueCallio may use usage-based billing.</p>
+        <p>PurpleCallio may use usage-based billing.</p>
         <p>
-          Charges are calculated based on actual billable usage recorded by BlueCallio's systems.
+          Charges are calculated based on actual billable usage recorded by PurpleCallio's systems.
         </p>
         <p>
           Because usage-based services are consumed in real time, charges for usage that has already
@@ -30,7 +30,7 @@ export default function RefundPage() {
 
       <LegalSection num="3" title="Incorrect Charges">
         <p>If you believe your account was incorrectly charged, contact:</p>
-        <LegalBullets items={["hello@bluecallio.com"]} />
+        <LegalBullets items={["hello@purplecallio.com"]} />
         <p>within 30 days of the charge.</p>
         <p>Please provide:</p>
         <LegalBullets items={[
@@ -44,14 +44,14 @@ export default function RefundPage() {
 
       <LegalSection num="4" title="Duplicate Payments">
         <p>
-          If a duplicate payment occurs because of a technical or processing error, BlueCallio will
+          If a duplicate payment occurs because of a technical or processing error, PurpleCallio will
           investigate and, where appropriate, issue a refund or adjustment.
         </p>
       </LegalSection>
 
       <LegalSection num="5" title="Failed Payments">
         <p>
-          If a payment fails, BlueCallio may retry the payment or restrict paid functionality.
+          If a payment fails, PurpleCallio may retry the payment or restrict paid functionality.
         </p>
         <p>Customers remain responsible for valid charges incurred before the payment failure.</p>
       </LegalSection>
@@ -82,7 +82,7 @@ export default function RefundPage() {
       </LegalSection>
 
       <LegalSection num="9" title="Policy Changes">
-        <p>BlueCallio may update this policy from time to time.</p>
+        <p>PurpleCallio may update this policy from time to time.</p>
       </LegalSection>
     </LegalLayout>
   );

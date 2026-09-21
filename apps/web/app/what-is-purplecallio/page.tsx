@@ -2,46 +2,46 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ContentSection, PublicPage } from "../components/marketing/PublicPage";
 import { JsonLd } from "../components/seo/JsonLd";
-import { BLUECALLIO_DESCRIPTION, BLUECALLIO_NAME } from "../lib/brand";
+import { PURPLECALLIO_DESCRIPTION, PURPLECALLIO_NAME } from "../lib/brand";
 import { pageMetadata, siteUrl } from "../lib/seo";
 
 export const metadata: Metadata = pageMetadata({
-   title: "What is BlueCallio? | Real-Time Communication Infrastructure",
+   title: "What is PurpleCallio? | Real-Time Communication Infrastructure",
    description:
-      "Learn what BlueCallio is, how its audio and video communication infrastructure works, and how developers can integrate it using hosted UI, React components, SDKs and APIs.",
-   path: "/what-is-bluecallio",
+      "Learn what PurpleCallio is, how its audio and video communication infrastructure works, and how developers can integrate it using hosted UI, React components, SDKs and APIs.",
+   path: "/what-is-purplecallio",
 });
 
 const faqs = [
-   ["What is BlueCallio?", BLUECALLIO_DESCRIPTION],
-   ["How do I integrate video calling using BlueCallio?", "Use the BlueCallio REST API or @bluecallio/sdk from your backend to create a call and generate participant session information. Your frontend can then join with @bluecallio/react components, the headless SDK, or hosted UI. See the quickstart at bluecallio.com/docs/quickstart and the video guide at bluecallio.com/docs/video."],
-   ["How do I integrate audio calling using BlueCallio?", "Create a call from your backend with the REST API or @bluecallio/sdk, then join from the browser with @bluecallio/react, the headless JavaScript SDK, or hosted UI. See bluecallio.com/docs/audio for a full walkthrough."],
-   ["What can I build with BlueCallio?", "Developers can build 1:1 audio calls, 1:1 video calls, screen sharing, custom communication interfaces, and embedded calling experiences."],
-   ["Does BlueCallio support video calls?", "Yes. BlueCallio supports video calling."],
-   ["Does BlueCallio support audio calls?", "Yes. BlueCallio supports audio calling and audio participant usage tracking."],
-   ["Does BlueCallio support screen sharing?", "Yes. Screen sharing is supported and tracked as a separate billable usage category."],
-   ["Does BlueCallio have a JavaScript SDK?", "Yes. @bluecallio/sdk is the official JavaScript and TypeScript SDK."],
-   ["Does BlueCallio have React components?", "Yes. @bluecallio/react provides official React components and hooks."],
-   ["How does BlueCallio pricing work?", "BlueCallio uses participant-minute usage pricing. Audio, video, and screen sharing are tracked as separate usage categories."],
-   ["Where is the BlueCallio API documentation?", "The official API documentation is available at bluecallio.com/docs/rest-api."],
+   ["What is PurpleCallio?", PURPLECALLIO_DESCRIPTION],
+   ["How do I integrate video calling using PurpleCallio?", "Use the PurpleCallio REST API or @purplecallio/sdk from your backend to create a call and generate participant session information. Your frontend can then join with @purplecallio/react components, the headless SDK, or hosted UI. See the quickstart at purplecallio.com/docs/quickstart and the video guide at purplecallio.com/docs/video."],
+   ["How do I integrate audio calling using PurpleCallio?", "Create a call from your backend with the REST API or @purplecallio/sdk, then join from the browser with @purplecallio/react, the headless JavaScript SDK, or hosted UI. See purplecallio.com/docs/audio for a full walkthrough."],
+   ["What can I build with PurpleCallio?", "Developers can build 1:1 audio calls, 1:1 video calls, screen sharing, custom communication interfaces, and embedded calling experiences."],
+   ["Does PurpleCallio support video calls?", "Yes. PurpleCallio supports video calling."],
+   ["Does PurpleCallio support audio calls?", "Yes. PurpleCallio supports audio calling and audio participant usage tracking."],
+   ["Does PurpleCallio support screen sharing?", "Yes. Screen sharing is supported and tracked as a separate billable usage category."],
+   ["Does PurpleCallio have a JavaScript SDK?", "Yes. @purplecallio/sdk is the official JavaScript and TypeScript SDK."],
+   ["Does PurpleCallio have React components?", "Yes. @purplecallio/react provides official React components and hooks."],
+   ["How does PurpleCallio pricing work?", "PurpleCallio uses participant-minute usage pricing. Audio, video, and screen sharing are tracked as separate usage categories."],
+   ["Where is the PurpleCallio API documentation?", "The official API documentation is available at purplecallio.com/docs/rest-api."],
 ] as const;
 
 const integrationPaths = [
    ["Hosted UI", "Use a ready-made calling interface when you want the shortest frontend path."],
-   ["React components", "Compose a branded meeting experience from BlueCallio React components and hooks."],
+   ["React components", "Compose a branded meeting experience from PurpleCallio React components and hooks."],
    ["Headless SDK", "Use the JavaScript and TypeScript meeting engine when your application owns the entire interface."],
    ["REST API", "Create and manage calls from trusted backend code in any language."],
 ] as const;
 
-export default function WhatIsBlueCallioPage() {
+export default function WhatIsPurpleCallioPage() {
    return (
       <PublicPage
-         eyebrow="About BlueCallio"
-         title="What is BlueCallio?"
-         intro={BLUECALLIO_DESCRIPTION}
+         eyebrow="About PurpleCallio"
+         title="What is PurpleCallio?"
+         intro={PURPLECALLIO_DESCRIPTION}
          crumbs={[
             { label: "Home", href: "/" },
-            { label: "What is BlueCallio?", href: "/what-is-bluecallio" },
+            { label: "What is PurpleCallio?", href: "/what-is-purplecallio" },
          ]}
       >
          <JsonLd
@@ -49,10 +49,10 @@ export default function WhatIsBlueCallioPage() {
                {
                   "@context": "https://schema.org",
                   "@type": "WebPage",
-                  name: "What is BlueCallio?",
-                  description: BLUECALLIO_DESCRIPTION,
-                  url: new URL("/what-is-bluecallio", siteUrl).toString(),
-                  about: { "@type": "Organization", name: BLUECALLIO_NAME },
+                  name: "What is PurpleCallio?",
+                  description: PURPLECALLIO_DESCRIPTION,
+                  url: new URL("/what-is-purplecallio", siteUrl).toString(),
+                  about: { "@type": "Organization", name: PURPLECALLIO_NAME },
                },
                {
                   "@context": "https://schema.org",
@@ -65,11 +65,11 @@ export default function WhatIsBlueCallioPage() {
                },
             ]}
          />
-         <ContentSection title="What is BlueCallio?">
-            <p>{BLUECALLIO_DESCRIPTION}</p>
-            <p>BlueCallio is an independent developer-focused real-time communication platform. It gives application teams official integration surfaces instead of requiring them to assemble signaling, participant sessions, and calling interfaces from scratch.</p>
+         <ContentSection title="What is PurpleCallio?">
+            <p>{PURPLECALLIO_DESCRIPTION}</p>
+            <p>PurpleCallio is an independent developer-focused real-time communication platform. It gives application teams official integration surfaces instead of requiring them to assemble signaling, participant sessions, and calling interfaces from scratch.</p>
          </ContentSection>
-         <ContentSection title="Who is BlueCallio for?">
+         <ContentSection title="Who is PurpleCallio for?">
             <ul className="grid gap-3 sm:grid-cols-2">
                {["SaaS products", "Marketplaces", "Education platforms", "Healthcare applications", "Customer support applications", "Internal business applications", "Developer products"].map((item) => (
                   <li key={item} className="rounded-xl border border-[#1A2642] bg-[#0A0F1E] p-4 text-slate-300">{item}</li>
@@ -85,7 +85,7 @@ export default function WhatIsBlueCallioPage() {
                <li>Embedded calling experiences</li>
             </ul>
          </ContentSection>
-         <ContentSection title="How developers integrate BlueCallio">
+         <ContentSection title="How developers integrate PurpleCallio">
             <div className="grid gap-4 sm:grid-cols-2">
                {integrationPaths.map(([name, description]) => (
                   <article key={name} className="rounded-xl border border-[#1A2642] bg-[#0A0F1E] p-5">
@@ -95,7 +95,7 @@ export default function WhatIsBlueCallioPage() {
                ))}
             </div>
          </ContentSection>
-         <ContentSection title="How BlueCallio works">
+         <ContentSection title="How PurpleCallio works">
             <div className="overflow-x-auto rounded-xl border border-[#1A2642] bg-[#0A0F1E] p-6 font-mono text-sm leading-7 text-slate-300">
                <pre>{`Your Application
        |
@@ -106,7 +106,7 @@ Your Backend          Your Frontend
        |                  |
        | API Key          | Session Information
        v                  |
-BlueCallio API <----------+
+PurpleCallio API <----------+
        |
        v
 Call / Participant Session
@@ -120,8 +120,8 @@ WebRTC
 Participants`}</pre>
             </div>
          </ContentSection>
-         <ContentSection title="BlueCallio vs building WebRTC yourself">
-            <p>When building directly with WebRTC, developers still need to design signaling, session management, authentication boundaries, participant state, media permissions, connection lifecycle, WebRTC state, and TURN connectivity. BlueCallio provides the integration surfaces around those concerns while your application retains control of its product flow and interface.</p>
+         <ContentSection title="PurpleCallio vs building WebRTC yourself">
+            <p>When building directly with WebRTC, developers still need to design signaling, session management, authentication boundaries, participant state, media permissions, connection lifecycle, WebRTC state, and TURN connectivity. PurpleCallio provides the integration surfaces around those concerns while your application retains control of its product flow and interface.</p>
          </ContentSection>
          <ContentSection title="Security">
             <div className="grid gap-4 sm:grid-cols-2">
@@ -130,8 +130,8 @@ Participants`}</pre>
             </div>
          </ContentSection>
          <ContentSection title="Pricing">
-            <p>BlueCallio uses usage-based participant-minute pricing. Audio, video, and screen sharing are separate usage categories.</p>
-            <Link href="/pricing" className="font-medium text-indigo-300 hover:text-white">View official BlueCallio pricing →</Link>
+            <p>PurpleCallio uses usage-based participant-minute pricing. Audio, video, and screen sharing are separate usage categories.</p>
+            <Link href="/pricing" className="font-medium text-indigo-300 hover:text-white">View official PurpleCallio pricing →</Link>
          </ContentSection>
          <ContentSection title="Developer resources">
             <div className="flex flex-wrap gap-4">

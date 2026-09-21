@@ -126,7 +126,7 @@ export default function PricingSection() {
           </h2>
           <p className="text-slate-400 mb-14 max-w-2xl">
             Audio, video, and screen sharing are tracked as separate participant-minute
-            categories. Current rates and allowances are loaded from BlueCallio's billing service.
+            categories. Current rates and allowances are loaded from PurpleCallio's billing service.
           </p>
 
           {/* Free tier + rates */}
@@ -207,7 +207,7 @@ export default function PricingSection() {
                   <p className="text-slate-400 text-sm mb-3 leading-relaxed">
                     For organizations with large-scale communication needs.
                   </p>
-                  <a href="mailto:hello@bluecallio.com" className="inline-block text-center text-sm font-medium text-white px-5 py-2.5 rounded-lg border border-[#2A3D64] hover:border-[#6366F1] transition-all">
+                  <a href="mailto:hello@purplecallio.com" className="inline-block text-center text-sm font-medium text-white px-5 py-2.5 rounded-lg border border-[#2A3D64] hover:border-[#6366F1] transition-all">
                     Talk to Sales →
                   </a>
                 </div>
@@ -270,7 +270,7 @@ export default function PricingSection() {
                 View pricing FAQ →
               </Link>
               <a
-                href="mailto:hello@bluecallio.com"
+                href="mailto:hello@purplecallio.com"
                 className="inline-flex items-center gap-2 text-slate-300 font-medium text-sm px-6 py-2.5 rounded-lg border border-[#1A2642] hover:border-[#2A3D64] transition-all"
               >
                 Talk to an engineer
