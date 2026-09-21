@@ -7,7 +7,11 @@ import {
 } from "../../components/marketing/PublicPage";
 import { JsonLd } from "../../components/seo/JsonLd";
 import { pageMetadata, siteUrl } from "../../lib/seo";
-import { CodeBlock, QuickstartStepper, ReactMeetingPreview } from "../../components/marketing/InteractiveTools";
+import {
+   CodeBlock,
+   QuickstartStepper,
+   ReactMeetingPreview,
+} from "../../components/marketing/InteractiveTools";
 import { PricingAuthority } from "../../components/PricingAuthority";
 
 const docs = {
@@ -203,6 +207,35 @@ const docs = {
          [
             "Design for retries",
             "Treat webhook delivery as an event notification, not the only source of truth. Make event handling idempotent in your application.",
+         ],
+      ],
+   },
+   security: {
+      title: "Security",
+      meta: "API & Call Security",
+      description:
+         "Understand how BlueCallio separates API keys, participant access, and TURN credentials, and how to keep your integration secure.",
+      lead: "BlueCallio separates credentials by trust boundary: your backend, the participant's browser, and the media relay each receive only the access they need.",
+      sections: [
+         [
+            "API key: server only",
+            "Your project API key authorizes creating and managing calls. Never expose it in browser code, a public repository, or a client-side environment variable. Use it only from trusted server code.",
+         ],
+         [
+            "Participant access: session only",
+            "When a call is created, each participant receives access scoped to that call. Pass only the participant's own access to hosted UI, the React components, or the headless SDK running in their browser.",
+         ],
+         [
+            "Dashboard authentication",
+            "The dashboard uses its own authenticated session to manage account and project resources. It is separate from both the API key and participant access.",
+         ],
+         [
+            "TURN credentials",
+            "Media relay (TURN) credentials are time-limited and generated per session using an HMAC-signed shared secret, so a leaked credential stops working after a short expiry window.",
+         ],
+         [
+            "Transport and origin security",
+            "API and signaling traffic is served over HTTPS/WSS. Configure CORS for your own domains and do not disable certificate validation in production.",
          ],
       ],
    },
@@ -479,6 +512,12 @@ export default async function DocPage({
                   className="text-indigo-300 hover:text-white"
                >
                   React SDK →
+               </Link>
+               <Link
+                  href="/docs/security"
+                  className="text-indigo-300 hover:text-white"
+               >
+                  Security →
                </Link>
                <Link
                   href="/features/video-calling"
