@@ -35,13 +35,13 @@ export default function AdminSettingsPage() {
   };
 
   if (loading) {
-    return <div className="text-slate-400 text-sm py-20 text-center">Loading settings…</div>;
+    return <div className="text-[#6B6478] text-sm py-20 text-center">Loading settings…</div>;
   }
 
   if (error || !data) {
     return (
       <div className="py-20 text-center">
-        <p className="text-red-400 text-sm">{error}</p>
+        <p className="text-red-600 text-sm">{error}</p>
       </div>
     );
   }
@@ -49,53 +49,53 @@ export default function AdminSettingsPage() {
   return (
     <div className="space-y-6">
 <header>
-        <h1 className="text-2xl font-bold text-white">Platform Settings</h1>
-        <p className="text-slate-400 text-sm mt-1">Manage maintenance mode and announcements</p>
+        <h1 className="text-2xl font-bold text-[#170B2E]">Platform Settings</h1>
+        <p className="text-[#6B6478] text-sm mt-1">Manage maintenance mode and announcements</p>
       </header>
 
       {/* Maintenance + announcement */}
-      <div className="rounded-xl border border-[#1A2642] p-5" style={{ background: '#0D1421' }}>
-        <p className="text-sm font-semibold text-white mb-4">Operations</p>
+      <div className="rounded-xl border border-[#E7DFF5] p-5" style={{ background: '#FFFFFF' }}>
+        <p className="text-sm font-semibold text-[#170B2E] mb-4">Operations</p>
         <label className="flex items-center gap-3 mb-5 cursor-pointer">
           <input
             type="checkbox"
             checked={maintenance}
             onChange={(e) => setMaintenance(e.target.checked)}
-            className="w-4 h-4 accent-indigo-500"
+            className="w-4 h-4 accent-[#7F40E8]"
           />
-          <span className="text-sm text-slate-300">Enable Maintenance Mode</span>
+          <span className="text-sm text-[#4B4560]">Enable Maintenance Mode</span>
         </label>
 
-        <label className="block mb-2 text-sm text-slate-300">Announcement</label>
+        <label className="block mb-2 text-sm text-[#4B4560]">Announcement</label>
         <textarea
           value={announcement}
           onChange={(e) => setAnnouncement(e.target.value)}
           placeholder="Broadcast a message to all users on the platform…"
-          className="w-full rounded-lg border border-[#1A2642] bg-[#060B18] px-3 py-2.5 text-sm text-white placeholder:text-slate-600 resize-none"
+          className="w-full rounded-lg border border-[#E7DFF5] bg-[#FFFFFF] px-3 py-2.5 text-sm text-[#170B2E] placeholder:text-[#9C93AC] resize-none"
           rows={3}
         />
 
         <button
           onClick={save}
           className="mt-4 px-5 py-2.5 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90"
-          style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}
+          style={{ background: 'linear-gradient(135deg, #7F40E8, #410686)' }}
         >
           {saved ? 'Saved ✓' : 'Save Settings'}
         </button>
       </div>
 
       {/* Server logs */}
-      <div className="rounded-xl border border-[#1A2642] p-5" style={{ background: '#0D1421' }}>
+      <div className="rounded-xl border border-[#E7DFF5] p-5" style={{ background: '#FFFFFF' }}>
         <div className="flex items-center justify-between mb-3">
-          <p className="text-sm font-semibold text-white">Server Logs</p>
+          <p className="text-sm font-semibold text-[#170B2E]">Server Logs</p>
           <button
             onClick={() => window.alert('Log streaming is not wired up yet.')}
-            className="text-[11px] px-3 py-1.5 rounded border border-[#1A2642] text-slate-300 hover:border-[#6366F1] transition-colors"
+            className="text-[11px] px-3 py-1.5 rounded border border-[#E7DFF5] text-[#4B4560] hover:border-[#7F40E8] transition-colors"
           >
             View logs
           </button>
         </div>
-        <p className="text-xs text-slate-500">Access to realtime server logs coming soon.</p>
+        <p className="text-xs text-[#8A8298]">Access to realtime server logs coming soon.</p>
       </div>
     </div>
   );

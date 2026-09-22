@@ -66,7 +66,7 @@ export function CopyButton({ value }: { value: string }) {
                /* Copy is an enhancement; the code remains selectable. */
             }
          }}
-         className="rounded border border-[#2A3D64] px-2.5 py-1 text-xs text-slate-300 hover:border-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-300"
+         className="rounded border border-[#D6C4EE] px-2.5 py-1 text-xs text-[#4B4560] hover:border-[#A05DF9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#A05DF9]"
          aria-label="Copy code"
       >
          {copied ? "Copied" : "Copy"}
@@ -82,12 +82,12 @@ export function CodeBlock({
    filename?: string;
 }) {
    return (
-      <div className="overflow-hidden rounded-xl border border-[#1A2642] bg-[#07111F]">
-         <div className="flex items-center justify-between border-b border-[#1A2642] px-4 py-3">
-            <span className="font-mono text-xs text-slate-500">{filename}</span>
+      <div className="overflow-hidden rounded-xl border border-[#E7DFF5] bg-[#F8F4FD]">
+         <div className="flex items-center justify-between border-b border-[#E7DFF5] px-4 py-3">
+            <span className="font-mono text-xs text-[#8A8298]">{filename}</span>
             <CopyButton value={code} />
          </div>
-         <pre className="overflow-x-auto p-5 text-sm leading-6 text-slate-200">
+         <pre className="overflow-x-auto p-5 text-sm leading-6 text-[#3D3650]">
             <code>{code}</code>
          </pre>
       </div>
@@ -107,13 +107,13 @@ export function IntegrationSelector({
          className={
             compact
                ? ""
-               : "rounded-2xl border border-[#1A2642] bg-[#0A0F1E] p-5 md:p-8"
+               : "rounded-2xl border border-[#E7DFF5] bg-white p-5 md:p-8"
          }
       >
          <div
             role="tablist"
             aria-label="Integration paths"
-            className="flex flex-wrap gap-2 border-b border-[#1A2642] pb-4"
+            className="flex flex-wrap gap-2 border-b border-[#E7DFF5] pb-4"
          >
             {paths.map((path) => (
                <button
@@ -122,7 +122,7 @@ export function IntegrationSelector({
                   role="tab"
                   aria-selected={selected === path.id}
                   onClick={() => setSelected(path.id)}
-                  className={`rounded-lg px-4 py-2 text-sm transition ${selected === path.id ? "bg-indigo-500/20 text-white" : "text-slate-400 hover:text-white"}`}
+                  className={`rounded-lg px-4 py-2 text-sm transition ${selected === path.id ? "bg-[#7F40E8]/20 text-[#170B2E]" : "text-[#6B6478] hover:text-[#170B2E]"}`}
                >
                   {path.label}
                </button>
@@ -130,43 +130,43 @@ export function IntegrationSelector({
          </div>
          <div className="grid gap-6 pt-6 lg:grid-cols-[1fr_1.15fr]">
             <div>
-               <p className="font-mono text-xs uppercase tracking-widest text-indigo-300">
+               <p className="font-mono text-xs uppercase tracking-widest text-[#6425C4]">
                   {item.label}
                </p>
-               <h3 className="mt-2 text-xl font-bold text-white">
+               <h3 className="mt-2 text-xl font-bold text-[#170B2E]">
                   {item.audience}
                </h3>
                <dl className="mt-5 space-y-4 text-sm leading-6">
                   <div>
-                     <dt className="font-semibold text-slate-200">Best for</dt>
-                     <dd className="text-slate-400">{item.builds}</dd>
+                     <dt className="font-semibold text-[#3D3650]">Best for</dt>
+                     <dd className="text-[#6B6478]">{item.builds}</dd>
                   </div>
                   <div>
-                     <dt className="font-semibold text-slate-200">
+                     <dt className="font-semibold text-[#3D3650]">
                         What you get
                      </dt>
-                     <dd className="text-slate-400">{item.handles}</dd>
+                     <dd className="text-[#6B6478]">{item.handles}</dd>
                   </div>
                   <div>
-                     <dt className="font-semibold text-slate-200">Installation</dt>
-                     <dd className="font-mono text-slate-400">{item.install}</dd>
+                     <dt className="font-semibold text-[#3D3650]">Installation</dt>
+                     <dd className="font-mono text-[#6B6478]">{item.install}</dd>
                   </div>
                </dl>
                <Link
                   href={item.href}
-                  className="mt-6 inline-block text-sm font-medium text-indigo-300 hover:text-white"
+                  className="mt-6 inline-block text-sm font-medium text-[#6425C4] hover:text-[#170B2E]"
                >
                   Read {item.label} documentation →
                </Link>
             </div>
-            <div className="overflow-hidden rounded-xl border border-[#1A2642] bg-[#07111F]">
-               <div className="flex items-center justify-between border-b border-[#1A2642] px-4 py-3">
-                  <span className="font-mono text-xs text-slate-500">
+            <div className="overflow-hidden rounded-xl border border-[#E7DFF5] bg-[#F8F4FD]">
+               <div className="flex items-center justify-between border-b border-[#E7DFF5] px-4 py-3">
+                  <span className="font-mono text-xs text-[#8A8298]">
                      integration.ts
                   </span>
                   <CopyButton value={item.code} />
                </div>
-               <pre className="overflow-x-auto p-5 text-sm leading-6 text-slate-200">
+               <pre className="overflow-x-auto p-5 text-sm leading-6 text-[#3D3650]">
                   <code>{item.code}</code>
                </pre>
             </div>
@@ -201,22 +201,22 @@ const flow = [
 export function FlowDiagram() {
    const [active, setActive] = useState(0);
    return (
-      <section className="rounded-2xl border border-[#1A2642] bg-[#0A0F1E] p-5 md:p-8">
+      <section className="rounded-2xl border border-[#E7DFF5] bg-white p-5 md:p-8">
          <div className="flex flex-wrap items-center gap-2">
             {flow.map(([label], index) => (
                <button
                   type="button"
                   key={label}
                   onClick={() => setActive(index)}
-                  className={`rounded-lg border px-3 py-2 text-sm ${active === index ? "border-indigo-400 bg-indigo-500/15 text-white" : "border-[#1A2642] text-slate-400 hover:text-white"}`}
+                  className={`rounded-lg border px-3 py-2 text-sm ${active === index ? "border-[#A05DF9] bg-[#7F40E8]/15 text-[#170B2E]" : "border-[#E7DFF5] text-[#6B6478] hover:text-[#170B2E]"}`}
                >
                   {index + 1}. {label}
                </button>
             ))}
          </div>
-         <div className="mt-6 rounded-xl border border-[#1A2642] bg-[#060B18] p-5">
-            <p className="font-semibold text-white">{flow[active][0]}</p>
-            <p className="mt-2 text-sm leading-6 text-slate-400">
+         <div className="mt-6 rounded-xl border border-[#E7DFF5] bg-[#F8F4FD] p-5">
+            <p className="font-semibold text-[#170B2E]">{flow[active][0]}</p>
+            <p className="mt-2 text-sm leading-6 text-[#6B6478]">
                {flow[active][1]}
             </p>
          </div>
@@ -239,29 +239,29 @@ const nodes = [
 export function ArchitectureExplorer() {
    const [active, setActive] = useState(0);
    return (
-      <section className="rounded-2xl border border-[#1A2642] bg-[#0A0F1E] p-5 md:p-8">
-         <div className="text-center text-sm text-slate-400">
+      <section className="rounded-2xl border border-[#E7DFF5] bg-white p-5 md:p-8">
+         <div className="text-center text-sm text-[#6B6478]">
             Your application
          </div>
-         <div className="mx-auto h-6 w-px bg-indigo-400/50" />
-         <div className="mx-auto max-w-xs rounded-xl border border-indigo-400/40 bg-indigo-500/10 p-3 text-center font-semibold text-white">
+         <div className="mx-auto h-6 w-px bg-[#A05DF9]/50" />
+         <div className="mx-auto max-w-xs rounded-xl border border-[#A05DF9]/40 bg-[#7F40E8]/10 p-3 text-center font-semibold text-[#170B2E]">
             PurpleCallio
          </div>
-         <div className="mx-auto h-6 w-px bg-indigo-400/50" />
+         <div className="mx-auto h-6 w-px bg-[#A05DF9]/50" />
          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {nodes.map(([label], index) => (
                <button
                   type="button"
                   key={label}
                   onClick={() => setActive(index)}
-                  className={`rounded-xl border p-4 text-left transition ${active === index ? "border-indigo-400 bg-indigo-500/15 text-white" : "border-[#1A2642] text-slate-400 hover:text-white"}`}
+                  className={`rounded-xl border p-4 text-left transition ${active === index ? "border-[#A05DF9] bg-[#7F40E8]/15 text-[#170B2E]" : "border-[#E7DFF5] text-[#6B6478] hover:text-[#170B2E]"}`}
                >
                   {label}
                </button>
             ))}
          </div>
-         <p className="mt-5 rounded-lg bg-[#060B18] p-4 text-sm leading-6 text-slate-400">
-            <strong className="text-slate-200">{nodes[active][0]}: </strong>
+         <p className="mt-5 rounded-lg bg-[#F8F4FD] p-4 text-sm leading-6 text-[#6B6478]">
+            <strong className="text-[#3D3650]">{nodes[active][0]}: </strong>
             {nodes[active][1]}
          </p>
       </section>
@@ -291,17 +291,17 @@ export function PricingCalculator() {
       ? billableAudio * rates.audioPaise + billableVideo * rates.videoPaise + screenMinutes * rates.screenSharePaise
       : null;
    return (
-      <section className="rounded-2xl border border-[#1A2642] bg-[#0A0F1E] p-5 md:p-8">
-         <h2 className="text-2xl font-bold text-white">
+      <section className="rounded-2xl border border-[#E7DFF5] bg-white p-5 md:p-8">
+         <h2 className="text-2xl font-bold text-[#170B2E]">
             Estimate participant-minute usage
          </h2>
-         <p className="mt-2 text-sm text-slate-400">
+         <p className="mt-2 text-sm text-[#6B6478]">
             A participant-minute is one connected participant for one minute.
             This uses current public rates when available and is an estimate,
             not an invoice.
          </p>
          <div className="mt-6 grid gap-5 md:grid-cols-2">
-            <label className="text-sm text-slate-300">
+            <label className="text-sm text-[#4B4560]">
                Participants{" "}
                <input
                   aria-label="Participants"
@@ -312,10 +312,10 @@ export function PricingCalculator() {
                   onChange={(event) =>
                      setPeople(Math.max(1, Number(event.target.value)))
                   }
-                  className="mt-2 w-full rounded-lg border border-[#2A3D64] bg-[#060B18] p-3 text-white"
+                  className="mt-2 w-full rounded-lg border border-[#D6C4EE] bg-[#F8F4FD] p-3 text-[#170B2E]"
                />
             </label>
-            <label className="text-sm text-slate-300">
+            <label className="text-sm text-[#4B4560]">
                Wall-clock call duration (minutes){" "}
                <input
                   aria-label="Call duration in minutes"
@@ -326,7 +326,7 @@ export function PricingCalculator() {
                   onChange={(event) =>
                      setMinutes(Math.max(1, Number(event.target.value)))
                   }
-                  className="mt-2 w-full rounded-lg border border-[#2A3D64] bg-[#060B18] p-3 text-white"
+                  className="mt-2 w-full rounded-lg border border-[#D6C4EE] bg-[#F8F4FD] p-3 text-[#170B2E]"
                />
             </label>
          </div>
@@ -358,40 +358,40 @@ export function PricingCalculator() {
          </div>
          {screen && (
             <div className="mt-5 grid max-w-xl gap-5 sm:grid-cols-2">
-               <label className="text-sm text-slate-300">
+               <label className="text-sm text-[#4B4560]">
                   Screen-sharing participants
-                  <input aria-label="Screen-sharing participants" type="number" min="1" max={people} value={screenPeople} onChange={(event) => setScreenPeople(Math.min(people, Math.max(1, Number(event.target.value))))} className="mt-2 w-full rounded-lg border border-[#2A3D64] bg-[#060B18] p-3 text-white" />
+                  <input aria-label="Screen-sharing participants" type="number" min="1" max={people} value={screenPeople} onChange={(event) => setScreenPeople(Math.min(people, Math.max(1, Number(event.target.value))))} className="mt-2 w-full rounded-lg border border-[#D6C4EE] bg-[#F8F4FD] p-3 text-[#170B2E]" />
                </label>
-               <label className="text-sm text-slate-300">
+               <label className="text-sm text-[#4B4560]">
                   Screen-share duration (minutes)
-                  <input aria-label="Screen-share duration in minutes" type="number" min="1" max={minutes} value={screenDuration} onChange={(event) => setScreenDuration(Math.min(minutes, Math.max(1, Number(event.target.value))))} className="mt-2 w-full rounded-lg border border-[#2A3D64] bg-[#060B18] p-3 text-white" />
+                  <input aria-label="Screen-share duration in minutes" type="number" min="1" max={minutes} value={screenDuration} onChange={(event) => setScreenDuration(Math.min(minutes, Math.max(1, Number(event.target.value))))} className="mt-2 w-full rounded-lg border border-[#D6C4EE] bg-[#F8F4FD] p-3 text-[#170B2E]" />
                </label>
             </div>
          )}
          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-           <div className="rounded-lg bg-[#060B18] p-4">
-               <p className="text-xs text-slate-500">Wall-clock duration</p>
-               <p className="mt-1 text-xl font-bold text-white">{minutes} minutes</p>
+           <div className="rounded-lg bg-[#F8F4FD] p-4">
+               <p className="text-xs text-[#8A8298]">Wall-clock duration</p>
+               <p className="mt-1 text-xl font-bold text-[#170B2E]">{minutes} minutes</p>
            </div>
-           <div className="rounded-lg bg-[#060B18] p-4">
-               <p className="text-xs text-slate-500">Audio participant-minutes</p>
-               <p className="mt-1 text-xl font-bold text-white">{audioMinutes}</p>
+           <div className="rounded-lg bg-[#F8F4FD] p-4">
+               <p className="text-xs text-[#8A8298]">Audio participant-minutes</p>
+               <p className="mt-1 text-xl font-bold text-[#170B2E]">{audioMinutes}</p>
            </div>
-           <div className="rounded-lg bg-[#060B18] p-4">
-               <p className="text-xs text-slate-500">Video participant-minutes</p>
-               <p className="mt-1 text-xl font-bold text-white">{videoMinutes}</p>
+           <div className="rounded-lg bg-[#F8F4FD] p-4">
+               <p className="text-xs text-[#8A8298]">Video participant-minutes</p>
+               <p className="mt-1 text-xl font-bold text-[#170B2E]">{videoMinutes}</p>
             </div>
-            <div className="rounded-lg bg-[#060B18] p-4">
-               <p className="text-xs text-slate-500">Screen-sharing minutes</p>
-               <p className="mt-1 text-xl font-bold text-white">{screenMinutes}</p>
+            <div className="rounded-lg bg-[#F8F4FD] p-4">
+               <p className="text-xs text-[#8A8298]">Screen-sharing minutes</p>
+               <p className="mt-1 text-xl font-bold text-[#170B2E]">{screenMinutes}</p>
             </div>
-            <div className="rounded-lg bg-[#060B18] p-4">
-               <p className="text-xs text-slate-500">Billable participant-minutes</p>
-               <p className="mt-1 text-xl font-bold text-white">{billableAudio === null || billableVideo === null ? "Loading…" : billableAudio + billableVideo + screenMinutes}</p>
+            <div className="rounded-lg bg-[#F8F4FD] p-4">
+               <p className="text-xs text-[#8A8298]">Billable participant-minutes</p>
+               <p className="mt-1 text-xl font-bold text-[#170B2E]">{billableAudio === null || billableVideo === null ? "Loading…" : billableAudio + billableVideo + screenMinutes}</p>
             </div>
-            <div className="rounded-lg bg-[#060B18] p-4">
-               <p className="text-xs text-slate-500">Estimated usage cost (pre-tax)</p>
-               <p className="mt-1 text-xl font-bold text-white">
+            <div className="rounded-lg bg-[#F8F4FD] p-4">
+               <p className="text-xs text-[#8A8298]">Estimated usage cost (pre-tax)</p>
+               <p className="mt-1 text-xl font-bold text-[#170B2E]">
                   {amountPaise === null ? "Loading rates…" : formatPaise(amountPaise)}
                </p>
             </div>
@@ -416,7 +416,7 @@ const quickstartSteps = [
 export function QuickstartStepper() {
    const [active, setActive] = useState(0);
    const [title, instruction, result, next] = quickstartSteps[active];
-   return <section className="rounded-2xl border border-[#1A2642] bg-[#0A0F1E] p-5 md:p-8"><div className="flex flex-wrap gap-2">{quickstartSteps.map(([step], index) => <button key={step} type="button" onClick={() => setActive(index)} className={`rounded-lg px-3 py-2 text-sm ${active === index ? "bg-indigo-500/20 text-white" : "text-slate-400 hover:text-white"}`}>Step {index + 1}</button>)}</div><div className="mt-6"><p className="font-mono text-xs uppercase tracking-widest text-indigo-300">Step {active + 1} of {quickstartSteps.length}</p><h3 className="mt-2 text-xl font-bold text-white">{title}</h3><p className="mt-3 text-slate-400">{instruction}</p><CodeBlock code={instruction} filename="quickstart.ts" /><dl className="mt-5 grid gap-4 sm:grid-cols-2"><div><dt className="font-semibold text-slate-200">Expected result</dt><dd className="mt-1 text-sm text-slate-400">{result}</dd></div><div><dt className="font-semibold text-slate-200">Next action</dt><dd className="mt-1 text-sm text-slate-400">{next}</dd></div></dl></div></section>;
+   return <section className="rounded-2xl border border-[#E7DFF5] bg-white p-5 md:p-8"><div className="flex flex-wrap gap-2">{quickstartSteps.map(([step], index) => <button key={step} type="button" onClick={() => setActive(index)} className={`rounded-lg px-3 py-2 text-sm ${active === index ? "bg-[#7F40E8]/20 text-[#170B2E]" : "text-[#6B6478] hover:text-[#170B2E]"}`}>Step {index + 1}</button>)}</div><div className="mt-6"><p className="font-mono text-xs uppercase tracking-widest text-[#6425C4]">Step {active + 1} of {quickstartSteps.length}</p><h3 className="mt-2 text-xl font-bold text-[#170B2E]">{title}</h3><p className="mt-3 text-[#6B6478]">{instruction}</p><CodeBlock code={instruction} filename="quickstart.ts" /><dl className="mt-5 grid gap-4 sm:grid-cols-2"><div><dt className="font-semibold text-[#3D3650]">Expected result</dt><dd className="mt-1 text-sm text-[#6B6478]">{result}</dd></div><div><dt className="font-semibold text-[#3D3650]">Next action</dt><dd className="mt-1 text-sm text-[#6B6478]">{next}</dd></div></dl></div></section>;
 }
 
 export function ReactMeetingPreview() {
@@ -424,7 +424,7 @@ export function ReactMeetingPreview() {
    const [camera, setCamera] = useState(true);
    const [sharing, setSharing] = useState(false);
    const [connected, setConnected] = useState(true);
-   return <section className="rounded-2xl border border-[#1A2642] bg-[#0A0F1E] p-5 md:p-8"><div className="flex items-center justify-between"><h3 className="font-semibold text-white">Simulated React meeting UI</h3><span className={`rounded-full px-3 py-1 text-xs ${connected ? "bg-emerald-500/15 text-emerald-300" : "bg-slate-500/15 text-slate-300"}`}>{connected ? "Connected" : "Left"}</span></div><div className="mt-5 grid gap-3 sm:grid-cols-2"><div className="aspect-video rounded-xl bg-indigo-500/15 p-4 text-sm text-indigo-200">Local participant<br /><span className="text-slate-400">{camera ? "Camera on" : "Camera off"}</span></div><div className="aspect-video rounded-xl bg-[#07111F] p-4 text-sm text-slate-200">Remote participant<br /><span className="text-slate-500">Participant stream</span></div></div><div className="mt-4 flex flex-wrap gap-3"><button type="button" onClick={() => setMicrophone((value) => !value)} className="rounded-lg border border-[#2A3D64] px-3 py-2 text-sm">{microphone ? "Mute microphone" : "Unmute microphone"}</button><button type="button" onClick={() => setCamera((value) => !value)} className="rounded-lg border border-[#2A3D64] px-3 py-2 text-sm">{camera ? "Turn camera off" : "Turn camera on"}</button><button type="button" onClick={() => setSharing((value) => !value)} className="rounded-lg border border-[#2A3D64] px-3 py-2 text-sm">{sharing ? "Stop sharing" : "Share screen"}</button><button type="button" onClick={() => setConnected(false)} className="rounded-lg border border-rose-400/40 px-3 py-2 text-sm text-rose-200">Leave</button></div>{sharing && <p className="mt-4 text-sm text-indigo-300">Screen sharing is active.</p>}</section>;
+   return <section className="rounded-2xl border border-[#E7DFF5] bg-white p-5 md:p-8"><div className="flex items-center justify-between"><h3 className="font-semibold text-[#170B2E]">Simulated React meeting UI</h3><span className={`rounded-full px-3 py-1 text-xs ${connected ? "bg-emerald-500/15 text-emerald-700" : "bg-slate-500/15 text-[#4B4560]"}`}>{connected ? "Connected" : "Left"}</span></div><div className="mt-5 grid gap-3 sm:grid-cols-2"><div className="aspect-video rounded-xl bg-[#7F40E8]/15 p-4 text-sm text-[#5B21B6]">Local participant<br /><span className="text-[#6B6478]">{camera ? "Camera on" : "Camera off"}</span></div><div className="aspect-video rounded-xl bg-[#F8F4FD] p-4 text-sm text-[#3D3650]">Remote participant<br /><span className="text-[#8A8298]">Participant stream</span></div></div><div className="mt-4 flex flex-wrap gap-3"><button type="button" onClick={() => setMicrophone((value) => !value)} className="rounded-lg border border-[#D6C4EE] px-3 py-2 text-sm">{microphone ? "Mute microphone" : "Unmute microphone"}</button><button type="button" onClick={() => setCamera((value) => !value)} className="rounded-lg border border-[#D6C4EE] px-3 py-2 text-sm">{camera ? "Turn camera off" : "Turn camera on"}</button><button type="button" onClick={() => setSharing((value) => !value)} className="rounded-lg border border-[#D6C4EE] px-3 py-2 text-sm">{sharing ? "Stop sharing" : "Share screen"}</button><button type="button" onClick={() => setConnected(false)} className="rounded-lg border border-rose-300 px-3 py-2 text-sm text-rose-600">Leave</button></div>{sharing && <p className="mt-4 text-sm text-[#6425C4]">Screen sharing is active.</p>}</section>;
 }
 
 const featureFlows = {
@@ -458,23 +458,23 @@ export function FeatureFlow({ kind }: { kind: keyof typeof featureFlows }) {
    const [active, setActive] = useState(0);
    const steps = featureFlows[kind];
    return (
-      <section className="rounded-2xl border border-[#1A2642] bg-[#0A0F1E] p-5 md:p-8">
+      <section className="rounded-2xl border border-[#E7DFF5] bg-white p-5 md:p-8">
          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {steps.map((step, index) => (
                <button
                   type="button"
                   key={step}
                   onClick={() => setActive(index)}
-                  className={`rounded-xl border p-4 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-300 ${active === index ? "border-indigo-400 bg-indigo-500/15 text-white" : "border-[#1A2642] text-slate-400 hover:text-white"}`}
+                  className={`rounded-xl border p-4 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#A05DF9] ${active === index ? "border-[#A05DF9] bg-[#7F40E8]/15 text-[#170B2E]" : "border-[#E7DFF5] text-[#6B6478] hover:text-[#170B2E]"}`}
                >
-                  <span className="font-mono text-xs text-indigo-300">
+                  <span className="font-mono text-xs text-[#6425C4]">
                      0{index + 1}
                   </span>
                   <span className="mt-2 block font-medium">{step}</span>
                </button>
             ))}
          </div>
-         <p className="mt-5 rounded-lg bg-[#060B18] p-4 text-sm leading-6 text-slate-400">
+         <p className="mt-5 rounded-lg bg-[#F8F4FD] p-4 text-sm leading-6 text-[#6B6478]">
             {kind === "screen" && active === 1
                ? "The browser, not your application, presents the permission picker and determines what a participant can share."
                : kind === "webrtc" && active === 3

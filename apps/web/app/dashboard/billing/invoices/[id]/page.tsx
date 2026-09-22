@@ -108,8 +108,8 @@ export default function InvoiceDetailPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="animate-spin h-6 w-6 text-indigo-500" />
-          <span className="text-sm text-slate-500">Loading invoice…</span>
+          <Loader2 className="animate-spin h-6 w-6 text-[#7F40E8]" />
+          <span className="text-sm text-[#8A8298]">Loading invoice…</span>
         </div>
       </div>
     );
@@ -118,10 +118,10 @@ export default function InvoiceDetailPage() {
   if (error || !invoice) {
     return (
       <div className="flex flex-col gap-4">
-        <Link href="/dashboard/billing" className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors w-fit">
+        <Link href="/dashboard/billing" className="inline-flex items-center gap-1.5 text-sm text-[#6B6478] hover:text-[#170B2E] transition-colors w-fit">
           <ArrowLeft size={14} /> Back to Billing
         </Link>
-        <div className="rounded-lg border border-red-500/30 px-4 py-3 text-sm text-red-400" style={{ background: 'rgba(239,68,68,0.06)' }}>
+        <div className="rounded-lg border border-red-500/30 px-4 py-3 text-sm text-red-600" style={{ background: 'rgba(239,68,68,0.06)' }}>
           {error ?? 'Invoice not found.'}
         </div>
       </div>
@@ -133,14 +133,14 @@ export default function InvoiceDetailPage() {
   return (
     <div className="flex flex-col gap-6 max-w-3xl">
       <div className="flex items-center justify-between">
-        <Link href="/dashboard/billing" className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors">
+        <Link href="/dashboard/billing" className="inline-flex items-center gap-1.5 text-sm text-[#6B6478] hover:text-[#170B2E] transition-colors">
           <ArrowLeft size={14} /> Back to Billing
         </Link>
         <button
           onClick={downloadPdf}
           disabled={downloading}
           className="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg text-white transition-all hover:opacity-90 disabled:opacity-50"
-          style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}
+          style={{ background: 'linear-gradient(135deg, #7F40E8, #410686)' }}
         >
           <Download size={14} />
           {downloading ? 'Preparing PDF…' : 'Download PDF'}
@@ -150,39 +150,39 @@ export default function InvoiceDetailPage() {
       <Card padding glow>
         <div className="flex items-start justify-between mb-6">
           <div>
-            <p className="text-xs text-slate-500 mb-1">Invoice</p>
-            <p className="text-lg font-bold text-white font-mono">{invoice.invoiceNumber}</p>
+            <p className="text-xs text-[#8A8298] mb-1">Invoice</p>
+            <p className="text-lg font-bold text-[#170B2E] font-mono">{invoice.invoiceNumber}</p>
           </div>
           <Badge variant={statusVariant[invoice.status] ?? 'default'}>{invoice.status.toUpperCase()}</Badge>
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
           <div>
-            <p className="text-xs text-slate-500 mb-0.5">Billing period</p>
-            <p className="text-slate-200">
+            <p className="text-xs text-[#8A8298] mb-0.5">Billing period</p>
+            <p className="text-[#3D3650]">
               {new Date(invoice.cycleStart).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
               {' – '}
               {new Date(invoice.cycleEnd).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
             </p>
           </div>
           <div>
-            <p className="text-xs text-slate-500 mb-0.5">Invoice date</p>
-            <p className="text-slate-200">
+            <p className="text-xs text-[#8A8298] mb-0.5">Invoice date</p>
+            <p className="text-[#3D3650]">
               {new Date(invoice.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
             </p>
           </div>
           {invoice.paidAt && (
             <div>
-              <p className="text-xs text-slate-500 mb-0.5">Paid on</p>
-              <p className="text-slate-200">
+              <p className="text-xs text-[#8A8298] mb-0.5">Paid on</p>
+              <p className="text-[#3D3650]">
                 {new Date(invoice.paidAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
               </p>
             </div>
           )}
         </div>
 
-        <div className="border-t border-[#1A2642] pt-4 mb-4">
-          <p className="text-sm font-semibold text-white mb-3">Usage</p>
+        <div className="border-t border-[#E7DFF5] pt-4 mb-4">
+          <p className="text-sm font-semibold text-[#170B2E] mb-3">Usage</p>
           <div className="flex flex-col gap-2 text-sm">
             <Row label={`Audio — ${invoice.audioMinutes.toLocaleString('en-IN')} min`} value={paiseToINR(invoice.audioPaise)} />
             <Row label={`Video — ${invoice.videoMinutes.toLocaleString('en-IN')} min`} value={paiseToINR(invoice.videoPaise)} />
@@ -191,8 +191,8 @@ export default function InvoiceDetailPage() {
         </div>
 
         {adjustments.length > 0 && (
-          <div className="border-t border-[#1A2642] pt-4 mb-4">
-            <p className="text-sm font-semibold text-white mb-3">Adjustments</p>
+          <div className="border-t border-[#E7DFF5] pt-4 mb-4">
+            <p className="text-sm font-semibold text-[#170B2E] mb-3">Adjustments</p>
             <div className="flex flex-col gap-2 text-sm">
               {adjustments.map((a) => (
                 <Row
@@ -205,10 +205,10 @@ export default function InvoiceDetailPage() {
           </div>
         )}
 
-        <div className="border-t border-[#1A2642] pt-4 flex flex-col gap-2 text-sm">
+        <div className="border-t border-[#E7DFF5] pt-4 flex flex-col gap-2 text-sm">
           <Row label="Subtotal" value={paiseToINR(invoice.subtotalPaise)} />
           <Row label="Tax (GST)" value={paiseToINR(invoice.taxPaise)} />
-          <div className="flex items-center justify-between text-base font-bold text-white pt-2 border-t border-[#1A2642]">
+          <div className="flex items-center justify-between text-base font-bold text-[#170B2E] pt-2 border-t border-[#E7DFF5]">
             <span>Total</span>
             <span>{paiseToINR(invoice.totalPaise)}</span>
           </div>
@@ -220,9 +220,9 @@ export default function InvoiceDetailPage() {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between text-slate-300">
-      <span className="text-slate-400">{label}</span>
-      <span className="font-medium text-slate-100">{value}</span>
+    <div className="flex items-center justify-between text-[#4B4560]">
+      <span className="text-[#6B6478]">{label}</span>
+      <span className="font-medium text-[#170B2E]">{value}</span>
     </div>
   );
 }

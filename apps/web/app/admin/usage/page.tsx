@@ -26,13 +26,13 @@ export default function AdminUsagePage() {
   }, []);
 
   if (loading) {
-    return <div className="text-slate-400 text-sm py-20 text-center">Loading usage…</div>;
+    return <div className="text-[#6B6478] text-sm py-20 text-center">Loading usage…</div>;
   }
 
   if (error || !data) {
     return (
       <div className="py-20 text-center">
-        <p className="text-red-400 text-sm">{error}</p>
+        <p className="text-red-600 text-sm">{error}</p>
       </div>
     );
   }
@@ -48,16 +48,16 @@ export default function AdminUsagePage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-bold text-white">Usage</h1>
-        <p className="text-slate-400 text-sm mt-1">Platform usage metrics</p>
+        <h1 className="text-2xl font-bold text-[#170B2E]">Usage</h1>
+        <p className="text-[#6B6478] text-sm mt-1">Platform usage metrics</p>
       </header>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         {cards.map((c) => (
-          <div key={c.label} className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
-            <div className="mb-2 text-indigo-300"><c.icon size={20} /></div>
-            <div className="text-2xl font-bold text-white">{c.value}</div>
-            <div className="text-xs text-slate-500 mt-1">{c.label}</div>
+          <div key={c.label} className="rounded-xl border border-[#E7DFF5] p-4" style={{ background: '#FFFFFF' }}>
+            <div className="mb-2 text-[#6425C4]"><c.icon size={20} /></div>
+            <div className="text-2xl font-bold text-[#170B2E]">{c.value}</div>
+            <div className="text-xs text-[#8A8298] mt-1">{c.label}</div>
           </div>
         ))}
       </div>

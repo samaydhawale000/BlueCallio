@@ -41,9 +41,9 @@ export default function BillingTimeline({
   const currentIndex = firstPending === -1 ? steps.length - 1 : firstPending;
 
   return (
-    <div className="rounded-2xl border border-[#1A2642] p-6" style={{ background: '#0D1421' }}>
-      <p className="text-sm font-semibold text-white mb-1">How your billing works</p>
-      <p className="text-xs text-slate-500 mb-5">
+    <div className="rounded-2xl border border-[#E7DFF5] p-6" style={{ background: '#FFFFFF' }}>
+      <p className="text-sm font-semibold text-[#170B2E] mb-1">How your billing works</p>
+      <p className="text-xs text-[#8A8298] mb-5">
         Usage-based billing, start to finish — this cycle.
       </p>
 
@@ -61,17 +61,17 @@ export default function BillingTimeline({
                       background: step.done
                         ? 'rgba(16,185,129,0.12)'
                         : isCurrent
-                          ? 'rgba(99,102,241,0.15)'
+                          ? 'rgba(127,64,232,0.15)'
                           : 'rgba(148,163,184,0.06)',
                       border: `1px solid ${
-                        step.done ? 'rgba(16,185,129,0.35)' : isCurrent ? 'rgba(99,102,241,0.4)' : '#1A2642'
+                        step.done ? 'rgba(16,185,129,0.35)' : isCurrent ? 'rgba(127,64,232,0.4)' : '#E7DFF5'
                       }`,
                     }}
                   >
                     {step.done ? (
                       <Check size={15} style={{ color: '#34D399' }} />
                     ) : (
-                      <Icon size={15} style={{ color: isCurrent ? '#A5B4FC' : '#475569' }} />
+                      <Icon size={15} style={{ color: isCurrent ? '#6425C4' : '#475569' }} />
                     )}
                   </div>
                   <div>
@@ -81,13 +81,13 @@ export default function BillingTimeline({
                     >
                       {step.label}
                     </p>
-                    <p className="text-[10px] text-slate-600 leading-tight mt-0.5">{step.desc}</p>
+                    <p className="text-[10px] text-[#9C93AC] leading-tight mt-0.5">{step.desc}</p>
                   </div>
                 </div>
                 {i < steps.length - 1 && (
                   <div
                     className="h-px flex-1 mt-[18px]"
-                    style={{ background: step.done ? 'rgba(16,185,129,0.3)' : '#1A2642' }}
+                    style={{ background: step.done ? 'rgba(16,185,129,0.3)' : '#E7DFF5' }}
                   />
                 )}
               </div>

@@ -21,7 +21,7 @@ export default function RootLayout({ children }) {
       suppressHydrationWarning
       className="h-full antialiased scroll-smooth"
     >
-      <body className="min-h-screen bg-[#050816] text-white overflow-x-hidden">
+      <body className="min-h-screen bg-white text-[#170B2E] overflow-x-hidden">
         <SiteHeader />
         {children}
         <SiteFooter />

@@ -153,20 +153,20 @@ const connected = callStatus === "ACCEPTED";
             >
               <div
                 className="rounded-3xl border overflow-hidden flex flex-col max-h-[calc(100dvh-1.5rem)]"
-                style={{ background: "#0B1220", borderColor: "#223250" }}
+                style={{ background: "#FFFFFF", borderColor: "#E7DFF5" }}
               >
                 {/* HEADER */}
                 <div
                   className="flex justify-between items-start px-5 sm:px-8 py-4 sm:py-6 shrink-0"
                   style={{
-                    background: "linear-gradient(135deg,#5B5DDB,#895DF6)",
+                    background: "linear-gradient(135deg,#7F40E8,#410686)",
                   }}
                 >
                   <div>
                     <h2 className="text-2xl sm:text-3xl font-bold text-white">
                       Try PurpleCallio
                     </h2>
-                    <p className="text-indigo-100 mt-1.5 text-sm sm:text-base">
+                    <p className="text-white/80 mt-1.5 text-sm sm:text-base">
                       Test a real-time video call in seconds.
                     </p>
                   </div>
@@ -198,14 +198,14 @@ const connected = callStatus === "ACCEPTED";
                                 className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-all"
                                 style={{
                                   background: done
-                                    ? "linear-gradient(135deg,#5B5DDB,#895DF6)"
+                                    ? "linear-gradient(135deg,#7F40E8,#410686)"
                                     : active
-                                    ? "#1E293B"
-                                    : "#111827",
+                                    ? "#F3ECFB"
+                                    : "#F8F4FD",
                                   border: active && !done
-                                    ? "1px solid #5B5DDB"
-                                    : "1px solid #223250",
-                                  color: done || active ? "#fff" : "#64748B",
+                                    ? "1px solid #7F40E8"
+                                    : "1px solid #E7DFF5",
+                                  color: done ? "#fff" : active ? "#6425C4" : "#9C93AC",
                                 }}
                               >
                                 {done ? <Check size={15} /> : stepNum}
@@ -214,7 +214,7 @@ const connected = callStatus === "ACCEPTED";
                                 className="text-[10px] mt-1.5 text-center leading-tight max-w-[70px]"
                                 style={{
                                   color:
-                                    done || active ? "#CBD5E1" : "#64748B",
+                                    done || active ? "#3D3650" : "#9C93AC",
                                 }}
                               >
                                 {s.label}
@@ -226,8 +226,8 @@ const connected = callStatus === "ACCEPTED";
                                 style={{
                                   background:
                                     stepNum < currentStep || connected
-                                      ? "#5B5DDB"
-                                      : "#223250",
+                                      ? "#7F40E8"
+                                      : "#E7DFF5",
                                 }}
                               />
                             )}
@@ -246,10 +246,10 @@ const connected = callStatus === "ACCEPTED";
                       animate={{ opacity: 1, y: 0 }}
                     >
 <div className="text-center mb-6">
-                        <h3 className="text-2xl font-bold text-white">
+                        <h3 className="text-2xl font-bold text-[#170B2E]">
                           <span className="inline-flex items-center gap-2">You're connected <PartyPopper size={22} /></span>
                         </h3>
-                        <p className="text-slate-400 mt-1.5">
+                        <p className="text-[#6B6478] mt-1.5">
                           Two devices are now on the same call.
                         </p>
                       </div>
@@ -257,27 +257,27 @@ const connected = callStatus === "ACCEPTED";
                       <div
                         className="rounded-2xl p-6 mb-6 text-center"
                         style={{
-                          background: "#111827",
-                          border: "1px solid #1F8B4C",
+                          background: "#ECFDF5",
+                          border: "1px solid #10B981",
                         }}
                       >
-                        <div className="flex items-center justify-center gap-2 text-emerald-400 font-semibold mb-2">
+                        <div className="flex items-center justify-center gap-2 text-emerald-700 font-semibold mb-2">
                           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
                           {isAudio ? "Audio Call Active" : "Video Call Active"}
                         </div>
-                        <p className="text-white text-sm mb-4">
-                          <span className="inline-flex items-center gap-1.5"><Users size={16} className="text-emerald-400" /> 2 Participants</span>
+                        <p className="text-[#170B2E] text-sm mb-4">
+                          <span className="inline-flex items-center gap-1.5"><Users size={16} className="text-emerald-700" /> 2 Participants</span>
                         </p>
                         <div className="flex flex-wrap justify-center gap-3 text-sm">
-                          <span className="inline-flex items-center gap-1.5 text-emerald-400">
+                          <span className="inline-flex items-center gap-1.5 text-emerald-700">
                             <Mic size={15} /> Audio
                           </span>
                           {!isAudio && (
                             <>
-                              <span className="inline-flex items-center gap-1.5 text-emerald-400">
+                              <span className="inline-flex items-center gap-1.5 text-emerald-700">
                                 <Video size={15} /> Video
                               </span>
-                              <span className="inline-flex items-center gap-1.5 text-emerald-400">
+                              <span className="inline-flex items-center gap-1.5 text-emerald-700">
                                 <MonitorPlay size={15} /> Screen
                               </span>
                             </>
@@ -286,10 +286,10 @@ const connected = callStatus === "ACCEPTED";
                       </div>
 
                       <div className="rounded-2xl p-5 mb-6">
-                        <p className="text-slate-300 font-medium mb-3 text-sm">
+                        <p className="text-[#4B4560] font-medium mb-3 text-sm">
                           Try these features
                         </p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-slate-400">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-[#6B6478]">
                           {isAudio ? (
                             <>
                               <div className="flex items-center gap-2">
@@ -323,7 +323,7 @@ const connected = callStatus === "ACCEPTED";
                         className="w-full py-3.5 rounded-xl text-white font-semibold transition hover:opacity-90 flex items-center justify-center gap-2"
                         style={{
                           background:
-                            "linear-gradient(135deg,#5B5DDB,#895DF6)",
+                            "linear-gradient(135deg,#7F40E8,#410686)",
                         }}
                       >
                         Open Full Call Experience
@@ -338,15 +338,15 @@ const connected = callStatus === "ACCEPTED";
                       animate={{ opacity: 1, y: 0 }}
                     >
                       <div className="flex items-center gap-2 mb-3">
-                        <Smartphone size={18} color="#818CF8" />
-                        <h3 className="text-white font-semibold">
+                        <Smartphone size={18} color="#7F40E8" />
+                        <h3 className="text-[#170B2E] font-semibold">
                           Join from another device
                         </h3>
                       </div>
 
                       <div className="flex flex-col sm:flex-row gap-5 items-center mb-6">
                         {/* QR */}
-                        <div className="bg-white rounded-2xl p-4 flex-shrink-0">
+                        <div className="bg-white border border-[#E7DFF5] rounded-2xl p-4 flex-shrink-0">
                           <QRCode
                             value={session.receiverUrl}
                             size={168}
@@ -354,7 +354,7 @@ const connected = callStatus === "ACCEPTED";
                         </div>
 
                         <div className="flex-1 w-full">
-                          <p className="text-slate-400 text-sm mb-4 leading-relaxed">
+                          <p className="text-[#6B6478] text-sm mb-4 leading-relaxed">
                             Scan this QR code with your phone or another
                             device to join this call.
                           </p>
@@ -362,8 +362,8 @@ const connected = callStatus === "ACCEPTED";
                           <div className="flex flex-col gap-2.5">
                             <button
                               onClick={() => onCopy(session.receiverUrl)}
-                              className="w-full py-2.5 rounded-xl text-white text-sm font-medium transition hover:opacity-90 flex items-center justify-center gap-2"
-                              style={{ background: "#1F2937" }}
+                              className="w-full py-2.5 rounded-xl text-[#3D3650] text-sm font-medium border border-[#E7DFF5] transition hover:opacity-90 flex items-center justify-center gap-2"
+                              style={{ background: "#F8F4FD" }}
                             >
                               <Copy size={16} />
                               Copy Invite Link
@@ -373,7 +373,7 @@ const connected = callStatus === "ACCEPTED";
                               className="w-full py-2.5 rounded-xl text-white text-sm font-medium transition hover:opacity-90 flex items-center justify-center gap-2"
                               style={{
                                 background:
-                                  "linear-gradient(135deg,#5B5DDB,#895DF6)",
+                                  "linear-gradient(135deg,#7F40E8,#410686)",
                               }}
                             >
                               <ExternalLink size={16} />
@@ -384,7 +384,7 @@ const connected = callStatus === "ACCEPTED";
                           {/* Show/hide raw link */}
                           <button
                             onClick={() => setShowLink((s) => !s)}
-                            className="mt-3 text-xs text-slate-500 hover:text-slate-300 flex items-center gap-1 transition-colors"
+                            className="mt-3 text-xs text-[#8A8298] hover:text-[#4B4560] flex items-center gap-1 transition-colors"
                           >
                             {showLink ? (
                               <ChevronUp size={14} />
@@ -395,10 +395,10 @@ const connected = callStatus === "ACCEPTED";
                           </button>
                           {showLink && (
                             <div
-                              className="mt-2 break-all text-[11px] text-slate-500 rounded-lg px-3 py-2"
+                              className="mt-2 break-all text-[11px] text-[#8A8298] rounded-lg px-3 py-2"
                               style={{
-                                background: "#0A1018",
-                                border: "1px solid #1A2A44",
+                                background: "#F8F4FD",
+                                border: "1px solid #E7DFF5",
                               }}
                             >
                               {session.receiverUrl}
@@ -411,30 +411,30 @@ const connected = callStatus === "ACCEPTED";
                       <div
                         className="rounded-2xl p-5 flex items-center gap-3"
                         style={{
-                          background: "#111827",
-                          border: "1px solid #1F8B4C",
+                          background: "#ECFDF5",
+                          border: "1px solid #10B981",
                         }}
                       >
                         <div
                           className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
                           style={{
-                            background: "rgba(34,197,94,.12)",
+                            background: "rgba(34,197,94,.15)",
                           }}
                         >
-                          <CheckCircle2 color="#22C55E" size={22} />
+                          <CheckCircle2 color="#059669" size={22} />
                         </div>
                         <div>
                           <p
                             className="font-semibold flex items-center gap-2"
-                            style={{ color: "#22C55E" }}
+                            style={{ color: "#059669" }}
                           >
                             <span
                               className="w-2 h-2 rounded-full inline-block animate-pulse"
-                              style={{ background: "#22C55E" }}
+                              style={{ background: "#059669" }}
                             />
                             1 participant connected
                           </p>
-                          <p className="text-slate-400 text-xs mt-0.5">
+                          <p className="text-[#6B6478] text-xs mt-0.5">
                             Open the call on another device to test the
                             connection.
                           </p>
@@ -449,26 +449,26 @@ const connected = callStatus === "ACCEPTED";
                       animate={{ opacity: 1, y: 0 }}
                     >
                       <div className="flex items-center gap-2 mb-3">
-                        <Monitor size={18} color="#818CF8" />
-                        <h3 className="text-white font-semibold">
+                        <Monitor size={18} color="#7F40E8" />
+                        <h3 className="text-[#170B2E] font-semibold">
                           Open the first device
                         </h3>
                       </div>
 
                       <div className="flex flex-col sm:flex-row gap-5 items-center mb-6">
                         {/* QR */}
-                        <div className="bg-white rounded-2xl p-4 flex-shrink-0">
+                        <div className="bg-white border border-[#E7DFF5] rounded-2xl p-4 flex-shrink-0">
                           <QRCode value={session.callerUrl} size={168} />
                         </div>
 
                         <div className="flex-1 w-full">
-                          <p className="text-slate-400 text-sm mb-2 leading-relaxed">
+                          <p className="text-[#6B6478] text-sm mb-2 leading-relaxed">
                             Scan this QR code with your phone, or open the
                             call right here on this device.
                           </p>
-                          <p className="text-slate-500 text-xs mb-4 leading-relaxed">
+                          <p className="text-[#8A8298] text-xs mb-4 leading-relaxed">
                             That opens a new tab with a green{" "}
-                            <span className="text-slate-300 font-medium">
+                            <span className="text-[#4B4560] font-medium">
                               Call
                             </span>{" "}
                             button — tap it there to start ringing. This
@@ -478,8 +478,8 @@ const connected = callStatus === "ACCEPTED";
                           <div className="flex flex-col gap-2.5">
                             <button
                               onClick={() => onCopy(session.callerUrl)}
-                              className="w-full py-2.5 rounded-xl text-white text-sm font-medium transition hover:opacity-90 flex items-center justify-center gap-2"
-                              style={{ background: "#1F2937" }}
+                              className="w-full py-2.5 rounded-xl text-[#3D3650] text-sm font-medium border border-[#E7DFF5] transition hover:opacity-90 flex items-center justify-center gap-2"
+                              style={{ background: "#F8F4FD" }}
                             >
                               <Copy size={16} />
                               Copy Invite Link
@@ -492,7 +492,7 @@ const connected = callStatus === "ACCEPTED";
                               className="w-full py-2.5 rounded-xl text-white text-sm font-medium transition hover:opacity-90 flex items-center justify-center gap-2"
                               style={{
                                 background:
-                                  "linear-gradient(135deg,#5B5DDB,#895DF6)",
+                                  "linear-gradient(135deg,#7F40E8,#410686)",
                               }}
                             >
                               Open Call on This Device
@@ -503,7 +503,7 @@ const connected = callStatus === "ACCEPTED";
                           {/* Show/hide raw link */}
                           <button
                             onClick={() => setShowCallerLink((s) => !s)}
-                            className="mt-3 text-xs text-slate-500 hover:text-slate-300 flex items-center gap-1 transition-colors"
+                            className="mt-3 text-xs text-[#8A8298] hover:text-[#4B4560] flex items-center gap-1 transition-colors"
                           >
                             {showCallerLink ? (
                               <ChevronUp size={14} />
@@ -514,10 +514,10 @@ const connected = callStatus === "ACCEPTED";
                           </button>
                           {showCallerLink && (
                             <div
-                              className="mt-2 break-all text-[11px] text-slate-500 rounded-lg px-3 py-2"
+                              className="mt-2 break-all text-[11px] text-[#8A8298] rounded-lg px-3 py-2"
                               style={{
-                                background: "#0A1018",
-                                border: "1px solid #1A2A44",
+                                background: "#F8F4FD",
+                                border: "1px solid #E7DFF5",
                               }}
                             >
                               {session.callerUrl}
@@ -530,39 +530,39 @@ const connected = callStatus === "ACCEPTED";
                       <div
                         className="rounded-2xl p-5 mt-6 flex items-center gap-3"
                         style={{
-                          background: "#111827",
+                          background: callWindowOpened ? "#FFFBEB" : "#F3ECFB",
                           border: callWindowOpened
-                            ? "1px solid #FACC15"
-                            : "1px solid #5B5DDB",
+                            ? "1px solid #F59E0B"
+                            : "1px solid #7F40E8",
                         }}
                       >
                         <div
                           className="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
                           style={{
                             background: callWindowOpened
-                              ? "rgba(250,204,21,.12)"
-                              : "rgba(91,93,219,.12)",
+                              ? "rgba(245,158,11,.15)"
+                              : "rgba(127,64,232,.12)",
                           }}
                         >
                           <Rocket
-                            color={callWindowOpened ? "#FACC15" : "#818CF8"}
+                            color={callWindowOpened ? "#B45309" : "#7F40E8"}
                             size={20}
                           />
                         </div>
                         <div>
                           <p
                             className="font-semibold flex items-center gap-2"
-                            style={{ color: "#CBD5E1" }}
+                            style={{ color: "#3D3650" }}
                           >
                             <span
                               className="w-2 h-2 rounded-full inline-block animate-pulse"
-                              style={{ background: "#FACC15" }}
+                              style={{ background: callWindowOpened ? "#F59E0B" : "#7F40E8" }}
                             />
                             {callWindowOpened
                               ? "Waiting for you to tap Call..."
                               : "Waiting for another device..."}
                           </p>
-                          <p className="text-slate-400 text-xs mt-0.5">
+                          <p className="text-[#6B6478] text-xs mt-0.5">
                             {callWindowOpened
                               ? "Go back to the tab you just opened and tap the green Call button — this page updates automatically once the call starts."
                               : "Open the first device to get started."}

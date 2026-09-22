@@ -128,7 +128,7 @@ const [summary, setSummary] = useState<UsageSummary | null>(null);
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="animate-spin h-6 w-6 text-indigo-500" />
+        <Loader2 className="animate-spin h-6 w-6 text-[#7F40E8]" />
       </div>
     );
   }
@@ -137,7 +137,7 @@ const [summary, setSummary] = useState<UsageSummary | null>(null);
 
   const statCards = [
     { icon: IndianRupee, label: 'Est. billable this cycle', value: paiseToINR(usage?.estimatedCostPaise ?? 0), color: '#34D399' },
-    { icon: PhoneCall, label: 'Calls completed', value: usage?.callsCompleted ?? 0, color: '#A5B4FC' },
+    { icon: PhoneCall, label: 'Calls completed', value: usage?.callsCompleted ?? 0, color: '#6425C4' },
     { icon: Users, label: 'Participants', value: usage?.participants ?? 0, color: '#FBBF24' },
     { icon: TrendingUp, label: 'Active accounts', value: usage?.activeAccounts ?? 0, color: '#60A5FA' },
   ];
@@ -145,8 +145,8 @@ const [summary, setSummary] = useState<UsageSummary | null>(null);
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Billing &amp; Revenue</h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <h1 className="text-2xl font-bold text-[#170B2E]">Billing &amp; Revenue</h1>
+        <p className="text-sm text-[#8A8298] mt-1">
           Usage-based revenue, platform usage, and edit your billing rates.
         </p>
       </div>
@@ -154,26 +154,26 @@ const [summary, setSummary] = useState<UsageSummary | null>(null);
       {/* Revenue stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((s) => (
-          <div key={s.label} className="rounded-2xl border border-[#1A2642] p-5" style={{ background: '#0D1421' }}>
+          <div key={s.label} className="rounded-2xl border border-[#E7DFF5] p-5" style={{ background: '#FFFFFF' }}>
             <div className="flex items-center gap-2 mb-2">
               <s.icon size={16} style={{ color: s.color }} />
-              <p className="text-xs text-slate-500">{s.label}</p>
+              <p className="text-xs text-[#8A8298]">{s.label}</p>
             </div>
-            <p className="text-2xl font-bold text-white">{s.value}</p>
+            <p className="text-2xl font-bold text-[#170B2E]">{s.value}</p>
           </div>
         ))}
       </div>
 
       {/* Usage breakdown */}
-      <div className="rounded-2xl border border-[#1A2642] p-6" style={{ background: '#0D1421' }}>
+      <div className="rounded-2xl border border-[#E7DFF5] p-6" style={{ background: '#FFFFFF' }}>
         <div className="flex items-center justify-between mb-4">
-          <p className="text-sm font-semibold text-white">Usage breakdown (current cycle)</p>
-          <span className="text-xs text-slate-500">Since {summary ? new Date(summary.since).toLocaleDateString('en-IN') : '—'}</span>
+          <p className="text-sm font-semibold text-[#170B2E]">Usage breakdown (current cycle)</p>
+          <span className="text-xs text-[#8A8298]">Since {summary ? new Date(summary.since).toLocaleDateString('en-IN') : '—'}</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-slate-500 border-b border-[#1A2642]">
+              <tr className="text-left text-xs text-[#8A8298] border-b border-[#E7DFF5]">
                 <th className="py-2 pr-4 font-medium">Media</th>
                 <th className="py-2 pr-4 font-medium">Minutes</th>
                 <th className="py-2 font-medium">Line items</th>
@@ -185,10 +185,10 @@ const [summary, setSummary] = useState<UsageSummary | null>(null);
                 { name: 'Video', minutes: usage?.videoMinutes ?? 0, items: summary?.lineItems?.videoMinutes ?? 0 },
                 { name: 'Screen share', minutes: usage?.screenShareMinutes ?? 0, items: summary?.lineItems?.screenShareMinutes ?? 0 },
               ].map((row) => (
-                <tr key={row.name} className="border-b border-[#1A2642]/60 last:border-0">
-                  <td className="py-3 pr-4 font-medium text-white">{row.name}</td>
-                  <td className="py-3 pr-4 text-slate-300">{Math.round(row.minutes).toLocaleString('en-IN')} min</td>
-                  <td className="py-3 text-slate-400">{Math.round(row.items).toLocaleString('en-IN')} min</td>
+                <tr key={row.name} className="border-b border-[#E7DFF5]/60 last:border-0">
+                  <td className="py-3 pr-4 font-medium text-[#170B2E]">{row.name}</td>
+                  <td className="py-3 pr-4 text-[#4B4560]">{Math.round(row.minutes).toLocaleString('en-IN')} min</td>
+                  <td className="py-3 text-[#6B6478]">{Math.round(row.items).toLocaleString('en-IN')} min</td>
                 </tr>
               ))}
             </tbody>
@@ -197,25 +197,25 @@ const [summary, setSummary] = useState<UsageSummary | null>(null);
       </div>
 
 {/* Segment analytics */}
-      <div className="rounded-2xl border border-[#1A2642] p-6" style={{ background: '#0D1421' }}>
+      <div className="rounded-2xl border border-[#E7DFF5] p-6" style={{ background: '#FFFFFF' }}>
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-sm font-semibold text-white">Segment analytics</p>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-sm font-semibold text-[#170B2E]">Segment analytics</p>
+            <p className="text-xs text-[#8A8298] mt-0.5">
               Per-participant-minute media segments rated this cycle.
             </p>
           </div>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-[#8A8298]">
             {segAnalytics?.segmentCount ?? 0} segments
           </span>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <SegStat label="Audio min" value={`${Math.round(segAnalytics?.totals.audioMins ?? 0)} min`} color="#818CF8" />
-          <SegStat label="Video min" value={`${Math.round(segAnalytics?.totals.videoMins ?? 0)} min`} color="#C084FC" />
+          <SegStat label="Audio min" value={`${Math.round(segAnalytics?.totals.audioMins ?? 0)} min`} color="#7F40E8" />
+          <SegStat label="Video min" value={`${Math.round(segAnalytics?.totals.videoMins ?? 0)} min`} color="#A05DF9" />
           <SegStat label="Screen-share min" value={`${Math.round(segAnalytics?.totals.screenShareMins ?? 0)} min`} color="#34D399" />
           <SegStat label="Rated revenue" value={paiseToINR(segAnalytics?.totals.costPaise ?? 0)} color="#FBBF24" />
         </div>
-        <p className="text-xs text-slate-600 mt-3">
+        <p className="text-xs text-[#9C93AC] mt-3">
           Across {segAnalytics?.totals.calls ?? 0} calls since{' '}
           {segAnalytics?.since ? new Date(segAnalytics.since).toLocaleDateString('en-IN') : '—'}.
           Segment-based rating reflects actual media state (audio / video / screen) per
@@ -224,10 +224,10 @@ const [summary, setSummary] = useState<UsageSummary | null>(null);
       </div>
 
       {/* Editable rates */}
-      <div className="rounded-2xl border border-[#1A2642] p-6" style={{ background: '#0D1421' }}>
+      <div className="rounded-2xl border border-[#E7DFF5] p-6" style={{ background: '#FFFFFF' }}>
         <div className="flex items-center justify-between mb-4">
-          <p className="text-sm font-semibold text-white">Billing rates</p>
-          <span className="text-xs text-slate-500">Applied to new usage immediately</span>
+          <p className="text-sm font-semibold text-[#170B2E]">Billing rates</p>
+          <span className="text-xs text-[#8A8298]">Applied to new usage immediately</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <RateField label="Audio (paise/min)" value={rates?.audioPaise ?? 0} onChange={(v) => updateRate('audioPaise', v)} suffix="paise" />
@@ -241,19 +241,19 @@ const [summary, setSummary] = useState<UsageSummary | null>(null);
           onClick={saveRates}
           disabled={saving}
           className="mt-5 px-5 py-2.5 rounded-lg text-sm font-medium text-white transition-all hover:opacity-90 disabled:opacity-50"
-          style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}
+          style={{ background: 'linear-gradient(135deg, #7F40E8, #410686)' }}
         >
           {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save rates'}
         </button>
       </div>
 
       {/* Recent line items note */}
-      <div className="rounded-2xl border border-[#1A2642] p-6" style={{ background: '#0D1421' }}>
+      <div className="rounded-2xl border border-[#E7DFF5] p-6" style={{ background: '#FFFFFF' }}>
         <div className="flex items-center gap-2 mb-3">
-          <Receipt size={16} className="text-violet-400" />
-          <p className="text-sm font-semibold text-white">Invoicing</p>
+          <Receipt size={16} className="text-[#7F40E8]" />
+          <p className="text-sm font-semibold text-[#170B2E]">Invoicing</p>
         </div>
-        <p className="text-xs text-slate-500 leading-relaxed">
+        <p className="text-xs text-[#8A8298] leading-relaxed">
           Invoices are generated automatically on the 1st of each month for the
           previous cycle's billable usage, then charged to the customer's saved
           card. Failed payments enter a 7-day grace period before new-call
@@ -277,16 +277,16 @@ function RateField({
 }) {
   return (
     <label className="block">
-      <span className="text-xs text-slate-500">{label}</span>
+      <span className="text-xs text-[#8A8298]">{label}</span>
       <div className="flex items-center gap-2 mt-1">
         <input
           type="number"
           value={value}
           min={0}
           onChange={(e) => onChange(Number(e.target.value) || 0)}
-          className="w-full rounded-lg border border-[#1A2642] bg-[#060B18] px-3 py-2 text-sm text-white focus:border-[#6366F1] outline-none"
+          className="w-full rounded-lg border border-[#E7DFF5] bg-[#FFFFFF] px-3 py-2 text-sm text-[#170B2E] focus:border-[#7F40E8] outline-none"
         />
-<span className="text-xs text-slate-600 whitespace-nowrap">{suffix}</span>
+<span className="text-xs text-[#9C93AC] whitespace-nowrap">{suffix}</span>
       </div>
     </label>
   );
@@ -302,11 +302,11 @@ function SegStat({
   color: string;
 }) {
   return (
-    <div className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0A0F1E' }}>
-      <p className="text-[11px] text-slate-500 mb-1" style={{ borderLeft: `2px solid ${color}`, paddingLeft: 8 }}>
+    <div className="rounded-xl border border-[#E7DFF5] p-4" style={{ background: '#F8F4FD' }}>
+      <p className="text-[11px] text-[#8A8298] mb-1" style={{ borderLeft: `2px solid ${color}`, paddingLeft: 8 }}>
         {label}
       </p>
-      <p className="text-lg font-bold text-white">{value}</p>
+      <p className="text-lg font-bold text-[#170B2E]">{value}</p>
     </div>
   );
 }

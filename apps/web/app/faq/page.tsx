@@ -90,7 +90,7 @@ const FAQ_GROUPS = [
       },
       {
         q: 'Who do I talk to for support?',
-        a: 'PurpleCallio support is run by the engineers who built the platform. Email hello@purplecallio.com and you will get a technical answer.',
+        a: 'PurpleCallio support is run by the engineers who built the platform. Email purplecallio@gmail.com and you will get a technical answer.',
       },
     ],
   },
@@ -111,24 +111,24 @@ function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
     <div
-      className="rounded-xl border border-[#1A2642] overflow-hidden transition-all"
-      style={{ background: open ? '#0A1525' : '#0D1421' }}
+      className="rounded-xl border border-[#E7DFF5] overflow-hidden transition-all"
+      style={{ background: open ? '#F3ECFB' : '#FFFFFF' }}
     >
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left hover:bg-white/[0.02] transition-all"
       >
-        <span className="text-sm font-semibold text-white">{q}</span>
+        <span className="text-sm font-semibold text-[#170B2E]">{q}</span>
         <span
-          className="shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-xs text-slate-400 transition-all"
-          style={{ background: open ? 'rgba(99,102,241,0.15)' : '#1A2642', color: open ? '#A5B4FC' : '#64748B' }}
+          className="shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-xs text-[#6B6478] transition-all"
+          style={{ background: open ? 'rgba(127,64,232,0.12)' : '#F3ECFB', color: open ? '#6425C4' : '#8A8298' }}
         >
           {open ? '−' : '+'}
         </span>
       </button>
       {open && (
-        <div className="px-5 pb-5 border-t border-[#1A2642]">
-          <p className="text-sm text-slate-400 leading-relaxed pt-4">{a}</p>
+        <div className="px-5 pb-5 border-t border-[#E7DFF5]">
+          <p className="text-sm text-[#6B6478] leading-relaxed pt-4">{a}</p>
         </div>
       )}
     </div>
@@ -174,21 +174,21 @@ export default function FaqPage() {
   ];
 
   return (
-    <div style={{ background: '#060B18', color: '#F1F5F9', minHeight: '100vh' }}>
+    <div style={{ background: '#FFFFFF', color: '#170B2E', minHeight: '100vh' }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_SCHEMA).replace(/</g, '\\u003c') }} />
 
       {/* Hero */}
       <div className="max-w-4xl mx-auto px-6 pt-28 pb-12">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono mb-4 border" style={{ background: 'rgba(99,102,241,0.1)', borderColor: 'rgba(99,102,241,0.3)', color: '#A5B4FC' }}>
-          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono mb-4 border" style={{ background: 'rgba(127,64,232,0.08)', borderColor: 'rgba(127,64,232,0.25)', color: '#6425C4' }}>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#7F40E8] animate-pulse" />
           Frequently asked questions
         </div>
-        <h1 className="font-bold text-white mb-3" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', letterSpacing: '-0.03em' }}>
+        <h1 className="font-bold text-[#170B2E] mb-3" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', letterSpacing: '-0.03em' }}>
           Everything you need to know
         </h1>
-        <p className="text-slate-400 text-base leading-relaxed max-w-2xl">
+        <p className="text-[#6B6478] text-base leading-relaxed max-w-2xl">
           Can't find what you're looking for? Email{' '}
-          <a href="mailto:hello@purplecallio.com" className="text-indigo-400 hover:underline">hello@purplecallio.com</a>{' '}
+          <a href="mailto:purplecallio@gmail.com" className="text-[#6425C4] hover:underline">purplecallio@gmail.com</a>{' '}
           and an engineer will get back to you.
         </p>
       </div>
@@ -198,7 +198,7 @@ export default function FaqPage() {
 <div className="flex flex-col gap-12">
 {FAQ_GROUPS.map((g) => (
             <div key={g.group}>
-              <h2 className="font-semibold text-white mb-4" style={{ fontSize: '1.1rem' }}>
+              <h2 className="font-semibold text-[#170B2E] mb-4" style={{ fontSize: '1.1rem' }}>
                 <span className="gradient-text font-mono text-xs tracking-widest uppercase mr-3">{g.group}</span>
               </h2>
               <div className="flex flex-col gap-3">
@@ -211,7 +211,7 @@ export default function FaqPage() {
 
           {/* Pricing & Billing (dynamic rates) */}
           <div id="pricing" className="scroll-mt-24">
-            <h2 className="font-semibold text-white mb-4" style={{ fontSize: '1.1rem' }}>
+            <h2 className="font-semibold text-[#170B2E] mb-4" style={{ fontSize: '1.1rem' }}>
               <span className="gradient-text font-mono text-xs tracking-widest uppercase mr-3">Pricing &amp; Billing</span>
             </h2>
             <div className="flex flex-col gap-3">
@@ -224,14 +224,14 @@ export default function FaqPage() {
         </div>
 
         {/* CTA */}
-        <div className="mt-16 rounded-xl p-8 text-center border border-[#2A3D64]" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05))' }}>
-          <p className="font-bold text-white mb-2 text-lg">Still have questions?</p>
-          <p className="text-slate-400 text-sm mb-6">Try the playground or read the docs — or talk to the engineers who built it.</p>
+        <div className="mt-16 rounded-xl p-8 text-center border border-[#D6C4EE]" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05))' }}>
+          <p className="font-bold text-[#170B2E] mb-2 text-lg">Still have questions?</p>
+          <p className="text-[#6B6478] text-sm mb-6">Try the playground or read the docs — or talk to the engineers who built it.</p>
           <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/dashboard/playground" className="inline-flex items-center gap-2 text-white font-medium text-sm px-6 py-2.5 rounded-lg transition-all hover:opacity-90" style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}>
+            <Link href="/dashboard/playground" className="inline-flex items-center gap-2 text-white font-medium text-sm px-6 py-2.5 rounded-lg transition-all hover:opacity-90" style={{ background: 'linear-gradient(135deg, #7F40E8, #410686)' }}>
               Open playground →
             </Link>
-            <Link href="/signup" className="inline-flex items-center gap-2 text-slate-300 font-medium text-sm px-6 py-2.5 rounded-lg border border-[#1A2642] hover:border-[#2A3D64] transition-all">
+            <Link href="/signup" className="inline-flex items-center gap-2 text-[#4B4560] font-medium text-sm px-6 py-2.5 rounded-lg border border-[#E7DFF5] hover:border-[#D6C4EE] transition-all">
               Get API key
             </Link>
           </div>

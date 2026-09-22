@@ -191,7 +191,7 @@ export default function UsagePage() {
          <div className="flex items-center justify-center min-h-[60vh]">
             <div className="flex flex-col items-center gap-3">
                <svg
-                  className="animate-spin h-6 w-6 text-indigo-500"
+                  className="animate-spin h-6 w-6 text-[#7F40E8]"
                   viewBox="0 0 24 24"
                   fill="none"
                >
@@ -209,7 +209,7 @@ export default function UsagePage() {
                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                   />
                </svg>
-               <span className="text-sm text-slate-500">Loading usage…</span>
+               <span className="text-sm text-[#8A8298]">Loading usage…</span>
             </div>
          </div>
       );
@@ -231,7 +231,7 @@ export default function UsagePage() {
    return (
       <div className="flex flex-col gap-6">
          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold text-white">Current Usage</h1>
+            <h1 className="text-2xl font-bold text-[#170B2E]">Current Usage</h1>
             {usage?.isFreeTier && (
                <span
                   className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-mono font-semibold uppercase tracking-wider text-emerald-300"
@@ -244,7 +244,7 @@ export default function UsagePage() {
                   Free tier active
                </span>
             )}
-            <p className="w-full text-sm text-slate-500 mt-1">
+            <p className="w-full text-sm text-[#8A8298] mt-1">
                Pay only for what you use. Track minutes and cost by media type.
             </p>
          </div>
@@ -269,11 +269,11 @@ export default function UsagePage() {
                   <Wallet size={18} style={{ color: "#FBBF24" }} />
                </div>
                <div className="flex-1">
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-[#170B2E]">
                      You&apos;ve used {usage.freeUsagePercent}% of your free
                      allowance
                   </p>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-[#6B6478] mt-0.5">
                      Audio and video beyond your free limit will be billed per
                      participant-minute.{" "}
                      {usage.hasPaymentMethod
@@ -283,7 +283,7 @@ export default function UsagePage() {
                </div>
                <Link
                   href="/dashboard/billing"
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-white px-4 py-2 rounded-lg transition-all hover:opacity-90 shrink-0"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-[#170B2E] px-4 py-2 rounded-lg transition-all hover:opacity-90 shrink-0"
                   style={{
                      background: "linear-gradient(135deg, #F59E0B, #F43F5E)",
                   }}
@@ -305,14 +305,14 @@ export default function UsagePage() {
                label="Total Usage"
                value={totalBillableMinutes.toFixed(2)}
                unit="participant-min"
-               color="#8B5CF6"
+               color="#410686"
                hint="Sum of duration × participants using that media, across audio/video/screen share — not raw call length."
             />
             <UsageCard
                icon={PhoneCall}
                label="Total Calls"
                value={u?.callsCompleted ?? 0}
-               color="#6366F1"
+               color="#7F40E8"
             />
             {!usage?.isFreeTier && (
                <>
@@ -335,24 +335,24 @@ export default function UsagePage() {
 
          {/* Per-type breakdown + cost */}
          <div
-            className="rounded-2xl border border-[#2A3D64] p-6"
+            className="rounded-2xl border border-[#D6C4EE] p-6"
             style={{
                background:
-                  "linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.04))",
+                  "linear-gradient(135deg, rgba(127,64,232,0.08), rgba(65,6,134,0.04))",
             }}
          >
             <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
                <div>
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-[#170B2E]">
                      Usage by media type
                   </p>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-[#8A8298] mt-0.5">
                      {free ? `Free tier: ${free.audioMinutes} audio + ${free.videoMinutes} video participant-min/month · screen share always paid` : 'Free allowance loading'}
                   </p>
                </div>
                <Link
                   href="/dashboard/billing"
-                  className="inline-flex items-center gap-1 text-xs font-medium text-violet-300 hover:text-violet-200 transition-colors"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-[#6425C4] hover:text-[#6425C4] transition-colors"
                >
                   Billing &amp; Usage <ArrowUpRight size={14} />
                </Link>
@@ -360,7 +360,7 @@ export default function UsagePage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                <TypeRow
-                  icon={<PhoneCall size={16} style={{ color: "#818CF8" }} />}
+                  icon={<PhoneCall size={16} style={{ color: "#7F40E8" }} />}
                   label="Audio"
                   minutes={u?.audioMinutes ?? 0}
                   costPaise={cost?.audioPaise ?? 0}
@@ -369,7 +369,7 @@ export default function UsagePage() {
                   showCost
                />
                <TypeRow
-                  icon={<Video size={16} style={{ color: "#C084FC" }} />}
+                  icon={<Video size={16} style={{ color: "#A05DF9" }} />}
                   label="Video"
                   minutes={u?.videoMinutes ?? 0}
                   costPaise={cost?.videoPaise ?? 0}
@@ -391,21 +391,21 @@ export default function UsagePage() {
 
          {/* Chart */}
          <div
-            className="rounded-2xl border border-[#1A2642] p-6"
-            style={{ background: "#0D1421" }}
+            className="rounded-2xl border border-[#E7DFF5] p-6"
+            style={{ background: "#FFFFFF" }}
          >
             <div className="flex flex-wrap items-center justify-between mb-6">
                <div>
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-[#170B2E]">
                      Minutes — Last 14 Days
                   </p>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-[#8A8298] mt-0.5">
                      {totalCallsInChart} calls in this period
                   </p>
                </div>
             </div>
             {chart.length === 0 ? (
-               <div className="flex h-48 items-center justify-center text-xs text-slate-600">
+               <div className="flex h-48 items-center justify-center text-xs text-[#9C93AC]">
                   No usage data for this period.
                </div>
             ) : (
@@ -415,7 +415,7 @@ export default function UsagePage() {
                         key={d.date}
                         className="flex h-full flex-1 min-w-0 flex-col items-center justify-end gap-2"
                      >
-                        <span className="text-[10px] text-slate-500">
+                        <span className="text-[10px] text-[#8A8298]">
                            {d.minutes > 0 ? d.minutes.toFixed(2) : ""}
                         </span>
                         <div className="flex h-full w-full items-end">
@@ -424,12 +424,12 @@ export default function UsagePage() {
                               style={{
                                  height: `${Math.max(4, (d.minutes / maxMin) * 100)}%`,
                                  background:
-                                    "linear-gradient(180deg, #6366F1, rgba(99,102,241,0.25))",
+                                    "linear-gradient(180deg, #7F40E8, rgba(127,64,232,0.25))",
                               }}
                               title={`${d.label}: ${d.minutes.toFixed(2)} minutes, ${d.calls} calls`}
                            />
                         </div>
-                        <span className="text-[10px] text-slate-600">
+                        <span className="text-[10px] text-[#9C93AC]">
                            {d.label}
                         </span>
                      </div>
@@ -440,32 +440,32 @@ export default function UsagePage() {
 
          {/* Call analytics */}
          <div
-            className="rounded-2xl border border-[#1A2642] p-6"
-            style={{ background: "#0D1421" }}
+            className="rounded-2xl border border-[#E7DFF5] p-6"
+            style={{ background: "#FFFFFF" }}
          >
             <div className="flex items-center justify-between mb-4">
                <div>
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-[#170B2E]">
                      Call analytics
                   </p>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-[#8A8298] mt-0.5">
                      {usage?.isFreeTier
                         ? `Per-call usage and charge after your free allowance is applied.`
                         : "Per-call usage and charge for this billing cycle."}
                   </p>
-                  <p className="text-[11px] text-slate-600 mt-1">
+                  <p className="text-[11px] text-[#9C93AC] mt-1">
                      Audio/Video/Screen below show actual call duration. Billing
                      is calculated in participant-minutes (duration ×
                      participants using that media) — see the summary above.
                   </p>
                </div>
-               <span className="text-xs text-slate-500">{callTotal} calls</span>
+               <span className="text-xs text-[#8A8298]">{callTotal} calls</span>
             </div>
 
             {callUsage.length === 0 ? (
                <div className="flex flex-col items-center gap-2 py-8 text-center">
-                  <Receipt size={24} className="text-slate-600" />
-                  <p className="text-sm text-slate-500">
+                  <Receipt size={24} className="text-[#9C93AC]" />
+                  <p className="text-sm text-[#8A8298]">
                      No call usage recorded yet.
                   </p>
                </div>
@@ -473,7 +473,7 @@ export default function UsagePage() {
                <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                      <thead>
-                        <tr className="text-left text-xs text-slate-500 border-b border-[#1A2642]">
+                        <tr className="text-left text-xs text-[#8A8298] border-b border-[#E7DFF5]">
                            <th className="py-2 pr-4 font-medium">Call</th>
                            <th className="py-2 pr-4 font-medium">Audio</th>
                            <th className="py-2 pr-4 font-medium">Video</th>
@@ -491,17 +491,17 @@ export default function UsagePage() {
                               <>
                                  <tr
                                     key={c.id}
-                                    className="border-b border-[#1A2642]/60 last:border-0 cursor-pointer select-none"
+                                    className="border-b border-[#E7DFF5]/60 last:border-0 cursor-pointer select-none"
                                     onClick={() => toggleSegment(c.callId)}
                                  >
                                     <td className="py-3 pr-4">
-                                       <p className="font-mono text-xs text-slate-400 flex items-center gap-1.5">
-                                          <span className="text-slate-600 inline-block w-3 text-center">
+                                       <p className="font-mono text-xs text-[#6B6478] flex items-center gap-1.5">
+                                          <span className="text-[#9C93AC] inline-block w-3 text-center">
                                              {open ? "▾" : "▸"}
                                           </span>
                                           {c.callId.slice(0, 12)}…
                                        </p>
-                                       <p className="text-[10px] text-slate-600 mt-0.5 pl-[18px]">
+                                       <p className="text-[10px] text-[#9C93AC] mt-0.5 pl-[18px]">
                                           {c.startedAt
                                              ? new Date(
                                                   c.startedAt,
@@ -509,26 +509,26 @@ export default function UsagePage() {
                                              : "—"}
                                        </p>
                                     </td>
-                                    <td className="py-3 pr-4 text-slate-300 whitespace-nowrap">
+                                    <td className="py-3 pr-4 text-[#4B4560] whitespace-nowrap">
                                        {formatDuration(
                                           c.durationSeconds?.audioSeconds ?? 0,
                                        )}
                                     </td>
-                                    <td className="py-3 pr-4 text-slate-300 whitespace-nowrap">
+                                    <td className="py-3 pr-4 text-[#4B4560] whitespace-nowrap">
                                        {formatDuration(
                                           c.durationSeconds?.videoSeconds ?? 0,
                                        )}
                                     </td>
-                                    <td className="py-3 pr-4 text-slate-300 whitespace-nowrap">
+                                    <td className="py-3 pr-4 text-[#4B4560] whitespace-nowrap">
                                        {formatDuration(
                                           c.durationSeconds
                                              ?.screenShareSeconds ?? 0,
                                        )}
                                     </td>
-                                    <td className="py-3 pr-4 text-slate-300">
+                                    <td className="py-3 pr-4 text-[#4B4560]">
                                        {c.participants}
                                     </td>
-                                    <td className="py-3 font-medium text-white">
+                                    <td className="py-3 font-medium text-[#170B2E]">
                                        {paiseToINR(c.billedCostPaise)}
                                     </td>
                                  </tr>
@@ -564,23 +564,23 @@ export default function UsagePage() {
 
          {/* How it works */}
          <div
-            className="flex items-start gap-3 rounded-2xl border border-[#1A2642] p-5"
-            style={{ background: "#0D1421" }}
+            className="flex items-start gap-3 rounded-2xl border border-[#E7DFF5] p-5"
+            style={{ background: "#FFFFFF" }}
          >
             <div
                className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
                style={{
-                  background: "rgba(99,102,241,0.1)",
-                  border: "1px solid rgba(99,102,241,0.2)",
+                  background: "rgba(127,64,232,0.1)",
+                  border: "1px solid rgba(127,64,232,0.2)",
                }}
             >
-               <Gauge size={16} style={{ color: "#818CF8" }} />
+               <Gauge size={16} style={{ color: "#7F40E8" }} />
             </div>
             <div>
-               <p className="text-sm font-medium text-white">
+               <p className="text-sm font-medium text-[#170B2E]">
                   How usage is billed
                </p>
-               <p className="text-xs text-slate-500 mt-0.5">
+               <p className="text-xs text-[#8A8298] mt-0.5">
                   Usage is calculated to the second, per participant, from when
                   a call connects until it ends. Anything beyond the free
                   allowance is billed at{" "}
@@ -611,8 +611,8 @@ function UsageCard({
 }) {
    return (
       <div
-         className="rounded-2xl border border-[#1A2642] p-5"
-         style={{ background: "#0D1421" }}
+         className="rounded-2xl border border-[#E7DFF5] p-5"
+         style={{ background: "#FFFFFF" }}
          title={hint}
       >
          <div
@@ -621,11 +621,11 @@ function UsageCard({
          >
             <Icon size={16} style={{ color }} />
          </div>
-         <p className="text-xs text-slate-500 mb-1">{label}</p>
-         <p className="text-2xl font-bold text-white">
+         <p className="text-xs text-[#8A8298] mb-1">{label}</p>
+         <p className="text-2xl font-bold text-[#170B2E]">
             {value}
             {unit && (
-               <span className="text-xs font-normal text-slate-500">
+               <span className="text-xs font-normal text-[#8A8298]">
                   {" "}
                   {unit}
                </span>
@@ -659,29 +659,29 @@ function TypeRow({
    const remaining = freeOf > 0 ? Math.max(0, freeOf - minutes) : 0;
    return (
       <div
-         className="rounded-xl border border-[#1A2642] p-4"
-         style={{ background: "#0A0F1E" }}
+         className="rounded-xl border border-[#E7DFF5] p-4"
+         style={{ background: "#F8F4FD" }}
       >
          <div className="flex items-center gap-1.5 mb-1">
             {icon}
-            <p className="text-xs text-slate-500">{label}</p>
+            <p className="text-xs text-[#8A8298]">{label}</p>
          </div>
-         <p className="text-lg font-bold text-white">
+         <p className="text-lg font-bold text-[#170B2E]">
             {minutes.toFixed(2)}
-            <span className="text-xs font-normal text-slate-500">
+            <span className="text-xs font-normal text-[#8A8298]">
                {" "}
                participant-min
             </span>
          </p>
          {showCost && (
-            <p className="text-xs font-semibold mt-1 text-violet-300">
+            <p className="text-xs font-semibold mt-1 text-[#6425C4]">
                {paiseToINR(costPaise)}
             </p>
          )}
-         <p className="text-[11px] text-slate-600 mt-0.5">{rate}</p>
+         <p className="text-[11px] text-[#9C93AC] mt-0.5">{rate}</p>
          {freeOf > 0 && (
             <div className="mt-2.5">
-               <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+               <div className="flex items-center justify-between text-[10px] text-[#8A8298] mb-1">
                   <span>
                      {remaining.toFixed(2)} / {freeOf} min remaining
                   </span>
@@ -689,7 +689,7 @@ function TypeRow({
                </div>
                <div
                   className="h-1.5 rounded-full overflow-hidden"
-                  style={{ background: "#1A2642" }}
+                  style={{ background: "#E7DFF5" }}
                >
                   <div
                      className="h-full rounded-full"
@@ -698,7 +698,7 @@ function TypeRow({
                         background:
                            pct >= 90
                               ? "linear-gradient(135deg,#f43f5e,#fb7185)"
-                              : "linear-gradient(135deg,#6366F1,#8B5CF6)",
+                              : "linear-gradient(135deg,#7F40E8,#410686)",
                      }}
                   />
                </div>
@@ -721,7 +721,7 @@ function SegmentTimeline({
 }) {
    if (loading) {
       return (
-         <div className="rounded-lg border border-[#1A2642] p-4 text-center text-xs text-slate-500">
+         <div className="rounded-lg border border-[#E7DFF5] p-4 text-center text-xs text-[#8A8298]">
             Loading segment timeline…
          </div>
       );
@@ -729,7 +729,7 @@ function SegmentTimeline({
 
    if (segments.length === 0) {
       return (
-         <div className="rounded-lg border border-[#1A2642] p-4 text-center text-xs text-slate-500">
+         <div className="rounded-lg border border-[#E7DFF5] p-4 text-center text-xs text-[#8A8298]">
             No media segments recorded for this call.
          </div>
       );
@@ -745,18 +745,18 @@ function SegmentTimeline({
 
    return (
       <div
-         className="rounded-lg border border-[#1A2642] p-4"
-         style={{ background: "#0A0F1E" }}
+         className="rounded-lg border border-[#E7DFF5] p-4"
+         style={{ background: "#F8F4FD" }}
       >
          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-semibold text-white">Segment timeline</p>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs font-semibold text-[#170B2E]">Segment timeline</p>
+            <p className="text-xs text-[#6B6478]">
                {segments.length} segments
                {showCost && (
                   <>
                      {" "}
                      ·{" "}
-                     <span className="text-violet-300">
+                     <span className="text-[#6425C4]">
                         {paiseToINR(totalCost)}
                      </span>
                   </>
@@ -780,15 +780,15 @@ function SegmentTimeline({
                return (
                   <div
                      key={s.id ?? i}
-                     className="flex items-center justify-between gap-3 rounded-lg border border-[#1A2642]/60 px-3 py-2"
+                     className="flex items-center justify-between gap-3 rounded-lg border border-[#E7DFF5]/60 px-3 py-2"
                   >
                      <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                           <span className="text-[10px] font-mono text-slate-600">
+                           <span className="text-[10px] font-mono text-[#9C93AC]">
                               {fmtTime(s.startedAt)}
                            </span>
-                           <span className="text-slate-600">→</span>
-                           <span className="text-[10px] font-mono text-slate-600">
+                           <span className="text-[#9C93AC]">→</span>
+                           <span className="text-[10px] font-mono text-[#9C93AC]">
                               {fmtTime(s.endedAt)}
                            </span>
                            {badges.map(({ label, Icon }) => (
@@ -796,8 +796,8 @@ function SegmentTimeline({
                                  key={label}
                                  className="text-[10px] px-1.5 py-0.5 rounded-full"
                                  style={{
-                                    background: "rgba(99,102,241,0.1)",
-                                    border: "1px solid rgba(99,102,241,0.2)",
+                                    background: "rgba(127,64,232,0.1)",
+                                    border: "1px solid rgba(127,64,232,0.2)",
                                     color: "#C7D2FE",
                                  }}
                               >
@@ -809,14 +809,14 @@ function SegmentTimeline({
                               </span>
                            ))}
                         </div>
-                        <p className="text-[10px] text-slate-600 mt-0.5">
+                        <p className="text-[10px] text-[#9C93AC] mt-0.5">
                            {durSec.toFixed(0)}s · {s.participantCount || 1}{" "}
                            participant
                            {(s.participantCount || 1) > 1 ? "s" : ""}
                         </p>
                      </div>
                      {showCost && (
-                        <p className="text-xs font-medium text-white whitespace-nowrap">
+                        <p className="text-xs font-medium text-[#170B2E] whitespace-nowrap">
                            {paiseToINR(s.costPaise ?? 0)}
                         </p>
                      )}

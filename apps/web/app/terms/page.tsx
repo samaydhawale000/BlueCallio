@@ -274,7 +274,7 @@ export default function TermsPage() {
         <p>For questions regarding these Terms:</p>
         <LegalBullets items={[
           "PurpleCallio",
-          "Email: hello@purplecallio.com",
+          "Email: purplecallio@gmail.com",
           "Website: https://purplecallio.com",
         ]} />
       </LegalSection>

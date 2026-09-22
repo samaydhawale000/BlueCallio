@@ -193,8 +193,8 @@ export default function BillingPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="animate-spin h-6 w-6 text-indigo-500" />
-          <span className="text-sm text-slate-500">Loading billing…</span>
+          <Loader2 className="animate-spin h-6 w-6 text-[#7F40E8]" />
+          <span className="text-sm text-[#8A8298]">Loading billing…</span>
         </div>
       </div>
     );
@@ -225,15 +225,15 @@ const u = usage?.usage;
       <ToastHost toast={toast} onDismiss={() => setToast(null)} />
 
       <div>
-        <h1 className="text-2xl font-bold text-white">Billing &amp; Usage</h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <h1 className="text-2xl font-bold text-[#170B2E]">Billing &amp; Usage</h1>
+        <p className="text-sm text-[#8A8298] mt-1">
           Pay only for what you use. Add a card and we&apos;ll auto-charge you at the end of each billing cycle.
         </p>
       </div>
 
       {error && (
         <div
-          className="rounded-lg border border-red-500/30 px-4 py-3 text-sm text-red-400"
+          className="rounded-lg border border-red-500/30 px-4 py-3 text-sm text-red-600"
           style={{ background: 'rgba(239,68,68,0.06)' }}
         >
           {error}
@@ -249,29 +249,29 @@ const u = usage?.usage;
 
       {/* ── Current balance / usage ── */}
       <div
-        className="rounded-2xl border border-[#2A3D64] p-6"
-        style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.04))' }}
+        className="rounded-2xl border border-[#D6C4EE] p-6"
+        style={{ background: 'linear-gradient(135deg, rgba(127,64,232,0.08), rgba(65,6,134,0.04))' }}
       >
         <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
             <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}
+              className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 text-white"
+              style={{ background: 'linear-gradient(135deg, #7F40E8, #410686)' }}
             >
               <Wallet size={22} />
             </div>
             <div>
-              <p className="text-lg font-bold text-white">{usage?.isFreeTier ? 'Free Tier' : 'Pay as you go'}</p>
-<p className="text-sm text-slate-400 mt-0.5">
+              <p className="text-lg font-bold text-[#170B2E]">{usage?.isFreeTier ? 'Free Tier' : 'Pay as you go'}</p>
+<p className="text-sm text-[#6B6478] mt-0.5">
                 {free?.audioMinutes ?? 500} audio + {free?.videoMinutes ?? 200} video participant-min / month free · screen share always paid
               </p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-xs text-slate-500 mb-1">Current balance (this cycle)</p>
-            <p className="text-2xl font-bold text-white">{paiseToINR(cost?.totalPaise ?? 0)}</p>
+            <p className="text-xs text-[#8A8298] mb-1">Current balance (this cycle)</p>
+            <p className="text-2xl font-bold text-[#170B2E]">{paiseToINR(cost?.totalPaise ?? 0)}</p>
             <p
-              className="text-[11px] text-slate-500 mt-0.5"
+              className="text-[11px] text-[#8A8298] mt-0.5"
               title="Projected total for the full cycle, based on your usage so far."
             >
               est. month-end {paiseToINR(usage?.estimatedMonthEndPaise ?? 0)}
@@ -282,22 +282,22 @@ const u = usage?.usage;
         {/* Per-type breakdown */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
 <TypeRow
-            icon={<PhoneCall size={16} style={{ color: '#818CF8' }} />}
+            icon={<PhoneCall size={16} style={{ color: '#7F40E8' }} />}
             label="Audio"
             minutes={u?.audioMinutes ?? 0}
             costPaise={cost?.audioPaise ?? 0}
             freeOf={free?.audioMinutes ?? 0}
             rate={rates ? `${paiseToINRShort(rates.audioPaise)} / participant-min` : 'Loading rate…'}
-            color="#818CF8"
+            color="#7F40E8"
           />
           <TypeRow
-            icon={<Video size={16} style={{ color: '#C084FC' }} />}
+            icon={<Video size={16} style={{ color: '#A05DF9' }} />}
             label="Video"
             minutes={u?.videoMinutes ?? 0}
             costPaise={cost?.videoPaise ?? 0}
             freeOf={free?.videoMinutes ?? 0}
             rate={rates ? `${paiseToINRShort(rates.videoPaise)} / participant-min` : 'Loading rate…'}
-            color="#C084FC"
+            color="#A05DF9"
           />
           <TypeRow
             icon={<Monitor size={16} style={{ color: '#34D399' }} />}
@@ -324,12 +324,12 @@ const u = usage?.usage;
                 ? new Date(usage.nextBillingDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
                 : '—'
             }
-            icon={<CalendarClock size={13} style={{ color: '#818CF8' }} />}
+            icon={<CalendarClock size={13} style={{ color: '#7F40E8' }} />}
           />
           <SummaryTile
             label="Payment method"
             value={defaultCard ? `${(defaultCard.brand || 'Card').toUpperCase()} •••• ${defaultCard.last4 ?? '····'}` : 'Not added'}
-            icon={<CreditCard size={13} style={{ color: '#A5B4FC' }} />}
+            icon={<CreditCard size={13} style={{ color: '#6425C4' }} />}
           />
           <SummaryTile
             label="Billing status"
@@ -337,7 +337,7 @@ const u = usage?.usage;
             valueColor={
               billingStatus.variant === 'success' ? '#34D399' : billingStatus.variant === 'warning' ? '#FBBF24' : '#F87171'
             }
-            icon={<billingStatus.icon size={13} style={{ color: '#818CF8' }} />}
+            icon={<billingStatus.icon size={13} style={{ color: '#7F40E8' }} />}
           />
         </div>
       </div>
@@ -370,16 +370,16 @@ const u = usage?.usage;
       />
 
       {/* ── Usage invoices ── */}
-      <div className="rounded-2xl border border-[#1A2642] p-6" style={{ background: '#0D1421' }}>
+      <div className="rounded-2xl border border-[#E7DFF5] p-6" style={{ background: '#FFFFFF' }}>
         <div className="flex items-center justify-between mb-4">
-          <p className="text-sm font-semibold text-white">Invoices</p>
-          <span className="text-xs text-slate-500">{invoices.length} total</span>
+          <p className="text-sm font-semibold text-[#170B2E]">Invoices</p>
+          <span className="text-xs text-[#8A8298]">{invoices.length} total</span>
         </div>
 
         {invoices.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-8 text-center">
-            <Receipt size={24} className="text-slate-600" />
-            <p className="text-sm text-slate-500">
+            <Receipt size={24} className="text-[#9C93AC]" />
+            <p className="text-sm text-[#8A8298]">
               No invoices yet. You&apos;ll be billed at the end of each billing cycle for usage beyond the free tier.
             </p>
           </div>
@@ -387,7 +387,7 @@ const u = usage?.usage;
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs text-slate-500 border-b border-[#1A2642]">
+                <tr className="text-left text-xs text-[#8A8298] border-b border-[#E7DFF5]">
                   <th className="py-2 pr-4 font-medium">Invoice</th>
                   <th className="py-2 pr-4 font-medium">Cycle</th>
                   <th className="py-2 pr-4 font-medium">Usage</th>
@@ -399,16 +399,16 @@ const u = usage?.usage;
               </thead>
               <tbody>
                 {invoices.map((inv) => (
-                  <tr key={inv.id} className="border-b border-[#1A2642]/60 last:border-0">
-                    <td className="py-3 pr-4 font-mono text-xs text-slate-400">{inv.invoiceNumber}</td>
-                    <td className="py-3 pr-4 text-slate-300">
+                  <tr key={inv.id} className="border-b border-[#E7DFF5]/60 last:border-0">
+                    <td className="py-3 pr-4 font-mono text-xs text-[#6B6478]">{inv.invoiceNumber}</td>
+                    <td className="py-3 pr-4 text-[#4B4560]">
                       {new Date(inv.cycleStart).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
                       {' – '}
                       {new Date(inv.cycleEnd).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
                     </td>
-                    <td className="py-3 pr-4 font-medium text-white">{paiseToINR(inv.subtotalPaise)}</td>
-                    <td className="py-3 pr-4 text-slate-400">{paiseToINR(inv.taxPaise)}</td>
-                    <td className="py-3 pr-4 font-medium text-white">{paiseToINR(inv.totalPaise)}</td>
+                    <td className="py-3 pr-4 font-medium text-[#170B2E]">{paiseToINR(inv.subtotalPaise)}</td>
+                    <td className="py-3 pr-4 text-[#6B6478]">{paiseToINR(inv.taxPaise)}</td>
+                    <td className="py-3 pr-4 font-medium text-[#170B2E]">{paiseToINR(inv.totalPaise)}</td>
                     <td className="py-3 pr-4">
                       <Badge variant={statusVariant[inv.status] ?? 'default'}>
                         {inv.status.toUpperCase()}
@@ -418,14 +418,14 @@ const u = usage?.usage;
                       <div className="flex items-center justify-end gap-3">
                         <Link
                           href={`/dashboard/billing/invoices/${inv.id}`}
-                          className="text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
+                          className="text-xs font-medium text-[#7F40E8] hover:text-[#170B2E] transition-colors"
                         >
                           View
                         </Link>
                         <button
                           onClick={() => downloadInvoicePdf(inv)}
                           disabled={downloadingId === inv.id}
-                          className="inline-flex items-center gap-1 text-xs font-medium text-slate-400 hover:text-white transition-colors disabled:opacity-50"
+                          className="inline-flex items-center gap-1 text-xs font-medium text-[#6B6478] hover:text-[#170B2E] transition-colors disabled:opacity-50"
                         >
                           <Download size={12} />
                           {downloadingId === inv.id ? 'Downloading…' : 'PDF'}
@@ -448,22 +448,22 @@ const u = usage?.usage;
       </div>
 
       {/* ── Usage history ── */}
-      <div className="rounded-2xl border border-[#1A2642] p-6" style={{ background: '#0D1421' }}>
+      <div className="rounded-2xl border border-[#E7DFF5] p-6" style={{ background: '#FFFFFF' }}>
         <div className="flex items-center justify-between mb-4">
-          <p className="text-sm font-semibold text-white">Usage history</p>
-          <span className="text-xs text-slate-500">{usageHistoryTotal} cycles</span>
+          <p className="text-sm font-semibold text-[#170B2E]">Usage history</p>
+          <span className="text-xs text-[#8A8298]">{usageHistoryTotal} cycles</span>
         </div>
 
         {usageHistory.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-8 text-center">
-            <Clock size={24} className="text-slate-600" />
-            <p className="text-sm text-slate-500">No usage recorded yet.</p>
+            <Clock size={24} className="text-[#9C93AC]" />
+            <p className="text-sm text-[#8A8298]">No usage recorded yet.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs text-slate-500 border-b border-[#1A2642]">
+                <tr className="text-left text-xs text-[#8A8298] border-b border-[#E7DFF5]">
                   <th className="py-2 pr-4 font-medium">Cycle</th>
                   <th className="py-2 pr-4 font-medium">Audio</th>
                   <th className="py-2 pr-4 font-medium">Video</th>
@@ -475,19 +475,19 @@ const u = usage?.usage;
                 {usageHistory.map((row) => {
                   const isCurrent = new Date(row.billingCycleEnd) > new Date();
                   return (
-                    <tr key={row.id} className="border-b border-[#1A2642]/60 last:border-0">
-                      <td className="py-3 pr-4 text-slate-300">
+                    <tr key={row.id} className="border-b border-[#E7DFF5]/60 last:border-0">
+                      <td className="py-3 pr-4 text-[#4B4560]">
                         {new Date(row.billingCycleStart).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
                         {' – '}
                         {new Date(row.billingCycleEnd).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
                         {isCurrent && (
-                          <span className="ml-2 text-[10px] font-medium text-indigo-400">CURRENT</span>
+                          <span className="ml-2 text-[10px] font-medium text-[#7F40E8]">CURRENT</span>
                         )}
                       </td>
-                      <td className="py-3 pr-4 text-slate-300">{row.audioMinutes.toFixed(2)} min</td>
-                      <td className="py-3 pr-4 text-slate-300">{row.videoMinutes.toFixed(2)} min</td>
-                      <td className="py-3 pr-4 text-slate-300">{row.screenShareMinutes.toFixed(2)} min</td>
-                      <td className="py-3 font-medium text-white">{paiseToINR(row.usageCostPaise)}</td>
+                      <td className="py-3 pr-4 text-[#4B4560]">{row.audioMinutes.toFixed(2)} min</td>
+                      <td className="py-3 pr-4 text-[#4B4560]">{row.videoMinutes.toFixed(2)} min</td>
+                      <td className="py-3 pr-4 text-[#4B4560]">{row.screenShareMinutes.toFixed(2)} min</td>
+                      <td className="py-3 font-medium text-[#170B2E]">{paiseToINR(row.usageCostPaise)}</td>
                     </tr>
                   );
                 })}
@@ -512,7 +512,7 @@ const u = usage?.usage;
           body={`${free?.audioMinutes ?? 500} audio + ${free?.videoMinutes ?? 200} video participant-minutes free every month. Screen sharing is always billable.`}
         />
         <InfoCard
-          icon={<Clock size={16} style={{ color: '#818CF8' }} />}
+          icon={<Clock size={16} style={{ color: '#7F40E8' }} />}
           title="Monthly invoice"
           body="On your billing date each month (anchored to when you started your plan), we aggregate your usage and generate an invoice for anything beyond the free allowance."
         />
@@ -547,31 +547,31 @@ function TypeRow({
     freeOf > 0 ? Math.min(100, Math.round((minutes / freeOf) * 100)) : Math.min(100, minutes > 0 ? 100 : 0);
   const remaining = freeOf > 0 ? Math.max(0, freeOf - minutes) : 0;
   return (
-    <div className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0A0F1E' }}>
+    <div className="rounded-xl border border-[#E7DFF5] p-4" style={{ background: '#F8F4FD' }}>
       <div className="flex items-center gap-1.5 mb-1">
         {icon}
-        <p className="text-xs text-slate-500">{label}</p>
+        <p className="text-xs text-[#8A8298]">{label}</p>
       </div>
-      <p className="text-lg font-bold text-white">
+      <p className="text-lg font-bold text-[#170B2E]">
         {minutes.toFixed(2)}
-        <span className="text-xs font-normal text-slate-500"> participant-min</span>
+        <span className="text-xs font-normal text-[#8A8298]"> participant-min</span>
       </p>
       <p className="text-xs font-semibold mt-1" style={{ color }}>
         {paiseToINR(costPaise)}
       </p>
-      <p className="text-[11px] text-slate-600 mt-0.5">{rate}</p>
+      <p className="text-[11px] text-[#9C93AC] mt-0.5">{rate}</p>
       {freeOf > 0 && (
         <div className="mt-2.5">
-          <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+          <div className="flex items-center justify-between text-[10px] text-[#8A8298] mb-1">
             <span>{remaining.toFixed(2)} / {freeOf} min remaining</span>
             <span>{pct}%</span>
           </div>
-          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: '#1A2642' }}>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: '#E7DFF5' }}>
             <div
               className="h-full rounded-full"
               style={{
                 width: `${pct}%`,
-                background: pct >= 90 ? 'linear-gradient(135deg,#f43f5e,#fb7185)' : 'linear-gradient(135deg,#6366F1,#8B5CF6)',
+                background: pct >= 90 ? 'linear-gradient(135deg,#f43f5e,#fb7185)' : 'linear-gradient(135deg,#7F40E8,#410686)',
               }}
             />
           </div>
@@ -596,7 +596,7 @@ function SummaryTile({
 }) {
   return (
     <div title={hint}>
-      <p className="text-[11px] text-slate-500 mb-1">{label}</p>
+      <p className="text-[11px] text-[#8A8298] mb-1">{label}</p>
       <p
         className="text-sm font-semibold flex items-center gap-1.5 truncate"
         style={{ color: valueColor ?? '#F1F5F9' }}
@@ -618,17 +618,17 @@ function InfoCard({
   body: string;
 }) {
   return (
-    <div className="rounded-xl border border-[#1A2642] p-5" style={{ background: '#0D1421' }}>
+    <div className="rounded-xl border border-[#E7DFF5] p-5" style={{ background: '#FFFFFF' }}>
       <div className="flex items-center gap-2 mb-2">
         <div
           className="w-8 h-8 rounded-lg flex items-center justify-center"
-          style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)' }}
+          style={{ background: 'rgba(127,64,232,0.1)', border: '1px solid rgba(127,64,232,0.2)' }}
         >
           {icon}
         </div>
-        <p className="text-sm font-semibold text-white">{title}</p>
+        <p className="text-sm font-semibold text-[#170B2E]">{title}</p>
       </div>
-      <p className="text-xs text-slate-500 leading-relaxed">{body}</p>
+      <p className="text-xs text-[#8A8298] leading-relaxed">{body}</p>
     </div>
   );
 }
@@ -657,7 +657,7 @@ function UsageAlertBanner({
       ? { color: '#F87171', border: 'rgba(248,113,113,0.35)', bg: 'rgba(239,68,68,0.06)' }
       : pct >= 90
         ? { color: '#FBBF24', border: 'rgba(251,191,36,0.35)', bg: 'rgba(251,191,36,0.06)' }
-        : { color: '#818CF8', border: 'rgba(99,102,241,0.3)', bg: 'rgba(99,102,241,0.05)' };
+        : { color: '#7F40E8', border: 'rgba(127,64,232,0.3)', bg: 'rgba(127,64,232,0.05)' };
 
   const message =
     pct >= 100
@@ -711,17 +711,17 @@ function SpendingLimitCard({
   };
 
   return (
-    <div className="rounded-xl border border-[#1A2642] p-5" style={{ background: '#0D1421' }}>
+    <div className="rounded-xl border border-[#E7DFF5] p-5" style={{ background: '#FFFFFF' }}>
       <div className="flex items-center gap-2 mb-1">
         <ShieldCheck size={16} style={{ color: '#34D399' }} />
-        <p className="text-sm font-semibold text-white">Monthly spending limit</p>
+        <p className="text-sm font-semibold text-[#170B2E]">Monthly spending limit</p>
       </div>
-      <p className="text-xs text-slate-500 mb-3">
+      <p className="text-xs text-[#8A8298] mb-3">
         Cap how much paid usage (beyond your free allowance) can be billed each month. New calls are blocked once you hit it — active calls are never interrupted.
       </p>
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-1.5 rounded-lg border border-[#1A2642] px-3 py-2" style={{ background: '#0A0F1E' }}>
-          <span className="text-slate-500 text-sm">₹</span>
+        <div className="flex items-center gap-1.5 rounded-lg border border-[#E7DFF5] px-3 py-2" style={{ background: '#F8F4FD' }}>
+          <span className="text-[#8A8298] text-sm">₹</span>
           <input
             type="number"
             min={0}
@@ -729,7 +729,7 @@ function SpendingLimitCard({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="No limit"
-            className="w-28 bg-transparent text-sm text-slate-100 outline-none"
+            className="w-28 bg-transparent text-sm text-[#170B2E] outline-none"
           />
         </div>
         <button
@@ -740,7 +740,7 @@ function SpendingLimitCard({
           }}
           disabled={saving}
           className="text-sm font-medium px-3 py-2 rounded-lg text-white transition-colors disabled:opacity-50"
-          style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}
+          style={{ background: 'linear-gradient(135deg, #7F40E8, #410686)' }}
         >
           Save
         </button>
@@ -748,7 +748,7 @@ function SpendingLimitCard({
           <button
             onClick={() => { setInput(''); save(null); }}
             disabled={saving}
-            className="text-sm text-slate-400 hover:text-white transition-colors disabled:opacity-50"
+            className="text-sm text-[#6B6478] hover:text-[#170B2E] transition-colors disabled:opacity-50"
           >
             Remove limit
           </button>

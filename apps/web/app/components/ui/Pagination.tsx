@@ -17,8 +17,8 @@ export function Pagination({ page, pageCount, totalItems, pageSize, onPageChange
   const end = Math.min(totalItems, page * pageSize);
 
   return (
-    <div className="flex items-center justify-between gap-3 pt-4 mt-2 border-t border-[#1A2642]">
-      <p className="text-xs text-slate-500">
+    <div className="flex items-center justify-between gap-3 pt-4 mt-2 border-t border-[#E7DFF5]">
+      <p className="text-xs text-[#8A8298]">
         Showing {start}–{end} of {totalItems}
       </p>
       <div className="flex items-center gap-2">
@@ -26,19 +26,19 @@ export function Pagination({ page, pageCount, totalItems, pageSize, onPageChange
           type="button"
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
-          className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-[#1A2642] text-slate-400 hover:text-white hover:border-[#2A3D64] transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-slate-400 disabled:hover:border-[#1A2642]"
+          className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-[#E7DFF5] text-[#6B6478] hover:text-[#170B2E] hover:border-[#D6C4EE] transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-[#6B6478] disabled:hover:border-[#E7DFF5]"
         >
           <ChevronLeft size={13} />
           Prev
         </button>
-        <span className="text-xs text-slate-500 px-1">
+        <span className="text-xs text-[#8A8298] px-1">
           Page {page} of {pageCount}
         </span>
         <button
           type="button"
           onClick={() => onPageChange(page + 1)}
           disabled={page >= pageCount}
-          className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-[#1A2642] text-slate-400 hover:text-white hover:border-[#2A3D64] transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-slate-400 disabled:hover:border-[#1A2642]"
+          className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-[#E7DFF5] text-[#6B6478] hover:text-[#170B2E] hover:border-[#D6C4EE] transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-[#6B6478] disabled:hover:border-[#E7DFF5]"
         >
           Next
           <ChevronRight size={13} />

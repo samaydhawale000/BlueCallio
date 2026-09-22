@@ -122,13 +122,13 @@ export default function AdminHealthPage() {
   }, []);
 
   if (loading) {
-    return <div className="text-slate-400 text-sm py-20 text-center">Loading health…</div>;
+    return <div className="text-[#6B6478] text-sm py-20 text-center">Loading health…</div>;
   }
 
   if (error || !health) {
     return (
       <div className="py-20 text-center">
-        <p className="text-red-400 text-sm">{error}</p>
+        <p className="text-red-600 text-sm">{error}</p>
       </div>
     );
   }
@@ -151,8 +151,8 @@ export default function AdminHealthPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-bold text-white">System Health</h1>
-        <p className="text-slate-400 text-sm mt-1">
+        <h1 className="text-2xl font-bold text-[#170B2E]">System Health</h1>
+        <p className="text-[#6B6478] text-sm mt-1">
           Live infrastructure status · refreshes every {POLL_MS / 1000}s
         </p>
       </header>
@@ -174,12 +174,12 @@ export default function AdminHealthPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <StatCard icon={Server} title="Server">
             <div className="flex items-center justify-between text-sm mb-1">
-              <span className="text-slate-500">OCI Monitoring</span>
+              <span className="text-[#8A8298]">OCI Monitoring</span>
               <span
                 className={`inline-flex items-center gap-1.5 text-xs font-mono px-2 py-0.5 rounded-full border ${
                   m.server.oci.connected
-                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                    : 'bg-slate-500/10 text-slate-500 border-slate-600/40'
+                    ? 'bg-emerald-500/10 text-emerald-700 border-emerald-500/30'
+                    : 'bg-slate-500/10 text-[#8A8298] border-slate-600/40'
                 }`}
                 title={m.server.oci.error ?? undefined}
               >
@@ -250,7 +250,7 @@ export default function AdminHealthPage() {
               value={fmtPct(m.webrtc.iceFailureRate)}
             />
             {!m.webrtc.available && (
-              <p className="text-[11px] text-slate-600 mt-1">
+              <p className="text-[11px] text-[#9C93AC] mt-1">
                 No calls have reported a transport or ICE outcome yet this month.
               </p>
             )}
@@ -262,7 +262,7 @@ export default function AdminHealthPage() {
             <StatRow label="Bytes received" na={!m.turn.available} value={fmtBytes(m.turn.bytesReceived)} />
             <StatRow label="Bytes sent" na={!m.turn.available} value={fmtBytes(m.turn.bytesSent)} />
             {!m.turn.available && (
-              <p className="text-[11px] text-slate-600 mt-1">
+              <p className="text-[11px] text-[#9C93AC] mt-1">
                 {m.turn.configured
                   ? "coturn's REST admin/stats API isn't enabled yet."
                   : 'TURN is not configured.'}
@@ -273,10 +273,10 @@ export default function AdminHealthPage() {
       )}
 
       {/* Alerts */}
-      <div className="rounded-xl border border-[#1A2642] p-5" style={{ background: '#0D1421' }}>
-        <p className="flex items-center gap-2 text-sm font-semibold text-white mb-3"><Bell size={16} /> Alerts</p>
+      <div className="rounded-xl border border-[#E7DFF5] p-5" style={{ background: '#FFFFFF' }}>
+        <p className="flex items-center gap-2 text-sm font-semibold text-[#170B2E] mb-3"><Bell size={16} /> Alerts</p>
         {alerts.length === 0 ? (
-          <p className="text-sm text-emerald-400">All systems operational. No active alerts.</p>
+          <p className="text-sm text-emerald-700">All systems operational. No active alerts.</p>
         ) : (
           <div className="space-y-2">
             {alerts.map((a) => (
@@ -292,19 +292,19 @@ export default function AdminHealthPage() {
       {/* Components */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {components.map((c) => (
-          <div key={c.name} className="rounded-xl border border-[#1A2642] p-5" style={{ background: '#0D1421' }}>
-            <div className="mb-2 text-indigo-300"><c.icon size={22} /></div>
-            <p className="text-white font-medium">{c.name}</p>
+          <div key={c.name} className="rounded-xl border border-[#E7DFF5] p-5" style={{ background: '#FFFFFF' }}>
+            <div className="mb-2 text-[#6425C4]"><c.icon size={22} /></div>
+            <p className="text-[#170B2E] font-medium">{c.name}</p>
             <span
               className={`inline-block mt-2 px-2.5 py-0.5 rounded-full text-[11px] font-mono border ${
                 c.status === 'healthy'
-                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                  : 'bg-red-500/10 text-red-400 border-red-500/30'
+                  ? 'bg-emerald-500/10 text-emerald-700 border-emerald-500/30'
+                  : 'bg-red-500/10 text-red-600 border-red-500/30'
               }`}
             >
               {c.status}
             </span>
-            {c.detail && <p className="text-[11px] text-slate-500 mt-1.5">{c.detail}</p>}
+            {c.detail && <p className="text-[11px] text-[#8A8298] mt-1.5">{c.detail}</p>}
           </div>
         ))}
       </div>
@@ -331,12 +331,12 @@ function HeroStat({
   value: string;
 }) {
   return (
-    <div className="rounded-xl border border-[#1A2642] p-5" style={{ background: '#0D1421' }}>
-      <div className="flex items-center gap-2 text-indigo-300 mb-2">
+    <div className="rounded-xl border border-[#E7DFF5] p-5" style={{ background: '#FFFFFF' }}>
+      <div className="flex items-center gap-2 text-[#6425C4] mb-2">
         <Icon size={18} />
-        <p className="text-xs text-slate-500 uppercase tracking-wide">{label}</p>
+        <p className="text-xs text-[#8A8298] uppercase tracking-wide">{label}</p>
       </div>
-      <p className="text-4xl font-bold text-white">{value}</p>
+      <p className="text-4xl font-bold text-[#170B2E]">{value}</p>
     </div>
   );
 }
@@ -351,10 +351,10 @@ function StatCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-[#1A2642] p-5" style={{ background: '#0D1421' }}>
-      <div className="flex items-center gap-2 text-indigo-300 mb-4">
+    <div className="rounded-xl border border-[#E7DFF5] p-5" style={{ background: '#FFFFFF' }}>
+      <div className="flex items-center gap-2 text-[#6425C4] mb-4">
         <Icon size={18} />
-        <p className="text-sm font-semibold text-white">{title}</p>
+        <p className="text-sm font-semibold text-[#170B2E]">{title}</p>
       </div>
       <div className="space-y-2.5">{children}</div>
     </div>
@@ -376,16 +376,16 @@ function StatRow({
 }) {
   return (
     <div className="flex items-center justify-between text-sm">
-      <span className="text-slate-500">{label}</span>
+      <span className="text-[#8A8298]">{label}</span>
       {na ? (
         <span className="text-right">
-          <span className="text-slate-600 font-mono text-xs">Not available</span>
+          <span className="text-[#9C93AC] font-mono text-xs">Not available</span>
           {note && <span className="block text-[10px] text-slate-700">{note}</span>}
         </span>
       ) : (
-        <span className="text-white font-mono">
+        <span className="text-[#170B2E] font-mono">
           {value}
-          {suffix && <span className="text-slate-500">{suffix}</span>}
+          {suffix && <span className="text-[#8A8298]">{suffix}</span>}
         </span>
       )}
     </div>
@@ -394,9 +394,9 @@ function StatRow({
 
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-[#1A2642] p-5" style={{ background: '#0D1421' }}>
-      <p className="text-xs text-slate-500">{label}</p>
-      <p className="text-2xl font-bold text-white mt-1">{value}</p>
+    <div className="rounded-xl border border-[#E7DFF5] p-5" style={{ background: '#FFFFFF' }}>
+      <p className="text-xs text-[#8A8298]">{label}</p>
+      <p className="text-2xl font-bold text-[#170B2E] mt-1">{value}</p>
     </div>
   );
 }

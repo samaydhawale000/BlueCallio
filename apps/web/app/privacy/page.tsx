@@ -12,7 +12,7 @@ export default function PrivacyPage() {
     >
       <LegalSection num="1" title="Information We Collect">
         <p>Depending on how you use PurpleCallio, we may collect:</p>
-        <p className="font-semibold text-slate-300">Account Information</p>
+        <p className="font-semibold text-[#3D3650]">Account Information</p>
         <LegalBullets items={[
           "Name",
           "Email address",
@@ -20,7 +20,7 @@ export default function PrivacyPage() {
           "Company information",
           "Account identifiers",
         ]} />
-        <p className="font-semibold text-slate-300">Developer Information</p>
+        <p className="font-semibold text-[#3D3650]">Developer Information</p>
         <LegalBullets items={[
           "Project names",
           "API keys and related metadata",
@@ -28,7 +28,7 @@ export default function PrivacyPage() {
           "Webhook configuration",
           "Application configuration",
         ]} />
-        <p className="font-semibold text-slate-300">Billing Information</p>
+        <p className="font-semibold text-[#3D3650]">Billing Information</p>
         <LegalBullets items={[
           "Billing address",
           "Billing contact",
@@ -40,7 +40,7 @@ export default function PrivacyPage() {
           Payment card details may be processed directly by our payment provider and may not be
           stored directly by PurpleCallio.
         </p>
-        <p className="font-semibold text-slate-300">Usage Information</p>
+        <p className="font-semibold text-[#3D3650]">Usage Information</p>
         <LegalBullets items={[
           "Calls started",
           "Calls ended",
@@ -53,7 +53,7 @@ export default function PrivacyPage() {
           "Error information",
           "Usage and billing metrics",
         ]} />
-        <p className="font-semibold text-slate-300">Technical Information</p>
+        <p className="font-semibold text-[#3D3650]">Technical Information</p>
         <LegalBullets items={[
           "IP address",
           "Browser type",
@@ -185,7 +185,7 @@ export default function PrivacyPage() {
           "Object to certain processing",
           "Request data portability",
         ]} />
-        <p>Requests can be submitted to: hello@purplecallio.com</p>
+        <p>Requests can be submitted to: purplecallio@gmail.com</p>
       </LegalSection>
 
       <LegalSection num="12" title="Children's Privacy">
@@ -206,7 +206,7 @@ export default function PrivacyPage() {
       <LegalSection num="14" title="Contact">
         <LegalBullets items={[
           "PurpleCallio",
-          "Privacy Email: hello@purplecallio.com",
+          "Privacy Email: purplecallio@gmail.com",
           "Website: https://purplecallio.com",
         ]} />
       </LegalSection>

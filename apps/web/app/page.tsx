@@ -244,7 +244,7 @@ export default function LandingPage() {
                   url: siteUrl.toString(),
                   logo: new URL("/opengraph-image", siteUrl).toString(),
                   description: PURPLECALLIO_DESCRIPTION,
-                  email: "hello@purplecallio.com",
+                  email: "purplecallio@gmail.com",
                },
                {
                   "@context": "https://schema.org",
@@ -275,7 +275,7 @@ export default function LandingPage() {
                   Start free &nbsp;·&nbsp; Usage-based pricing
                </div>
 
-               <h1 className="lp-h1 font-bold text-white leading-tight mb-6">
+               <h1 className="lp-h1 font-bold text-[#170B2E] leading-tight mb-6">
                   Build real-time communication into your product
                   <span className="gradient-text-hero">
                      {" "}
@@ -283,7 +283,7 @@ export default function LandingPage() {
                   </span>
                </h1>
 
-               <p className="text-balance text-slate-400 text-lg leading-relaxed mb-6">
+               <p className="text-balance text-[#6B6478] text-lg leading-relaxed mb-6">
                   {PURPLECALLIO_DESCRIPTION} Instead of building WebRTC
                   signaling, authentication, participant sessions, and calling
                   interfaces from scratch, developers can integrate PurpleCallio
@@ -302,22 +302,22 @@ export default function LandingPage() {
                         </Link>
                         <Link
                            href="/docs"
-                           className="btn-secondary inline-flex items-center gap-2 font-medium text-sm px-6 py-3 rounded-lg border border-[#1A2642] transition-all hover:border-slate-500 hover:text-white text-slate-300"
+                           className="btn-secondary inline-flex items-center gap-2 font-medium text-sm px-6 py-3 rounded-lg border border-[#E7DFF5] transition-all hover:border-[#D6C4EE] hover:text-[#170B2E] text-[#4B4560]"
                         >
                            Read the docs
                         </Link>
                      </div>
 
                      {/* Code snippet */}
-                     <div className="lp-code-block rounded-xl overflow-hidden border border-[#1A2642]">
-                        <div className="flex items-center gap-2 px-4 py-3 border-b border-[#1A2642]">
+                     <div className="lp-code-block rounded-xl overflow-hidden border border-[#E7DFF5]">
+                        <div className="flex items-center gap-2 px-4 py-3 border-b border-[#E7DFF5]">
                            <span className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
                            <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
                            <span className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
-                           <span className="font-mono text-slate-500 text-xs ml-2">
+                           <span className="font-mono text-[#8A8298] text-xs ml-2">
                               your-server.js
                            </span>
-                           <span className="ml-auto text-xs text-slate-600 font-mono hidden sm:inline">
+                           <span className="ml-auto text-xs text-[#9C93AC] font-mono hidden sm:inline">
                               integration takes minutes, not days
                            </span>
                         </div>
@@ -362,10 +362,10 @@ export default function LandingPage() {
                <p className="section-label font-mono text-xs tracking-widest uppercase mb-4">
                   Choose your integration
                </p>
-               <h2 className="lp-h2 font-bold text-white mb-4">
+               <h2 className="lp-h2 font-bold text-[#170B2E] mb-4">
                   You build the product. PurpleCallio handles communication.
                </h2>
-               <p className="text-slate-400 mb-10 max-w-3xl">
+               <p className="text-[#6B6478] mb-10 max-w-3xl">
                   Keep your authentication, business logic, permissions,
                   branding, and database. PurpleCallio provides the call
                   lifecycle, participant sessions, signaling, WebRTC setup, TURN
@@ -381,10 +381,10 @@ export default function LandingPage() {
                <p className="section-label font-mono text-xs tracking-widest uppercase mb-4">
                   Why PurpleCallio
                </p>
-               <h2 className="lp-h2 font-bold text-white mb-4">
+               <h2 className="lp-h2 font-bold text-[#170B2E] mb-4">
                   Real-time communication built for modern products.
                </h2>
-               <p className="text-slate-400 mb-14 max-w-2xl">
+               <p className="text-[#6B6478] mb-14 max-w-2xl">
                   Building browser communication means connecting product logic
                   to participant access, signaling, media controls, and the
                   WebRTC connection lifecycle.
@@ -407,13 +407,13 @@ export default function LandingPage() {
                               <span className="text-red-500 mt-0.5 text-sm">
                                  ✕
                               </span>
-                              <p className="text-sm text-slate-400">{item}</p>
+                              <p className="text-sm text-[#6B6478]">{item}</p>
                            </div>
                         ))}
                      </div>
                   </div>
 
-                  <div className="card-gradient rounded-xl border border-[#2A3D64] p-8">
+                  <div className="card-gradient rounded-xl border border-[#D6C4EE] p-8">
                      <p className="section-label font-mono text-xs tracking-widest uppercase mb-6">
                         The PurpleCallio way
                      </p>
@@ -429,7 +429,7 @@ export default function LandingPage() {
                               <span className="text-green-400 mt-0.5 text-sm">
                                  ✓
                               </span>
-                              <p className="text-sm text-slate-300">{item}</p>
+                              <p className="text-sm text-[#4B4560]">{item}</p>
                            </div>
                         ))}
                      </div>
@@ -443,10 +443,10 @@ export default function LandingPage() {
                <p className="section-label font-mono text-xs tracking-widest uppercase mb-4">
                   How it works
                </p>
-               <h2 className="lp-h2 font-bold text-white mb-4">
+               <h2 className="lp-h2 font-bold text-[#170B2E] mb-4">
                   A clear path from backend call creation to browser media.
                </h2>
-               <p className="text-slate-400 mb-10 max-w-3xl">
+               <p className="text-[#6B6478] mb-10 max-w-3xl">
                   Select a step to see where PurpleCallio fits into the
                   communication flow.
                </p>
@@ -460,10 +460,10 @@ export default function LandingPage() {
                <p className="section-label font-mono text-xs tracking-widest uppercase mb-4">
                   Who it&apos;s for
                </p>
-               <h2 className="lp-h2 font-bold text-white mb-4">
+               <h2 className="lp-h2 font-bold text-[#170B2E] mb-4">
                   Any product that needs real-time video between two people
                </h2>
-               <p className="text-slate-400 mb-14 max-w-2xl">
+               <p className="text-[#6B6478] mb-14 max-w-2xl">
                   PurpleCallio is B2B infrastructure. Your customers never know it
                   exists — it just works, invisibly, inside your product.
                </p>
@@ -471,15 +471,15 @@ export default function LandingPage() {
                   {USE_CASES.map((uc) => (
                      <div
                         key={uc.label}
-                        className="card-gradient rounded-xl border border-[#1A2642] p-6 transition-all hover:border-[#2A3D64]"
+                        className="card-gradient rounded-xl border border-[#E7DFF5] p-6 transition-all hover:border-[#D6C4EE]"
                      >
-                        <div className="mb-4 text-indigo-300">
+                        <div className="mb-4 text-[#7F40E8]">
                            <uc.icon size={24} />
                         </div>
-                        <p className="font-semibold text-white mb-2 text-sm">
+                        <p className="font-semibold text-[#170B2E] mb-2 text-sm">
                            {uc.label}
                         </p>
-                        <p className="text-sm text-slate-400 leading-relaxed">
+                        <p className="text-sm text-[#6B6478] leading-relaxed">
                            {uc.description}
                         </p>
                      </div>
@@ -494,10 +494,10 @@ export default function LandingPage() {
                <p className="section-label font-mono text-xs tracking-widest uppercase mb-4">
                   Products
                </p>
-               <h2 className="lp-h2 font-bold text-white mb-4">
+               <h2 className="lp-h2 font-bold text-[#170B2E] mb-4">
                   Three ways to integrate.
                </h2>
-               <p className="text-slate-400 mb-14 max-w-2xl">
+               <p className="text-[#6B6478] mb-14 max-w-2xl">
                   Choose the integration style that fits your product. All three
                   are powered by the same REST + WebSocket backend — so you can
                   move between them without changing your server-side code.
@@ -507,15 +507,16 @@ export default function LandingPage() {
                   {PRODUCTS.map((product) => (
                      <div
                         key={product.name}
-                        className="card-surface rounded-xl border border-[#1A2642] p-7 flex flex-col transition-all hover:border-[#2A3D64]"
+                        className="card-surface rounded-xl border border-[#E7DFF5] p-7 flex flex-col transition-all hover:border-[#D6C4EE]"
                      >
                         <div className="flex items-center justify-between mb-5">
                            <div
                               className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
                               style={{
                                  background:
-                                    "linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.15))",
-                                 border: "1px solid rgba(99,102,241,0.25)",
+                                    "linear-gradient(135deg, rgba(127,64,232,0.14), rgba(65,6,134,0.1))",
+                                 border: "1px solid rgba(127,64,232,0.25)",
+                                 color: "#7F40E8",
                               }}
                            >
                               <product.icon size={24} />
@@ -523,22 +524,22 @@ export default function LandingPage() {
                            <span
                               className="text-[10px] font-mono px-2.5 py-1 rounded-full uppercase tracking-widest"
                               style={{
-                                 background: "rgba(99,102,241,0.1)",
-                                 border: "1px solid rgba(99,102,241,0.3)",
-                                 color: "#A5B4FC",
+                                 background: "rgba(127,64,232,0.08)",
+                                 border: "1px solid rgba(127,64,232,0.25)",
+                                 color: "#6425C4",
                               }}
                            >
                               {product.tag}
                            </span>
                         </div>
 
-                        <h3 className="font-bold text-white text-lg mb-1">
+                        <h3 className="font-bold text-[#170B2E] text-lg mb-1">
                            {product.name}
                         </h3>
-                        <p className="text-sm font-medium text-slate-300 mb-3">
+                        <p className="text-sm font-medium text-[#4B4560] mb-3">
                            {product.tagline}
                         </p>
-                        <p className="text-sm text-slate-400 leading-relaxed mb-6">
+                        <p className="text-sm text-[#6B6478] leading-relaxed mb-6">
                            {product.body}
                         </p>
 
@@ -548,16 +549,16 @@ export default function LandingPage() {
                                  <span className="check-indigo text-xs mt-0.5">
                                     ✓
                                  </span>
-                                 <p className="text-sm text-slate-400">{f}</p>
+                                 <p className="text-sm text-[#6B6478]">{f}</p>
                               </div>
                            ))}
                         </div>
 
                         <div
-                           className="rounded-lg px-3 py-2.5 mb-6 font-mono text-[11px] text-slate-500"
+                           className="rounded-lg px-3 py-2.5 mb-6 font-mono text-[11px] text-[#3D3650]"
                            style={{
-                              background: "#060B18",
-                              border: "1px solid #1A2642",
+                              background: "#F8F4FD",
+                              border: "1px solid #E7DFF5",
                               overflowX: "auto",
                               whiteSpace: "nowrap",
                            }}
@@ -565,22 +566,26 @@ export default function LandingPage() {
                            {product.code}
                         </div>
 
-                        <p className="text-xs text-slate-500 mb-5 flex-1">
+                        <p className="text-xs text-[#8A8298] mb-5 flex-1">
                            {product.cta}
                         </p>
 
                         <Link
                            href="/docs"
-                           className="block text-center text-sm font-medium text-white px-4 py-2.5 rounded-lg transition-all hover:opacity-90"
+                           className={`block text-center text-sm font-medium px-4 py-2.5 rounded-lg transition-all hover:opacity-90 ${
+                              product.name === "React Components"
+                                 ? "text-white"
+                                 : "text-[#6425C4]"
+                           }`}
                            style={{
                               background:
                                  product.name === "React Components"
-                                    ? "linear-gradient(135deg, #6366F1, #8B5CF6)"
-                                    : "rgba(255,255,255,0.04)",
+                                    ? "linear-gradient(135deg, #7F40E8, #410686)"
+                                    : "rgba(127,64,232,0.06)",
                               border:
                                  product.name === "React Components"
                                     ? "none"
-                                    : "1px solid #1A2642",
+                                    : "1px solid rgba(127,64,232,0.2)",
                            }}
                         >
                            Learn more in docs →
@@ -597,17 +602,17 @@ export default function LandingPage() {
                <p className="section-label font-mono text-xs tracking-widest uppercase mb-4">
                   What you get
                </p>
-               <h2 className="lp-h2 font-bold text-white mb-14">
+               <h2 className="lp-h2 font-bold text-[#170B2E] mb-14">
                   Everything in the box
                </h2>
                <div className="features-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px">
                   {FEATURES.map((f) => (
                      <div key={f.title} className="feature-cell p-6">
                         <div className="feature-bar w-1 h-4 rounded-full mb-4" />
-                        <p className="font-semibold text-white text-sm mb-2">
+                        <p className="font-semibold text-[#170B2E] text-sm mb-2">
                            {f.title}
                         </p>
-                        <p className="text-sm text-slate-400 leading-relaxed">
+                        <p className="text-sm text-[#6B6478] leading-relaxed">
                            {f.body}
                         </p>
                      </div>
@@ -624,10 +629,10 @@ export default function LandingPage() {
                      <p className="section-label font-mono text-xs tracking-widest uppercase mb-4">
                         Live Playground
                      </p>
-                     <h2 className="lp-h2 font-bold text-white mb-4">
+                     <h2 className="lp-h2 font-bold text-[#170B2E] mb-4">
                         Test before you integrate
                      </h2>
-                     <p className="text-slate-400 mb-8 leading-relaxed">
+                     <p className="text-[#6B6478] mb-8 leading-relaxed">
                         Start a demo session, then share its invite link or QR
                         code with another device. Test audio, video, and screen
                         sharing before integrating.
@@ -640,10 +645,10 @@ export default function LandingPage() {
                      </Link>
                   </div>
 
-                  <div className="card-surface rounded-xl border border-[#1A2642] overflow-hidden">
-                     <div className="px-5 py-4 border-b border-[#1A2642] flex items-center gap-2">
+                  <div className="card-surface rounded-xl border border-[#E7DFF5] overflow-hidden">
+                     <div className="px-5 py-4 border-b border-[#E7DFF5] flex items-center gap-2">
                         <span className="hero-badge-dot w-2 h-2 rounded-full" />
-                        <span className="text-xs text-slate-400 font-mono">
+                        <span className="text-xs text-[#6B6478] font-mono">
                            PurpleCallio Playground
                         </span>
                      </div>
@@ -660,14 +665,14 @@ export default function LandingPage() {
                                     {item.done ? "✓" : item.step}
                                  </div>
                                  <p
-                                    className={`text-sm ${item.done ? "text-white" : "text-slate-500"}`}
+                                    className={`text-sm ${item.done ? "text-[#170B2E]" : "text-[#8A8298]"}`}
                                  >
                                     {item.label}
                                  </p>
                               </div>
                            ))}
                         </div>
-                        <div className="feature-cell mt-6 rounded-lg p-3 border border-[#1A2642] text-center text-xs text-slate-500 font-mono">
+                        <div className="feature-cell mt-6 rounded-lg p-3 border border-[#E7DFF5] text-center text-xs text-[#8A8298] font-mono">
                            Sign in to create and manage a demo session.
                         </div>
                      </div>
@@ -687,10 +692,10 @@ export default function LandingPage() {
                      <p className="section-label font-mono text-xs tracking-widest uppercase mb-4">
                         Support
                      </p>
-                     <h2 className="lp-h2 font-bold text-white mb-4">
+                     <h2 className="lp-h2 font-bold text-[#170B2E] mb-4">
                         Real answers from technical people
                      </h2>
-                     <p className="text-slate-400 leading-relaxed">
+                     <p className="text-[#6B6478] leading-relaxed">
                         When something breaks, you need a fast answer from
                         someone who actually knows the stack — not a chatbot
                         pointing to a FAQ. PurpleCallio support is run by the
@@ -701,15 +706,15 @@ export default function LandingPage() {
                      {SUPPORT_ITEMS.map((item) => (
                         <div
                            key={item.title}
-                           className="card-surface rounded-xl border border-[#1A2642] p-5"
+                           className="card-surface rounded-xl border border-[#E7DFF5] p-5"
                         >
-                           <div className="mb-3 text-indigo-300">
+                           <div className="mb-3 text-[#7F40E8]">
                               <item.icon size={20} />
                            </div>
-                           <p className="font-semibold text-white text-sm mb-1">
+                           <p className="font-semibold text-[#170B2E] text-sm mb-1">
                               {item.title}
                            </p>
-                           <p className="text-xs text-slate-500 leading-relaxed">
+                           <p className="text-xs text-[#8A8298] leading-relaxed">
                               {item.body}
                            </p>
                         </div>

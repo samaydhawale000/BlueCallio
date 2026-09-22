@@ -4,7 +4,7 @@ export default function EmptyState() {
   return (
     <div className="border rounded-2xl p-16 text-center bg-white mt-10">
 
-      <div className="mb-5 flex justify-center text-indigo-500">
+      <div className="mb-5 flex justify-center text-[#7F40E8]">
         <Rocket size={48} />
       </div>
 

@@ -93,7 +93,7 @@ if (isCallPage || isAppPage || isAuthPage) {
           duration-300
           ${
             scrolled
-              ? "border-b border-[#1A2642] bg-[#050816]/80 backdrop-blur-xl shadow-lg"
+              ? "border-b border-[#E7DFF5] bg-white/85 backdrop-blur-xl shadow-sm"
               : "bg-transparent"
           }
         `}
@@ -127,7 +127,7 @@ if (isCallPage || isAppPage || isAuthPage) {
                   onClick={() => setProfileOpen((open) => !open)}
                   aria-expanded={profileOpen}
                   aria-haspopup="menu"
-                  className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-slate-300 transition hover:bg-white/5 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-300"
+                  className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-[#4B4560] transition hover:bg-[#7F40E8]/5 hover:text-[#170B2E] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#7F40E8]"
                 >
                   {avatarUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -139,16 +139,16 @@ if (isCallPage || isAppPage || isAuthPage) {
                   ) : (
                     <span
                       className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                      style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}
+                      style={{ background: 'linear-gradient(135deg, #7F40E8, #410686)' }}
                     >
                       {(displayName || 'U')[0].toUpperCase()}
                     </span>
                   )}
                   <ChevronDown size={15} className={`transition ${profileOpen ? "rotate-180" : ""}`} aria-hidden="true" />
                 </button>
-                {profileOpen && <div role="menu" className="absolute right-0 top-full z-50 mt-2 w-44 rounded-xl border border-[#1A2642] bg-[#0A0F1E] p-1.5 shadow-2xl shadow-black/40">
-                  <Link href="/dashboard" role="menuitem" onClick={() => setProfileOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-slate-300 transition hover:bg-white/5 hover:text-white">Dashboard</Link>
-                  <button type="button" role="menuitem" onClick={() => { setProfileOpen(false); logout?.(); router.push("/"); }} className="w-full rounded-lg px-3 py-2 text-left text-sm text-slate-300 transition hover:bg-white/5 hover:text-white">Log out</button>
+                {profileOpen && <div role="menu" className="absolute right-0 top-full z-50 mt-2 w-44 rounded-xl border border-[#E7DFF5] bg-white p-1.5 shadow-xl shadow-black/10">
+                  <Link href="/dashboard" role="menuitem" onClick={() => setProfileOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-[#4B4560] transition hover:bg-[#7F40E8]/5 hover:text-[#170B2E]">Dashboard</Link>
+                  <button type="button" role="menuitem" onClick={() => { setProfileOpen(false); logout?.(); router.push("/"); }} className="w-full rounded-lg px-3 py-2 text-left text-sm text-[#4B4560] transition hover:bg-[#7F40E8]/5 hover:text-[#170B2E]">Log out</button>
                 </div>}
               </div>
             ) : (
@@ -160,12 +160,12 @@ if (isCallPage || isAppPage || isAuthPage) {
 
           <button
             onClick={() => setMenuOpen(true)}
-            className="group flex h-11 w-11 items-center justify-center rounded-lg border border-[#1A2642] transition hover:border-[#2A3D64] lg:hidden"
+            className="group flex h-11 w-11 items-center justify-center rounded-lg border border-[#E7DFF5] transition hover:border-[#D6C4EE] lg:hidden"
             aria-label="Open Menu"
           >
             <Menu
               size={22}
-              className="text-slate-300 transition group-hover:text-white"
+              className="text-[#4B4560] transition group-hover:text-[#170B2E]"
             />
           </button>
         </div>

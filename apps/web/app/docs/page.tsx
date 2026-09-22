@@ -19,7 +19,7 @@ const NAV = [
 type LangKey = 'sdk' | 'node' | 'python' | 'curl';
 
 function MethodBadge({ verb }: { verb: 'GET' | 'POST' | 'PATCH' | 'DELETE' }) {
-  const c: Record<string, string> = { GET: '#10B981', POST: '#6366F1', PATCH: '#F59E0B', DELETE: '#EF4444' };
+  const c: Record<string, string> = { GET: '#10B981', POST: '#7F40E8', PATCH: '#F59E0B', DELETE: '#EF4444' };
   return (
     <span className="font-mono text-xs font-bold px-2 py-0.5 rounded" style={{ background: `${c[verb]}22`, color: c[verb], border: `1px solid ${c[verb]}44` }}>
       {verb}
@@ -32,7 +32,7 @@ function CopyBtn({ text }: { text: string }) {
   return (
     <button onClick={() => { navigator.clipboard.writeText(text.trim()); setOk(true); setTimeout(() => setOk(false), 1500); }}
       className="text-xs font-mono px-2 py-0.5 rounded transition-all shrink-0"
-      style={{ background: ok ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.05)', color: ok ? '#10B981' : '#475569' }}>
+      style={{ background: ok ? 'rgba(16,185,129,0.15)' : 'rgba(127,64,232,0.06)', color: ok ? '#10B981' : '#6B6478' }}>
       {ok ? '✓ copied' : 'copy'}
     </button>
   );
@@ -40,15 +40,15 @@ function CopyBtn({ text }: { text: string }) {
 
 function Code({ code, label }: { code: string; label?: string }) {
   return (
-    <div className="rounded-xl border border-[#1A2642] overflow-hidden" style={{ background: '#07111F' }}>
+    <div className="rounded-xl border border-[#E7DFF5] overflow-hidden" style={{ background: '#F8F4FD' }}>
       {label && (
-        <div className="flex items-center justify-between px-4 py-2 border-b border-[#1A2642]">
-          <span className="font-mono text-xs text-slate-600">{label}</span>
+        <div className="flex items-center justify-between px-4 py-2 border-b border-[#E7DFF5]">
+          <span className="font-mono text-xs text-[#8A8298]">{label}</span>
           <CopyBtn text={code} />
         </div>
       )}
       {!label && <div className="flex justify-end px-4 pt-3 pb-0"><CopyBtn text={code} /></div>}
-      <pre className="font-mono text-xs text-slate-300 px-5 py-4 overflow-x-auto" style={{ lineHeight: 1.8 }}>{code.trim()}</pre>
+      <pre className="font-mono text-xs text-[#3D3650] px-5 py-4 overflow-x-auto" style={{ lineHeight: 1.8 }}>{code.trim()}</pre>
     </div>
   );
 }
@@ -59,11 +59,11 @@ function LangTabs({ tabs }: { tabs: Partial<Record<LangKey, string>> }) {
   const [active, setActive] = useState<LangKey>(keys[0]);
   return (
     <div className="my-4">
-      <div className="flex gap-1 mb-0 border-b border-[#1A2642]">
+      <div className="flex gap-1 mb-0 border-b border-[#E7DFF5]">
         {keys.map((k) => (
           <button key={k} onClick={() => setActive(k)}
             className="text-xs font-mono px-3 py-2 transition-all border-b-2 -mb-px"
-            style={{ color: active === k ? '#A5B4FC' : '#475569', borderColor: active === k ? '#6366F1' : 'transparent', background: 'transparent' }}>
+            style={{ color: active === k ? '#6425C4' : '#8A8298', borderColor: active === k ? '#7F40E8' : 'transparent', background: 'transparent' }}>
             {labels[k]}
           </button>
         ))}
@@ -74,11 +74,11 @@ function LangTabs({ tabs }: { tabs: Partial<Record<LangKey, string>> }) {
 }
 
 function Tip({ children, type = 'info' }: { children: React.ReactNode; type?: 'info' | 'warn' | 'tip' }) {
-  const s = { info: { bg: 'rgba(99,102,241,0.07)', b: 'rgba(99,102,241,0.25)', icon: 'ℹ', c: '#A5B4FC' }, warn: { bg: 'rgba(245,158,11,0.07)', b: 'rgba(245,158,11,0.3)', icon: '⚠', c: '#FCD34D' }, tip: { bg: 'rgba(16,185,129,0.07)', b: 'rgba(16,185,129,0.3)', icon: '✓', c: '#6EE7B7' } }[type];
+  const s = { info: { bg: 'rgba(127,64,232,0.06)', b: 'rgba(127,64,232,0.25)', icon: 'ℹ', c: '#6425C4' }, warn: { bg: 'rgba(245,158,11,0.08)', b: 'rgba(245,158,11,0.3)', icon: '⚠', c: '#92400E' }, tip: { bg: 'rgba(16,185,129,0.08)', b: 'rgba(16,185,129,0.3)', icon: '✓', c: '#065F46' } }[type];
   return (
     <div className="flex gap-3 rounded-xl px-4 py-3 my-4 text-sm leading-relaxed border" style={{ background: s.bg, borderColor: s.b }}>
       <span style={{ color: s.c }}>{s.icon}</span>
-      <span className="text-slate-300">{children}</span>
+      <span className="text-[#4B4560]">{children}</span>
     </div>
   );
 }
@@ -88,21 +88,21 @@ function Section({ id, children }: { id: string; children: React.ReactNode }) {
 }
 
 function Heading({ children }: { children: React.ReactNode }) {
-  return <h2 className="font-bold text-white mb-6 pb-3 border-b border-[#1A2642]" style={{ fontSize: '1.35rem', letterSpacing: '-0.02em' }}>{children}</h2>;
+  return <h2 className="font-bold text-[#170B2E] mb-6 pb-3 border-b border-[#E7DFF5]" style={{ fontSize: '1.35rem', letterSpacing: '-0.02em' }}>{children}</h2>;
 }
 
 // ── Accordion endpoint card ───────────────────────────────────────────────────
 function Endpoint({ method, path, summary, children, id }: { method: 'GET' | 'POST' | 'PATCH' | 'DELETE'; path: string; summary: string; children: React.ReactNode; id?: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div id={id} className="rounded-xl border border-[#1A2642] overflow-hidden mb-3 transition-all scroll-mt-20" style={{ background: open ? '#0A1525' : '#0D1421' }}>
-      <button onClick={() => setOpen(!open)} className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-white/[0.02] transition-all">
+    <div id={id} className="rounded-xl border border-[#E7DFF5] overflow-hidden mb-3 transition-all scroll-mt-20" style={{ background: open ? '#F3ECFB' : '#FFFFFF' }}>
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-[#7F40E8]/[0.03] transition-all">
         <MethodBadge verb={method} />
-        <code className="font-mono text-sm text-slate-200">{path}</code>
-        <span className="text-slate-500 text-xs ml-2 hidden sm:block">— {summary}</span>
-        <span className="ml-auto text-slate-600 text-xs">{open ? '▲' : '▼'}</span>
+        <code className="font-mono text-sm text-[#3D3650]">{path}</code>
+        <span className="text-[#8A8298] text-xs ml-2 hidden sm:block">— {summary}</span>
+        <span className="ml-auto text-[#9C93AC] text-xs">{open ? '▲' : '▼'}</span>
       </button>
-      {open && <div className="px-5 pb-5 pt-1 border-t border-[#1A2642]">{children}</div>}
+      {open && <div className="px-5 pb-5 pt-1 border-t border-[#E7DFF5]">{children}</div>}
     </div>
   );
 }
@@ -145,19 +145,19 @@ export default function DocsPage() {
   const freeVideo = rates?.freeVideoMins;
 
   return (
-    <div style={{ background: '#060B18', color: '#F1F5F9', minHeight: '100vh' }}>
+    <div style={{ background: '#FFFFFF', color: '#170B2E', minHeight: '100vh' }}>
 
       <div className="max-w-7xl mx-auto flex pt-20">
 
         {/* sidebar */}
-        <aside className="hidden lg:flex flex-col w-56 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto py-8 px-4 border-r border-[#1A2642]" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
+        <aside className="hidden lg:flex flex-col w-56 shrink-0 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto py-8 px-4 border-r border-[#E7DFF5]" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
           {NAV.map((g) => (
             <div key={g.group} className="mb-5">
-              <p className="font-mono text-xs text-slate-700 uppercase tracking-widest mb-2 px-3">{g.group}</p>
+              <p className="font-mono text-xs text-[#3D3650] uppercase tracking-widest mb-2 px-3">{g.group}</p>
               {g.items.map((item) => (
                 <a key={item.id} href={`#${item.id}`}
                   className="flex items-center text-xs px-3 py-1.5 rounded-lg transition-all mb-0.5"
-                  style={{ color: activeId === item.id ? '#A5B4FC' : '#64748B', background: activeId === item.id ? 'rgba(99,102,241,0.1)' : 'transparent', borderLeft: activeId === item.id ? '2px solid #6366F1' : '2px solid transparent' }}>
+                  style={{ color: activeId === item.id ? '#6425C4' : '#64748B', background: activeId === item.id ? 'rgba(127,64,232,0.1)' : 'transparent', borderLeft: activeId === item.id ? '2px solid #7F40E8' : '2px solid transparent' }}>
                   {item.icon && <item.icon size={14} className="mr-2 shrink-0" />}{item.label}
                 </a>
               ))}
@@ -171,14 +171,14 @@ export default function DocsPage() {
           {/* ── Quick Start ───────────────────────────── */}
           <Section id="quickstart">
             <div className="mb-8">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono mb-4 border" style={{ background: 'rgba(99,102,241,0.1)', borderColor: 'rgba(99,102,241,0.3)', color: '#A5B4FC' }}>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono mb-4 border" style={{ background: 'rgba(127,64,232,0.1)', borderColor: 'rgba(127,64,232,0.3)', color: '#6425C4' }}>
                 <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
                 Start here
               </div>
-              <h1 className="font-bold text-white mb-3" style={{ fontSize: 'clamp(1.75rem, 3vw, 2.25rem)', letterSpacing: '-0.03em' }}>
+              <h1 className="font-bold text-[#170B2E] mb-3" style={{ fontSize: 'clamp(1.75rem, 3vw, 2.25rem)', letterSpacing: '-0.03em' }}>
                 First call in 5 minutes
               </h1>
-              <p className="text-slate-400 text-base leading-relaxed">
+              <p className="text-[#6B6478] text-base leading-relaxed">
                 Two API calls. Two URLs. That's the entire integration.
               </p>
             </div>
@@ -191,13 +191,13 @@ export default function DocsPage() {
                 { n: '03', title: 'Create a call from your backend', body: null },
                 { n: '04', title: 'Redirect each user — done', body: 'Alice opens callerUrl, Bob opens receiverUrl. PurpleCallio handles the rest.' },
               ].map((step, i) => (
-                <div key={step.n} className="flex gap-4 rounded-xl border border-[#1A2642] p-5 transition-all hover:border-[#2A3D64]" style={{ background: '#0D1421' }}>
-                  <div className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center font-mono text-xs font-bold" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2))', color: '#A5B4FC', border: '1px solid rgba(99,102,241,0.25)' }}>
+                <div key={step.n} className="flex gap-4 rounded-xl border border-[#E7DFF5] p-5 transition-all hover:border-[#D6C4EE]" style={{ background: '#FFFFFF' }}>
+                  <div className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center font-mono text-xs font-bold" style={{ background: 'linear-gradient(135deg, rgba(127,64,232,0.2), rgba(65,6,134,0.2))', color: '#6425C4', border: '1px solid rgba(127,64,232,0.25)' }}>
                     {step.n}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-white text-sm mb-1">{step.title}</p>
-                    {step.body && <p className="text-xs text-slate-500">{step.body}</p>}
+                    <p className="font-semibold text-[#170B2E] text-sm mb-1">{step.title}</p>
+                    {step.body && <p className="text-xs text-[#8A8298]">{step.body}</p>}
                     {i === 1 && <Code code="npm install @purplecallio/sdk" />}
                     {i === 2 && (
                       <LangTabs tabs={{
@@ -250,7 +250,7 @@ receiver_url = data['receiverUrl']`,
             <Heading>How it works</Heading>
 
             {/* Visual flow */}
-            <div className="rounded-xl border border-[#1A2642] p-6 mb-6" style={{ background: '#0D1421' }}>
+            <div className="rounded-xl border border-[#E7DFF5] p-6 mb-6" style={{ background: '#FFFFFF' }}>
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center">
                 {[
                   { icon: Server, label: 'Your backend', sub: 'POST /calls' },
@@ -262,17 +262,17 @@ receiver_url = data['receiverUrl']`,
                   { icon: UserRound, label: 'Bob (receiver)', sub: 'Opens receiverUrl' },
                 ].map((item, i) =>
                   item === null ? (
-                    <div key={i} className="text-slate-700 text-lg hidden sm:block">→</div>
+                    <div key={i} className="text-[#3D3650] text-lg hidden sm:block">→</div>
                   ) : (
                     <div key={item.label} className="flex flex-col items-center gap-1">
-                      <div className="w-12 h-12 rounded-xl flex items-center justify-center border border-[#2A3D64] text-indigo-300" style={{ background: '#060B18' }}><item.icon size={22} /></div>
-                      <p className="text-xs font-semibold text-white">{item.label}</p>
-                      <p className="font-mono text-xs text-slate-600">{item.sub}</p>
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center border border-[#D6C4EE] text-[#6425C4]" style={{ background: '#F8F4FD' }}><item.icon size={22} /></div>
+                      <p className="text-xs font-semibold text-[#170B2E]">{item.label}</p>
+                      <p className="font-mono text-xs text-[#9C93AC]">{item.sub}</p>
                     </div>
                   )
                 )}
               </div>
-              <div className="mt-6 pt-5 border-t border-[#1A2642] grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-slate-400">
+              <div className="mt-6 pt-5 border-t border-[#E7DFF5] grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-[#6B6478]">
                 <div><span className="text-indigo-400 font-semibold">Signaling</span> — WebSocket events between browser and server</div>
                 <div><span className="text-indigo-400 font-semibold">WebRTC</span> — peer-to-peer media, negotiated automatically</div>
                 <div><span className="text-indigo-400 font-semibold">TURN</span> — relay for calls behind strict firewalls</div>
@@ -280,17 +280,17 @@ receiver_url = data['receiverUrl']`,
             </div>
 
             {/* 3 tokens */}
-            <p className="text-sm font-semibold text-white mb-3">Three types of credentials</p>
+            <p className="text-sm font-semibold text-[#170B2E] mb-3">Three types of credentials</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
-                { prefix: 'bj_live_...', name: 'API Key', who: 'Your server → REST API', color: '#6366F1' },
-                { prefix: 'bj_session_...', name: 'Session Token', who: 'Browser → WebSocket', color: '#8B5CF6' },
-                { prefix: 'JWT Bearer', name: 'Dashboard JWT', who: 'Dashboard UI → management API', color: '#A78BFA' },
+                { prefix: 'bj_live_...', name: 'API Key', who: 'Your server → REST API', color: '#7F40E8' },
+                { prefix: 'bj_session_...', name: 'Session Token', who: 'Browser → WebSocket', color: '#A05DF9' },
+                { prefix: 'JWT Bearer', name: 'Dashboard JWT', who: 'Dashboard UI → management API', color: '#6425C4' },
               ].map((t) => (
-                <div key={t.name} className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0A1525' }}>
+                <div key={t.name} className="rounded-xl border border-[#E7DFF5] p-4" style={{ background: '#F3ECFB' }}>
                   <code className="font-mono text-xs block mb-2" style={{ color: t.color }}>{t.prefix}</code>
-                  <p className="text-xs font-semibold text-white">{t.name}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">{t.who}</p>
+                  <p className="text-xs font-semibold text-[#170B2E]">{t.name}</p>
+                  <p className="text-xs text-[#8A8298] mt-0.5">{t.who}</p>
                 </div>
               ))}
             </div>
@@ -299,7 +299,7 @@ receiver_url = data['receiverUrl']`,
           {/* ── Authentication ───────────────────────── */}
           <Section id="authentication">
             <Heading>Authentication</Heading>
-            <p className="text-slate-400 text-sm mb-4">Every REST request needs your API key in the <code className="font-mono text-xs">x-api-key</code> header.</p>
+            <p className="text-[#6B6478] text-sm mb-4">Every REST request needs your API key in the <code className="font-mono text-xs">x-api-key</code> header.</p>
             <Code code="x-api-key: $PURPLECALLIO_API_KEY" label="Header" />
             <Tip type="warn">
               Session tokens in <code className="font-mono text-xs bg-black/30 px-1 rounded">callerUrl</code> / <code className="font-mono text-xs bg-black/30 px-1 rounded">receiverUrl</code> are single-use. Do not cache or reuse them.
@@ -309,7 +309,7 @@ receiver_url = data['receiverUrl']`,
           {/* ── Hosted UI ────────────────────────────── */}
           <Section id="hosted-ui">
             <Heading>Hosted UI — zero frontend work</Heading>
-            <p className="text-slate-400 text-sm mb-5">
+            <p className="text-[#6B6478] text-sm mb-5">
               The fastest way to integrate. Create a call from your backend, then
               redirect your users to a PurpleCallio-hosted meeting page. No frontend
               implementation required.
@@ -326,14 +326,14 @@ receiver_url = data['receiverUrl']`,
                 'Branding support',
                 'WebRTC + TURN handled',
               ].map((f) => (
-                <div key={f} className="rounded-lg border border-[#1A2642] px-3 py-2 text-xs text-slate-300" style={{ background: '#0A1525' }}>
+                <div key={f} className="rounded-lg border border-[#E7DFF5] px-3 py-2 text-xs text-[#4B4560]" style={{ background: '#F3ECFB' }}>
                   ✓ {f}
                 </div>
               ))}
             </div>
 
-            <p className="text-sm font-semibold text-white mb-3">Integration flow</p>
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center rounded-xl border border-[#1A2642] p-6 mb-6" style={{ background: '#0D1421' }}>
+            <p className="text-sm font-semibold text-[#170B2E] mb-3">Integration flow</p>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center rounded-xl border border-[#E7DFF5] p-6 mb-6" style={{ background: '#FFFFFF' }}>
               {[
                 { icon: Server, label: 'Your backend', sub: 'POST /calls' },
                 null,
@@ -342,19 +342,19 @@ receiver_url = data['receiverUrl']`,
                 { icon: UserRound, label: 'Redirect users', sub: 'Meeting starts' },
               ].map((item, i) =>
                 item === null ? (
-                  <div key={i} className="text-slate-700 text-lg hidden sm:block">→</div>
+                  <div key={i} className="text-[#3D3650] text-lg hidden sm:block">→</div>
                 ) : (
                   <div key={item.label} className="flex flex-col items-center gap-1">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center border border-[#2A3D64] text-indigo-300" style={{ background: '#060B18' }}><item.icon size={22} /></div>
-                    <p className="text-xs font-semibold text-white">{item.label}</p>
-                    <p className="font-mono text-xs text-slate-600">{item.sub}</p>
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center border border-[#D6C4EE] text-[#6425C4]" style={{ background: '#F8F4FD' }}><item.icon size={22} /></div>
+                    <p className="text-xs font-semibold text-[#170B2E]">{item.label}</p>
+                    <p className="font-mono text-xs text-[#9C93AC]">{item.sub}</p>
                   </div>
                 )
               )}
             </div>
 
-            <p className="text-sm font-semibold text-white mb-3">Branding</p>
-            <p className="text-slate-400 text-sm mb-3">
+            <p className="text-sm font-semibold text-[#170B2E] mb-3">Branding</p>
+            <p className="text-[#6B6478] text-sm mb-3">
               Configure branding on your project and the hosted page will apply it automatically.
             </p>
             <Code code={`{
@@ -375,14 +375,14 @@ receiver_url = data['receiverUrl']`,
           {/* ── React Components ─────────────────────── */}
           <Section id="react-components">
             <Heading>⚛️ React UI Components</Heading>
-            <p className="text-slate-400 text-sm mb-5">
+            <p className="text-[#6B6478] text-sm mb-5">
               Build a custom interface with reusable React components — no need to
               implement WebRTC, signaling, or media handling yourself.
             </p>
 
             <Code code="npm install @purplecallio/react" label="install" />
 
-            <p className="text-sm font-semibold text-white mb-3">Quick example</p>
+            <p className="text-sm font-semibold text-[#170B2E] mb-3">Quick example</p>
             <Code code={`import { MeetingProvider, MeetingRoom, ParticipantGrid, ControlBar } from '@purplecallio/react';
 
 export function Call({ token, callId, signalUrl }) {
@@ -409,14 +409,14 @@ export function Call({ token, callId, signalUrl }) {
                 { c: 'ConnectionStatus', d: 'Live connection state indicator' },
                 { c: 'SpeakingIndicator', d: 'Active speaker indicator' },
               ].map((x) => (
-                <div key={x.c} className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
-                  <code className="font-mono text-xs block mb-1" style={{ color: '#A5B4FC' }}>{x.c}</code>
-                  <p className="text-xs text-slate-500">{x.d}</p>
+                <div key={x.c} className="rounded-xl border border-[#E7DFF5] p-4" style={{ background: '#FFFFFF' }}>
+                  <code className="font-mono text-xs block mb-1" style={{ color: '#6425C4' }}>{x.c}</code>
+                  <p className="text-xs text-[#8A8298]">{x.d}</p>
                 </div>
               ))}
             </div>
 
-            <p className="text-sm font-semibold text-white mb-3">Hooks</p>
+            <p className="text-sm font-semibold text-[#170B2E] mb-3">Hooks</p>
             <Code code={`import { useMeeting, useParticipants, useParticipant, useDevices, useConnection } from '@purplecallio/react';
 
 function Status() {
@@ -436,14 +436,14 @@ function Status() {
           {/* ── Headless SDK ─────────────────────────── */}
           <Section id="headless-sdk">
             <Heading>Headless SDK</Heading>
-            <p className="text-slate-400 text-sm mb-5">
+            <p className="text-[#6B6478] text-sm mb-5">
               For developers who want complete control. PurpleCallio provides only the
               communication engine — no UI included.
             </p>
 
             <Code code="npm install @purplecallio/sdk" label="install" />
 
-            <p className="text-sm font-semibold text-white mb-3">Quick example</p>
+            <p className="text-sm font-semibold text-[#170B2E] mb-3">Quick example</p>
 <Code code={`import { PurpleCallioMeeting } from '@purplecallio/sdk';
 
 const meeting = new PurpleCallioMeeting({
@@ -474,14 +474,14 @@ await meeting.leave();`} />
                 { m: 'meeting.connectionState()', r: "Current connection state" },
                 { m: 'meeting.on(event, cb)', r: 'Subscribe to meeting events' },
               ].map((m) => (
-                <div key={m.m} className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
-                  <code className="font-mono text-xs block mb-1" style={{ color: '#A5B4FC' }}>{m.m}</code>
-                  <p className="text-xs text-slate-500">→ {m.r}</p>
+                <div key={m.m} className="rounded-xl border border-[#E7DFF5] p-4" style={{ background: '#FFFFFF' }}>
+                  <code className="font-mono text-xs block mb-1" style={{ color: '#6425C4' }}>{m.m}</code>
+                  <p className="text-xs text-[#8A8298]">→ {m.r}</p>
                 </div>
               ))}
             </div>
 
-            <p className="text-sm font-semibold text-white mb-3">Events</p>
+            <p className="text-sm font-semibold text-[#170B2E] mb-3">Events</p>
             <Code code={`meeting.on('connected', (p) => {});
 meeting.on('disconnected', () => {});
 meeting.on('reconnected', () => {});
@@ -500,26 +500,26 @@ meeting.on('remote.stream.ended', () => {});`} />
           {/* ── REST API ─────────────────────────────── */}
           <Section id="api-create">
             <Heading>REST API</Heading>
-            <p className="text-slate-400 text-sm mb-5">Base URL: <code className="font-mono text-xs px-2 py-0.5 rounded" style={{ background: '#0D1421', color: '#A5B4FC' }}>https://api.purplecallio.com</code></p>
+            <p className="text-[#6B6478] text-sm mb-5">Base URL: <code className="font-mono text-xs px-2 py-0.5 rounded" style={{ background: '#FFFFFF', color: '#6425C4' }}>https://api.purplecallio.com</code></p>
 
             {/* POST /calls */}
             <Endpoint method="POST" path="/calls" summary="Create a call">
-              <p className="text-slate-400 text-sm mb-4 mt-3">Creates a call session and returns two participant URLs.</p>
+              <p className="text-[#6B6478] text-sm mb-4 mt-3">Creates a call session and returns two participant URLs.</p>
 
-              <p className="text-xs font-semibold text-slate-300 mb-2">Request body</p>
-              <div className="rounded-lg border border-[#1A2642] overflow-hidden mb-4">
+              <p className="text-xs font-semibold text-[#4B4560] mb-2">Request body</p>
+              <div className="rounded-lg border border-[#E7DFF5] overflow-hidden mb-4">
                 <table className="w-full text-xs">
-                  <thead><tr style={{ background: '#060B18' }}><th className="text-left px-3 py-2 text-slate-600 font-mono font-normal">field</th><th className="text-left px-3 py-2 text-slate-600 font-mono font-normal">type</th><th className="text-left px-3 py-2 text-slate-600 font-mono font-normal">required</th></tr></thead>
+                  <thead><tr style={{ background: '#F8F4FD' }}><th className="text-left px-3 py-2 text-[#9C93AC] font-mono font-normal">field</th><th className="text-left px-3 py-2 text-[#9C93AC] font-mono font-normal">type</th><th className="text-left px-3 py-2 text-[#9C93AC] font-mono font-normal">required</th></tr></thead>
                   <tbody>
                     {[
                       { f: 'callerId', t: 'string', r: true },
                       { f: 'receiverId', t: 'string', r: true },
                       { f: 'type', t: '"VIDEO" | "AUDIO"', r: false },
                     ].map((row) => (
-                      <tr key={row.f} className="border-t border-[#1A2642]">
-                        <td className="px-3 py-2 font-mono" style={{ color: '#A5B4FC' }}>{row.f}</td>
-                        <td className="px-3 py-2 text-slate-500">{row.t}</td>
-                        <td className="px-3 py-2" style={{ color: row.r ? '#F87171' : '#475569' }}>{row.r ? 'required' : 'optional'}</td>
+                      <tr key={row.f} className="border-t border-[#E7DFF5]">
+                        <td className="px-3 py-2 font-mono" style={{ color: '#6425C4' }}>{row.f}</td>
+                        <td className="px-3 py-2 text-[#8A8298]">{row.t}</td>
+                        <td className="px-3 py-2" style={{ color: row.r ? '#DC2626' : '#8A8298' }}>{row.r ? 'required' : 'optional'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -537,7 +537,7 @@ meeting.on('remote.stream.ended', () => {});`} />
   -d '{"callerId":"user_alice","receiverId":"user_bob"}'`,
               }} />
 
-              <p className="text-xs font-semibold text-slate-300 mb-2 mt-4">Response — 201</p>
+              <p className="text-xs font-semibold text-[#4B4560] mb-2 mt-4">Response — 201</p>
               <Code code={`{
   "callId": "clx8f2z...",
   "hostedUrl": "https://purplecallio.com/call?callId=clx8f...&token=bj_session_...",
@@ -560,7 +560,7 @@ meeting.on('remote.stream.ended', () => {});`} />
 
             {/* POST join */}
             <Endpoint method="POST" path="/calls/:callId/join" summary="Join a call" id="api-join">
-              <p className="text-slate-400 text-sm mb-4 mt-3">
+              <p className="text-[#6B6478] text-sm mb-4 mt-3">
                 Marks this participant as joined. The hosted UI calls this automatically
                 when the receiver accepts. Guarded by a session token (<code className="font-mono text-xs bg-black/30 px-1 rounded">Authorization: Bearer bj_session_...</code>).
               </p>
@@ -576,7 +576,7 @@ await meeting.join();`,
 
             {/* POST leave */}
             <Endpoint method="POST" path="/calls/:callId/leave" summary="Leave a call" id="api-leave">
-              <p className="text-slate-400 text-sm mb-4 mt-3">
+              <p className="text-[#6B6478] text-sm mb-4 mt-3">
                 Marks this participant as left. Guarded by a session token.
               </p>
               <LangTabs tabs={{
@@ -589,7 +589,7 @@ await meeting.join();`,
 
             {/* POST accept */}
             <Endpoint method="POST" path="/calls/:callId/accept" summary="Accept a call" id="api-accept">
-              <p className="text-slate-400 text-sm mb-4 mt-3">Marks a call as accepted. The hosted UI does this automatically when the receiver taps Accept.</p>
+              <p className="text-[#6B6478] text-sm mb-4 mt-3">Marks a call as accepted. The hosted UI does this automatically when the receiver taps Accept.</p>
               <LangTabs tabs={{ sdk: `await bj.acceptCall('clx8f2z...');`, curl: `curl -X POST https://api.purplecallio.com/calls/CALL_ID/accept \\
   -H "Authorization: Bearer bj_session_"` }} />
               <Code code={`{ "callId": "clx8f2z...", "status": "ACCEPTED" }`} />
@@ -597,7 +597,7 @@ await meeting.join();`,
 
             {/* POST reject */}
             <Endpoint method="POST" path="/calls/:callId/reject" summary="Reject a call" id="api-reject">
-              <p className="text-slate-400 text-sm mb-4 mt-3">Receiver declines. The caller's UI is notified via WebSocket.</p>
+              <p className="text-[#6B6478] text-sm mb-4 mt-3">Receiver declines. The caller's UI is notified via WebSocket.</p>
               <LangTabs tabs={{ sdk: `await bj.rejectCall('clx8f2z...');`, curl: `curl -X POST https://api.purplecallio.com/calls/CALL_ID/reject \\
   -H "Authorization: Bearer bj_session_"` }} />
               <Code code={`{ "callId": "clx8f2z...", "status": "REJECTED" }`} />
@@ -605,7 +605,7 @@ await meeting.join();`,
 
             {/* POST end */}
             <Endpoint method="POST" path="/calls/:callId/end" summary="End a call" id="api-end">
-              <p className="text-slate-400 text-sm mb-4 mt-3">Ends an active call. Both participants receive a WebSocket <code className="font-mono text-xs bg-black/30 px-1 rounded">call.ended</code> event.</p>
+              <p className="text-[#6B6478] text-sm mb-4 mt-3">Ends an active call. Both participants receive a WebSocket <code className="font-mono text-xs bg-black/30 px-1 rounded">call.ended</code> event.</p>
               <LangTabs tabs={{ sdk: `await bj.endCall('clx8f2z...');`, curl: `curl -X POST https://api.purplecallio.com/calls/CALL_ID/end \\
   -H "Authorization: Bearer bj_session_"` }} />
               <Code code={`{ "callId": "clx8f2z...", "status": "ENDED" }`} />
@@ -613,7 +613,7 @@ await meeting.join();`,
 
             {/* GET call */}
             <Endpoint method="GET" path="/calls/:callId" summary="Get call status" id="api-get">
-              <p className="text-slate-400 text-sm mb-4 mt-3">Returns the current state of a call.</p>
+              <p className="text-[#6B6478] text-sm mb-4 mt-3">Returns the current state of a call.</p>
               <LangTabs tabs={{ sdk: `const call = await bj.getCall('clx8f2z...');`, curl: `curl https://api.purplecallio.com/calls/CALL_ID \\
   -H "x-api-key: $PURPLECALLIO_API_KEY"` }} />
               <Code code={`{
@@ -637,7 +637,7 @@ await meeting.join();`,
           {/* ── WebSocket ─────────────────────────────── */}
           <Section id="websocket">
             <Heading>WebSocket Events</Heading>
-            <p className="text-slate-400 text-sm mb-5">The hosted call UI connects automatically. Build a custom client? Here's the full reference.</p>
+            <p className="text-[#6B6478] text-sm mb-5">The hosted call UI connects automatically. Build a custom client? Here's the full reference.</p>
 
             <Code label="connect" code={`import { io } from 'socket.io-client';
 
@@ -650,75 +650,75 @@ socket.on('connect', () => {
   socket.emit('authenticate', { token: 'bj_session_...' });
 });`} />
 
-            <p className="text-sm font-semibold text-white mb-3 mt-6">Connection</p>
+            <p className="text-sm font-semibold text-[#170B2E] mb-3 mt-6">Connection</p>
             <div className="space-y-3 mb-5">
               {[
                 { event: 'connected', dir: '→ client', color: '#10B981', desc: 'Authenticated and joined the meeting. Carries your participant id.', payload: `{ participantId: 'user_alice' }` },
                 { event: 'disconnected', dir: '→ client', color: '#EF4444', desc: 'Socket dropped.', payload: `{}` },
                 { event: 'reconnected', dir: '→ client', color: '#F59E0B', desc: 'Socket re-established.', payload: `{}` },
               ].map((ev) => (
-                <div key={ev.event} className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
+                <div key={ev.event} className="rounded-xl border border-[#E7DFF5] p-4" style={{ background: '#FFFFFF' }}>
                   <div className="flex items-center gap-3 mb-2">
                     <code className="font-mono text-xs font-bold" style={{ color: ev.color }}>{ev.event}</code>
-                    <span className="text-xs text-slate-600 font-mono">{ev.dir}</span>
+                    <span className="text-xs text-[#9C93AC] font-mono">{ev.dir}</span>
                   </div>
-                  <p className="text-xs text-slate-400 mb-2">{ev.desc}</p>
-                  <code className="font-mono text-xs text-slate-600">{ev.payload}</code>
+                  <p className="text-xs text-[#6B6478] mb-2">{ev.desc}</p>
+                  <code className="font-mono text-xs text-[#9C93AC]">{ev.payload}</code>
                 </div>
               ))}
             </div>
 
-            <p className="text-sm font-semibold text-white mb-3">Call + participant events</p>
+            <p className="text-sm font-semibold text-[#170B2E] mb-3">Call + participant events</p>
             <div className="space-y-3 mb-5">
               {[
                 { event: 'call.started', dir: '→ both', color: '#10B981', desc: 'Call became active.', payload: `{ callId: 'clx8f2z...' }` },
                 { event: 'call.ended', dir: '→ both', color: '#EF4444', desc: 'Call ended by either side.', payload: `{ callId: 'clx8f2z...' }` },
-                { event: 'participant.joined', dir: '→ others', color: '#6366F1', desc: 'A participant joined the room.', payload: `{ participantId: 'user_bob' }` },
+                { event: 'participant.joined', dir: '→ others', color: '#7F40E8', desc: 'A participant joined the room.', payload: `{ participantId: 'user_bob' }` },
                 { event: 'participant.left', dir: '→ others', color: '#F59E0B', desc: 'A participant left the room.', payload: `{ participantId: 'user_bob' }` },
-                { event: 'participant.updated', dir: '→ others', color: '#8B5CF6', desc: 'Participant media state changed.', payload: `{ participantId: 'user_bob', camera: false, microphone: true }` },
-                { event: 'incoming-call', dir: '→ receiver', color: '#6366F1', desc: 'Legacy alias — caller is waiting.', payload: `{ callId, callerId, type: 'VIDEO' }` },
+                { event: 'participant.updated', dir: '→ others', color: '#A05DF9', desc: 'Participant media state changed.', payload: `{ participantId: 'user_bob', camera: false, microphone: true }` },
+                { event: 'incoming-call', dir: '→ receiver', color: '#7F40E8', desc: 'Legacy alias — caller is waiting.', payload: `{ callId, callerId, type: 'VIDEO' }` },
               ].map((ev) => (
-                <div key={ev.event} className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
+                <div key={ev.event} className="rounded-xl border border-[#E7DFF5] p-4" style={{ background: '#FFFFFF' }}>
                   <div className="flex items-center gap-3 mb-2">
                     <code className="font-mono text-xs font-bold" style={{ color: ev.color }}>{ev.event}</code>
-                    <span className="text-xs text-slate-600 font-mono">{ev.dir}</span>
+                    <span className="text-xs text-[#9C93AC] font-mono">{ev.dir}</span>
                   </div>
-                  <p className="text-xs text-slate-400 mb-2">{ev.desc}</p>
-                  <code className="font-mono text-xs text-slate-600">{ev.payload}</code>
+                  <p className="text-xs text-[#6B6478] mb-2">{ev.desc}</p>
+                  <code className="font-mono text-xs text-[#9C93AC]">{ev.payload}</code>
                 </div>
               ))}
             </div>
 
-            <p className="text-sm font-semibold text-white mb-3">Media events</p>
+            <p className="text-sm font-semibold text-[#170B2E] mb-3">Media events</p>
             <div className="space-y-3 mb-5">
               {[
-                { event: 'camera.enabled / camera.disabled', dir: '→ others', color: '#8B5CF6', desc: 'Camera toggled.', payload: `{ callId }` },
-                { event: 'microphone.enabled / microphone.disabled', dir: '→ others', color: '#8B5CF6', desc: 'Microphone toggled.', payload: `{ callId }` },
-                { event: 'screenShare.started / screenShare.stopped', dir: '→ others', color: '#8B5CF6', desc: 'Screen share toggled.', payload: `{ callId }` },
+                { event: 'camera.enabled / camera.disabled', dir: '→ others', color: '#A05DF9', desc: 'Camera toggled.', payload: `{ callId }` },
+                { event: 'microphone.enabled / microphone.disabled', dir: '→ others', color: '#A05DF9', desc: 'Microphone toggled.', payload: `{ callId }` },
+                { event: 'screenShare.started / screenShare.stopped', dir: '→ others', color: '#A05DF9', desc: 'Screen share toggled.', payload: `{ callId }` },
               ].map((ev) => (
-                <div key={ev.event} className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
+                <div key={ev.event} className="rounded-xl border border-[#E7DFF5] p-4" style={{ background: '#FFFFFF' }}>
                   <div className="flex items-center gap-3 mb-2">
                     <code className="font-mono text-xs font-bold" style={{ color: ev.color }}>{ev.event}</code>
-                    <span className="text-xs text-slate-600 font-mono">{ev.dir}</span>
+                    <span className="text-xs text-[#9C93AC] font-mono">{ev.dir}</span>
                   </div>
-                  <p className="text-xs text-slate-400 mb-2">{ev.desc}</p>
-                  <code className="font-mono text-xs text-slate-600">{ev.payload}</code>
+                  <p className="text-xs text-[#6B6478] mb-2">{ev.desc}</p>
+                  <code className="font-mono text-xs text-[#9C93AC]">{ev.payload}</code>
                 </div>
               ))}
             </div>
 
-            <p className="text-sm font-semibold text-white mb-3">WebRTC signaling</p>
+            <p className="text-sm font-semibold text-[#170B2E] mb-3">WebRTC signaling</p>
             <div className="space-y-3">
               {[
-                { event: 'offer / answer / ice-candidate', dir: '↔ both', color: '#8B5CF6', desc: 'WebRTC signaling events relayed by the server.', payload: `{ callId, offer? / answer? / candidate? }` },
+                { event: 'offer / answer / ice-candidate', dir: '↔ both', color: '#A05DF9', desc: 'WebRTC signaling events relayed by the server.', payload: `{ callId, offer? / answer? / candidate? }` },
               ].map((ev) => (
-                <div key={ev.event} className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
+                <div key={ev.event} className="rounded-xl border border-[#E7DFF5] p-4" style={{ background: '#FFFFFF' }}>
                   <div className="flex items-center gap-3 mb-2">
                     <code className="font-mono text-xs font-bold" style={{ color: ev.color }}>{ev.event}</code>
-                    <span className="text-xs text-slate-600 font-mono">{ev.dir}</span>
+                    <span className="text-xs text-[#9C93AC] font-mono">{ev.dir}</span>
                   </div>
-                  <p className="text-xs text-slate-400 mb-2">{ev.desc}</p>
-                  <code className="font-mono text-xs text-slate-600">{ev.payload}</code>
+                  <p className="text-xs text-[#6B6478] mb-2">{ev.desc}</p>
+                  <code className="font-mono text-xs text-[#9C93AC]">{ev.payload}</code>
                 </div>
               ))}
             </div>
@@ -727,31 +727,31 @@ socket.on('connect', () => {
           {/* ── Webhooks ──────────────────────────────── */}
           <Section id="webhooks">
             <Heading>Webhooks</Heading>
-            <p className="text-slate-400 text-sm mb-5">PurpleCallio POSTs a signed event to your server on every call lifecycle change.</p>
+            <p className="text-[#6B6478] text-sm mb-5">PurpleCallio POSTs a signed event to your server on every call lifecycle change.</p>
 
             {/* Setup */}
-            <div className="rounded-xl border border-[#1A2642] p-5 mb-5" style={{ background: '#0D1421' }}>
-              <p className="text-xs font-semibold text-white mb-3">Setup — Dashboard</p>
-              <div className="flex items-center gap-3 flex-wrap text-xs text-slate-400">
-                <span className="px-3 py-1 rounded-lg border border-[#2A3D64]" style={{ background: '#060B18' }}>Open project</span>
-                <span className="text-slate-700">→</span>
-                <span className="px-3 py-1 rounded-lg border border-[#2A3D64]" style={{ background: '#060B18' }}>Webhook section</span>
-                <span className="text-slate-700">→</span>
-                <span className="px-3 py-1 rounded-lg border border-[#2A3D64]" style={{ background: '#060B18' }}>Paste your URL</span>
-                <span className="text-slate-700">→</span>
-                <span className="px-3 py-1 rounded-lg border border-[#2A3D64] text-green-400" style={{ background: '#060B18' }}>Secret auto-generated</span>
+            <div className="rounded-xl border border-[#E7DFF5] p-5 mb-5" style={{ background: '#FFFFFF' }}>
+              <p className="text-xs font-semibold text-[#170B2E] mb-3">Setup — Dashboard</p>
+              <div className="flex items-center gap-3 flex-wrap text-xs text-[#6B6478]">
+                <span className="px-3 py-1 rounded-lg border border-[#D6C4EE]" style={{ background: '#F8F4FD' }}>Open project</span>
+                <span className="text-[#3D3650]">→</span>
+                <span className="px-3 py-1 rounded-lg border border-[#D6C4EE]" style={{ background: '#F8F4FD' }}>Webhook section</span>
+                <span className="text-[#3D3650]">→</span>
+                <span className="px-3 py-1 rounded-lg border border-[#D6C4EE]" style={{ background: '#F8F4FD' }}>Paste your URL</span>
+                <span className="text-[#3D3650]">→</span>
+                <span className="px-3 py-1 rounded-lg border border-[#D6C4EE] text-green-700" style={{ background: '#F8F4FD' }}>Secret auto-generated</span>
               </div>
             </div>
 
             {/* Events */}
             <div className="grid grid-cols-2 gap-2 mb-5">
               {['call.created', 'call.accepted', 'call.rejected', 'call.ended'].map((ev) => (
-                <div key={ev} className="rounded-lg border border-[#1A2642] px-3 py-2 font-mono text-xs" style={{ background: '#0A1525', color: '#A5B4FC' }}>{ev}</div>
+                <div key={ev} className="rounded-lg border border-[#E7DFF5] px-3 py-2 font-mono text-xs" style={{ background: '#F3ECFB', color: '#6425C4' }}>{ev}</div>
               ))}
             </div>
 
             {/* Verify */}
-            <p className="text-sm font-semibold text-white mb-3">Verify the signature</p>
+            <p className="text-sm font-semibold text-[#170B2E] mb-3">Verify the signature</p>
             <Tip type="warn">
               Always verify the <code className="font-mono text-xs bg-black/30 px-1 rounded">X-PurpleCallio-Signature</code> header before processing. Use <code className="font-mono text-xs bg-black/30 px-1 rounded">express.raw()</code> — do not parse JSON first.
             </Tip>
@@ -801,7 +801,7 @@ async def webhook(request: Request):
           <Section id="examples">
             <Heading>Examples</Heading>
 
-            <p className="text-sm font-semibold text-white mb-3">Hosted UI — create & redirect (Node.js)</p>
+            <p className="text-sm font-semibold text-[#170B2E] mb-3">Hosted UI — create & redirect (Node.js)</p>
             <Code code={`import PurpleCallio from '@purplecallio/sdk';
 
 const bj = new PurpleCallio({
@@ -821,7 +821,7 @@ const { callId, hostedUrl, participants } = await bj.createCall({
 //    participants[1].hostedUrl  → Bob
 res.redirect(participants[0].hostedUrl);`} label="your-server.js" />
 
-            <p className="text-sm font-semibold text-white mb-3 mt-6">React Components</p>
+            <p className="text-sm font-semibold text-[#170B2E] mb-3 mt-6">React Components</p>
             <Code code={`import { MeetingProvider, MeetingRoom, ParticipantGrid, CameraButton, MicrophoneButton, ScreenShareButton, LeaveButton, DeviceSelector } from '@purplecallio/react';
 
 export function CustomCall({ token, callId, signalUrl }) {
@@ -841,7 +841,7 @@ export function CustomCall({ token, callId, signalUrl }) {
   );
 }`} />
 
-            <p className="text-sm font-semibold text-white mb-3 mt-6">Headless SDK</p>
+            <p className="text-sm font-semibold text-[#170B2E] mb-3 mt-6">Headless SDK</p>
             <Code code={`import { PurpleCallioMeeting } from '@purplecallio/sdk';
 
 const meeting = new PurpleCallioMeeting({ token, callId, signalUrl });
@@ -858,9 +858,9 @@ meeting.microphone.enable();`} />
           {/* ── Errors ───────────────────────────────── */}
           <Section id="errors">
             <Heading>Error Codes</Heading>
-            <div className="rounded-xl border border-[#1A2642] overflow-hidden">
+            <div className="rounded-xl border border-[#E7DFF5] overflow-hidden">
               <table className="w-full text-xs">
-                <thead><tr style={{ background: '#0D1421' }}><th className="text-left px-4 py-2.5 text-slate-600 font-mono font-normal">status</th><th className="text-left px-4 py-2.5 text-slate-600 font-mono font-normal">meaning</th><th className="text-left px-4 py-2.5 text-slate-600 font-mono font-normal">fix</th></tr></thead>
+                <thead><tr style={{ background: '#FFFFFF' }}><th className="text-left px-4 py-2.5 text-[#9C93AC] font-mono font-normal">status</th><th className="text-left px-4 py-2.5 text-[#9C93AC] font-mono font-normal">meaning</th><th className="text-left px-4 py-2.5 text-[#9C93AC] font-mono font-normal">fix</th></tr></thead>
                 <tbody>
                   {[
                     { code: '400', label: 'Bad Request', fix: 'Check request body — missing required field.' },
@@ -871,12 +871,12 @@ meeting.microphone.enable();`} />
                     { code: '429', label: 'Rate Limited', fix: 'Slow down — too many requests per second.' },
                     { code: '500', label: 'Server Error', fix: 'Temporary. Retry with backoff. Contact support if persistent.' },
                   ].map((row, i) => {
-                    const c = Number(row.code) >= 500 ? '#F87171' : Number(row.code) >= 400 ? '#FCD34D' : '#A5B4FC';
+                    const c = Number(row.code) >= 500 ? '#DC2626' : Number(row.code) >= 400 ? '#B45309' : '#6425C4';
                     return (
-                      <tr key={row.code} className="border-t border-[#1A2642]" style={{ background: i % 2 === 0 ? '#060B18' : '#070D1C' }}>
+                      <tr key={row.code} className="border-t border-[#E7DFF5]" style={{ background: i % 2 === 0 ? '#FFFFFF' : '#FBF8FE' }}>
                         <td className="px-4 py-2.5 font-mono font-bold" style={{ color: c }}>{row.code}</td>
-                        <td className="px-4 py-2.5 text-white">{row.label}</td>
-                        <td className="px-4 py-2.5 text-slate-500">{row.fix}</td>
+                        <td className="px-4 py-2.5 text-[#170B2E]">{row.label}</td>
+                        <td className="px-4 py-2.5 text-[#8A8298]">{row.fix}</td>
                       </tr>
                     );
                   })}
@@ -888,7 +888,7 @@ meeting.microphone.enable();`} />
 {/* ── Usage & Billing ─────────────────────────── */}
           <Section id="usage-billing">
             <Heading>Usage & Billing</Heading>
-            <p className="text-slate-400 text-sm mb-5">
+            <p className="text-[#6B6478] text-sm mb-5">
               PurpleCallio is pay-as-you-go. There are no subscriptions and no
               up-front fees — you pay a simple per-participant-minute rate only
               for usage beyond the monthly free allowance.
@@ -901,16 +901,16 @@ meeting.microphone.enable();`} />
                 { media: 'Video', rate: video, note: freeVideo === undefined ? 'Current allowance loading' : `First ${freeVideo} video min/month free` },
                 { media: 'Screen share', rate: screen, note: 'Separate usage category; no free allowance' },
               ].map((r) => (
-                <div key={r.media} className="rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
-                  <p className="text-xs text-slate-500">{r.media}</p>
-                  <p className="text-2xl font-bold text-white mt-1">{r.rate}</p>
-                  <p className="text-[11px] text-slate-500 mt-1">/ participant-minute</p>
-                  <p className="text-[11px] text-slate-500 mt-2">{r.note}</p>
+                <div key={r.media} className="rounded-xl border border-[#E7DFF5] p-4" style={{ background: '#FFFFFF' }}>
+                  <p className="text-xs text-[#8A8298]">{r.media}</p>
+                  <p className="text-2xl font-bold text-[#170B2E] mt-1">{r.rate}</p>
+                  <p className="text-[11px] text-[#8A8298] mt-1">/ participant-minute</p>
+                  <p className="text-[11px] text-[#8A8298] mt-2">{r.note}</p>
                 </div>
               ))}
             </div>
 
-            <p className="text-sm font-semibold text-white mb-3">How billing works</p>
+            <p className="text-sm font-semibold text-[#170B2E] mb-3">How billing works</p>
             <div className="space-y-3 mb-6">
               {[
                 { t: 'Start free', d: freeAudio === undefined || freeVideo === undefined ? 'Current free allowances are loaded from the billing service.' : `Every account gets ${freeAudio} audio + ${freeVideo} video minutes/month at no cost. No card required to begin.` },
@@ -918,11 +918,11 @@ meeting.microphone.enable();`} />
                 { t: 'Monthly invoice', d: rates ? `At the end of each month we generate an invoice for billable usage and auto-charge your saved card. GST of ${rates.taxPercent}% applies on billable usage.` : 'Current tax information is loaded from the billing service.' },
                 { t: 'Failed payment', d: 'We retry and enter a 7-day grace period. Active calls are never interrupted, but new calls are blocked until payment succeeds.' },
               ].map((s) => (
-                <div key={s.t} className="flex gap-3 rounded-xl border border-[#1A2642] p-4" style={{ background: '#0D1421' }}>
-                  <span className="shrink-0 w-6 h-6 rounded-lg flex items-center justify-center font-mono text-xs font-bold" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2))', color: '#A5B4FC', border: '1px solid rgba(99,102,241,0.25)' }}>✓</span>
+                <div key={s.t} className="flex gap-3 rounded-xl border border-[#E7DFF5] p-4" style={{ background: '#FFFFFF' }}>
+                  <span className="shrink-0 w-6 h-6 rounded-lg flex items-center justify-center font-mono text-xs font-bold" style={{ background: 'linear-gradient(135deg, rgba(127,64,232,0.2), rgba(65,6,134,0.2))', color: '#6425C4', border: '1px solid rgba(127,64,232,0.25)' }}>✓</span>
                   <div>
-                    <p className="text-sm font-semibold text-white">{s.t}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{s.d}</p>
+                    <p className="text-sm font-semibold text-[#170B2E]">{s.t}</p>
+                    <p className="text-xs text-[#8A8298] mt-0.5">{s.d}</p>
                   </div>
                 </div>
               ))}
@@ -948,22 +948,22 @@ meeting.microphone.enable();`} />
                 { q: 'Do you support group calls?', a: 'Currently 1:1 calls. Group calls are on the roadmap.' },
                 { q: 'How do I debug a failed call?', a: 'Check the WebSocket connection state, verify the session token matches the correct participant, ensure camera/microphone permissions are granted, and confirm TURN credentials are returned from /turn/credentials.' },
               ].map((item) => (
-                <div key={item.q} className="rounded-xl border border-[#1A2642] p-5" style={{ background: '#0D1421' }}>
-                  <p className="text-sm font-semibold text-white mb-1">{item.q}</p>
-                  <p className="text-sm text-slate-400 leading-relaxed">{item.a}</p>
+                <div key={item.q} className="rounded-xl border border-[#E7DFF5] p-5" style={{ background: '#FFFFFF' }}>
+                  <p className="text-sm font-semibold text-[#170B2E] mb-1">{item.q}</p>
+                  <p className="text-sm text-[#6B6478] leading-relaxed">{item.a}</p>
                 </div>
               ))}
             </div>
 
             {/* Final CTA */}
-            <div className="mt-12 rounded-xl p-8 text-center border border-[#2A3D64]" style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.05))' }}>
-              <p className="font-bold text-white mb-2 text-lg">Still stuck?</p>
-              <p className="text-slate-400 text-sm mb-6">Try the playground — make a call in your browser with no code, no API key required.</p>
+            <div className="mt-12 rounded-xl p-8 text-center border border-[#D6C4EE]" style={{ background: 'linear-gradient(135deg, rgba(127,64,232,0.08), rgba(65,6,134,0.05))' }}>
+              <p className="font-bold text-[#170B2E] mb-2 text-lg">Still stuck?</p>
+              <p className="text-[#6B6478] text-sm mb-6">Try the playground — make a call in your browser with no code, no API key required.</p>
               <div className="flex flex-wrap justify-center gap-3">
-                <Link href="/dashboard/playground" className="inline-flex items-center gap-2 text-white font-medium text-sm px-6 py-2.5 rounded-lg transition-all hover:opacity-90" style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}>
+                <Link href="/dashboard/playground" className="inline-flex items-center gap-2 text-white font-medium text-sm px-6 py-2.5 rounded-lg transition-all hover:opacity-90" style={{ background: 'linear-gradient(135deg, #7F40E8, #410686)' }}>
                   Open playground →
                 </Link>
-                <Link href="/signup" className="inline-flex items-center gap-2 text-slate-300 font-medium text-sm px-6 py-2.5 rounded-lg border border-[#1A2642] hover:border-[#2A3D64] transition-all">
+                <Link href="/signup" className="inline-flex items-center gap-2 text-[#4B4560] font-medium text-sm px-6 py-2.5 rounded-lg border border-[#E7DFF5] hover:border-[#D6C4EE] transition-all">
                   Get API key
                 </Link>
               </div>

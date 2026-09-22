@@ -99,13 +99,13 @@ export default function DevelopersPage() {
             ].map(([name, label, description]) => (
                <article
                   key={name}
-                  className="rounded-2xl border border-[#1A2642] bg-[#0A0F1E] p-6"
+                  className="rounded-2xl border border-[#E7DFF5] bg-white p-6"
                >
-                  <p className="font-mono text-xs uppercase tracking-widest text-indigo-300">
+                  <p className="font-mono text-xs uppercase tracking-widest text-[#6425C4]">
                      {label}
                   </p>
-                  <h2 className="mt-3 text-xl font-bold text-white">{name}</h2>
-                  <p className="mt-2 text-sm leading-6 text-slate-400">
+                  <h2 className="mt-3 text-xl font-bold text-[#170B2E]">{name}</h2>
+                  <p className="mt-2 text-sm leading-6 text-[#6B6478]">
                      {description}
                   </p>
                </article>
@@ -147,15 +147,15 @@ export default function DevelopersPage() {
                ].map(([name, build, handles]) => (
                   <article
                      key={name}
-                     className="rounded-xl border border-[#1A2642] p-5"
+                     className="rounded-xl border border-[#E7DFF5] p-5"
                   >
-                     <h3 className="font-semibold text-white">{name}</h3>
-                     <p className="mt-3 text-sm text-slate-400">
-                        <strong className="text-slate-200">You build:</strong>{" "}
+                     <h3 className="font-semibold text-[#170B2E]">{name}</h3>
+                     <p className="mt-3 text-sm text-[#6B6478]">
+                        <strong className="text-[#3D3650]">You build:</strong>{" "}
                         {build}
                      </p>
-                     <p className="mt-3 text-sm text-slate-400">
-                        <strong className="text-slate-200">
+                     <p className="mt-3 text-sm text-[#6B6478]">
+                        <strong className="text-[#3D3650]">
                            PurpleCallio handles:
                         </strong>{" "}
                         {handles}
@@ -170,12 +170,12 @@ export default function DevelopersPage() {
                   <Link
                      key={name}
                      href={href}
-                     className="rounded-xl border border-[#1A2642] p-5 transition hover:border-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-300"
+                     className="rounded-xl border border-[#E7DFF5] p-5 transition hover:border-[#A05DF9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#A05DF9]"
                   >
-                     <h3 className="font-semibold text-white">
-                        {name} <span className="text-indigo-300">→</span>
+                     <h3 className="font-semibold text-[#170B2E]">
+                        {name} <span className="text-[#6425C4]">→</span>
                      </h3>
-                     <p className="mt-2 text-sm leading-6 text-slate-400">
+                     <p className="mt-2 text-sm leading-6 text-[#6B6478]">
                         {description}
                      </p>
                   </Link>
@@ -191,13 +191,13 @@ export default function DevelopersPage() {
             <div className="flex flex-wrap gap-4">
                <Link
                   href="/docs/quickstart"
-                  className="text-indigo-300 hover:text-white"
+                  className="text-[#6425C4] hover:text-[#170B2E]"
                >
                   Read the quickstart →
                </Link>
                <Link
                   href="/pricing"
-                  className="text-indigo-300 hover:text-white"
+                  className="text-[#6425C4] hover:text-[#170B2E]"
                >
                   Understand usage pricing →
                </Link>
