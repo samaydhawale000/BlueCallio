@@ -82,7 +82,7 @@ return (
             <DemoCard
               title="Video Calling"
               description="Experience HD video calls, screen sharing and WebRTC exactly like your users."
-              icon={<Video color="#818CF8" />}
+              icon={<Video color="#7F40E8" />}
               buttonText={
                 loading
                   ? "Creating Session..."
@@ -95,7 +95,7 @@ return (
             <DemoCard
               title="Audio Calling"
               description="Crystal clear audio calling built on the same infrastructure."
-              icon={<Phone color="#818CF8" />}
+              icon={<Phone color="#7F40E8" />}
               buttonText={
                 loading
                   ? "Creating Session..."

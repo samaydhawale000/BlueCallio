@@ -41,14 +41,14 @@ export default function SignupPage() {
   }, [hasHydrated, token, router]);
 
   return (
-    <div className="min-h-screen" style={{ background: '#060B18' }}>
+    <div className="min-h-screen" style={{ background: '#FFFFFF' }}>
       <div className="min-h-screen grid lg:grid-cols-2">
         {/* ── Left: Branding / Benefits ── */}
         <div
           className="relative hidden lg:flex flex-col justify-between p-12 overflow-hidden"
           style={{
             background:
-              'radial-gradient(ellipse 80% 60% at 20% 20%, rgba(139,92,246,0.12), transparent), radial-gradient(ellipse 60% 50% at 80% 80%, rgba(99,102,241,0.08), transparent), #0A0F1E',
+              'radial-gradient(ellipse 80% 60% at 20% 20%, rgba(160,93,249,0.25), transparent), radial-gradient(ellipse 60% 50% at 80% 80%, rgba(127,64,232,0.15), transparent), linear-gradient(180deg, #2B0F52 0%, #1A0B33 100%)',
           }}
         >
           <div
@@ -64,7 +64,7 @@ export default function SignupPage() {
           <div className="relative flex items-center gap-3">
             <Image src={logo} alt="PurpleCallio" width={176} height={42} className="h-auto w-44 object-contain" />
             <div>
-              <p className="text-xs text-slate-500">Communication Infrastructure</p>
+              <p className="text-xs text-white/50">Communication Infrastructure</p>
             </div>
           </div>
 
@@ -75,7 +75,7 @@ export default function SignupPage() {
               <br />
               <span
                 style={{
-                  background: 'linear-gradient(135deg, #C084FC, #818CF8)',
+                  background: 'linear-gradient(135deg, #FFFFFF, #C9A6F5)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}
@@ -93,21 +93,21 @@ export default function SignupPage() {
                 <div
                   key={item.label}
                   className="flex items-center gap-3 rounded-xl px-4 py-3"
-                  style={{ background: 'rgba(13,20,33,0.8)', border: '1px solid #1A2642' }}
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}
                 >
                   <div
                     className="w-9 h-9 rounded-lg flex items-center justify-center text-lg shrink-0"
                     style={{
                       background:
-                        'linear-gradient(135deg, rgba(139,92,246,0.15), rgba(99,102,241,0.15))',
-                      border: '1px solid rgba(139,92,246,0.25)',
+                        'rgba(255,255,255,0.12)',
+                      border: '1px solid rgba(255,255,255,0.2)',
                     }}
                   >
                     <item.icon size={18} strokeWidth={1.8} />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-white">{item.label}</p>
-                    <p className="text-xs text-slate-500">{item.desc}</p>
+                    <p className="text-xs text-white/50">{item.desc}</p>
                   </div>
                 </div>
               ))}
@@ -116,11 +116,11 @@ export default function SignupPage() {
 
           {/* Bottom: trust */}
           <div className="relative flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-1.5 text-xs text-slate-400 px-3 py-1.5 rounded-full border border-[#1A2642]">
+            <span className="inline-flex items-center gap-1.5 text-xs text-white/70 px-3 py-1.5 rounded-full border border-white/15">
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#10B981' }} />
               Free plan, no credit card
             </span>
-            <span className="inline-flex items-center gap-1.5 text-xs text-slate-400 px-3 py-1.5 rounded-full border border-[#1A2642]">
+            <span className="inline-flex items-center gap-1.5 text-xs text-white/70 px-3 py-1.5 rounded-full border border-white/15">
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#10B981' }} />
               300 minutes / month free
             </span>
@@ -130,13 +130,13 @@ export default function SignupPage() {
         {/* ── Right: Signup card ── */}
         <div
           className="relative flex items-center justify-center px-6 py-16"
-          style={{ background: '#060B18' }}
+          style={{ background: '#FFFFFF' }}
         >
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
               background:
-                'radial-gradient(ellipse 50% 40% at 50% 20%, rgba(139,92,246,0.07), transparent)',
+                'radial-gradient(ellipse 50% 40% at 50% 20%, rgba(127,64,232,0.06), transparent)',
             }}
           />
 
@@ -146,18 +146,18 @@ export default function SignupPage() {
               <Link href="/" className="inline-flex">
                 <Image src={logo} alt="PurpleCallio" width={176} height={42} className="h-auto w-44 object-contain" />
               </Link>
-              <p className="text-slate-500 text-sm mt-1">Communication Infrastructure</p>
+              <p className="text-[#8A8298] text-sm mt-1">Communication Infrastructure</p>
             </div>
 
             {/* Card */}
             <div
-              className="rounded-2xl border border-[#1A2642] p-8"
-              style={{ background: '#0D1421', boxShadow: '0 24px 60px rgba(0,0,0,0.4)' }}
+              className="rounded-2xl border border-[#E7DFF5] p-8"
+              style={{ background: '#FFFFFF', boxShadow: '0 24px 60px rgba(127,64,232,0.1)' }}
             >
               <div className="flex flex-col items-center gap-2 text-center mb-6">
                 <Image src={logo} alt="PurpleCallio" width={176} height={42} className="mb-2 h-auto w-40 object-contain" />
-                <h2 className="text-lg font-bold text-white">Create your account</h2>
-                <p className="text-sm text-slate-400">
+                <h2 className="text-lg font-bold text-[#170B2E]">Create your account</h2>
+                <p className="text-sm text-[#6B6478]">
                   Get started free — no credit card required.
                 </p>
               </div>
@@ -166,16 +166,16 @@ export default function SignupPage() {
                 <GoogleSignInButton />
 
                 <div className="flex items-center gap-3 my-1">
-                  <div className="flex-1" style={{ height: '1px', background: '#1A2642' }} />
-                  <span className="text-xs text-slate-600 uppercase tracking-widest">or</span>
-                  <div className="flex-1" style={{ height: '1px', background: '#1A2642' }} />
+                  <div className="flex-1" style={{ height: '1px', background: '#E7DFF5' }} />
+                  <span className="text-xs text-[#9C93AC] uppercase tracking-widest">or</span>
+                  <div className="flex-1" style={{ height: '1px', background: '#E7DFF5' }} />
                 </div>
 
-                <p className="text-center text-xs text-slate-500">
+                <p className="text-center text-xs text-[#8A8298]">
                   Already have an account?{' '}
                   <Link
                     href="/login"
-                    className="font-medium text-violet-400 hover:text-violet-300 transition-colors"
+                    className="font-medium text-[#7F40E8] hover:text-[#6425C4] transition-colors"
                   >
                     Sign in
                   </Link>
@@ -183,13 +183,13 @@ export default function SignupPage() {
               </div>
             </div>
 
-<p className="text-center text-xs text-slate-600 mt-6">
+<p className="text-center text-xs text-[#9C93AC] mt-6">
               By creating an account, you agree to our{' '}
-              <Link href="/terms" className="hover:text-slate-300 transition-colors">
+              <Link href="/terms" className="hover:text-[#170B2E] transition-colors">
                 Terms of Service
               </Link>{' '}
               and{' '}
-              <Link href="/privacy" className="hover:text-slate-300 transition-colors">
+              <Link href="/privacy" className="hover:text-[#170B2E] transition-colors">
                 Privacy Policy
               </Link>
               .

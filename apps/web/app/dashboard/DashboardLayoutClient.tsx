@@ -59,13 +59,13 @@ function PhoneGate() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6" style={{ background: '#060B18' }}>
+    <div className="min-h-screen flex items-center justify-center px-6" style={{ background: '#FFFFFF' }}>
       <div
-        className="w-full max-w-sm rounded-2xl border border-[#1A2642] p-8"
-        style={{ background: '#0D1421', boxShadow: '0 24px 60px rgba(0,0,0,0.4)' }}
+        className="w-full max-w-sm rounded-2xl border border-[#E7DFF5] p-8"
+        style={{ background: '#FFFFFF', boxShadow: '0 24px 60px rgba(127,64,232,0.1)' }}
       >
-        <p className="text-lg font-bold text-white mb-1">One more thing</p>
-        <p className="text-sm text-slate-400 mb-6">
+        <p className="text-lg font-bold text-[#170B2E] mb-1">One more thing</p>
+        <p className="text-sm text-[#6B6478] mb-6">
           Add a contact number to your account. It&apos;s required to authorise cards for
           automatic monthly billing later on.
         </p>
@@ -75,11 +75,11 @@ function PhoneGate() {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="+919876543210"
-            className="w-full rounded-lg border border-[#1A2642] px-3 py-2.5 text-sm text-slate-200"
-            style={{ background: '#0A0F1E' }}
+            className="w-full rounded-lg border border-[#D6C4EE] px-3 py-2.5 text-sm text-[#170B2E]"
+            style={{ background: '#F8F4FD' }}
             autoFocus
           />
-          {error && <p className="text-xs" style={{ color: '#F87171' }}>{error}</p>}
+          {error && <p className="text-xs" style={{ color: '#DC2626' }}>{error}</p>}
           <Button type="submit" loading={saving} className="w-full justify-center">
             Continue
           </Button>
@@ -127,18 +127,18 @@ const logout = useAuthStore((s) => s.logout);
   }
 
   return (
-    <div className="min-h-screen lg:flex" style={{ background: '#060B18' }}>
+    <div className="min-h-screen lg:flex" style={{ background: '#FFFFFF' }}>
       {/* Mobile top bar */}
       <div
-        className="lg:hidden flex items-center justify-between px-4 h-14 border-b border-[#1A2642]"
-        style={{ background: '#0A0F1E' }}
+        className="lg:hidden flex items-center justify-between px-4 h-14 border-b border-[#E7DFF5]"
+        style={{ background: '#FFFFFF' }}
       >
         <Link href="/dashboard" className="flex items-center">
           <Image src={logo} alt="PurpleCallio" width={132} height={32} className="h-auto w-[116px] object-contain" />
         </Link>
         <button
           onClick={() => setSidebarOpen(true)}
-          className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#1A2642] text-slate-400"
+          className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#E7DFF5] text-[#6B6478]"
           aria-label="Open menu"
         >
           <Menu size={20} />
@@ -157,20 +157,20 @@ const logout = useAuthStore((s) => s.logout);
       <aside
         className={`
           fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300
-          border-r border-[#1A2642] flex flex-col
+          border-r border-[#E7DFF5] flex flex-col
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0 lg:static lg:sticky lg:top-0 lg:h-screen lg:flex-none lg:w-64
         `}
-        style={{ background: '#0A0F1E' }}
+        style={{ background: '#FFFFFF' }}
       >
         {/* Brand */}
-        <div className="flex items-center justify-between px-5 h-16 border-b border-[#1A2642]">
+        <div className="flex items-center justify-between px-5 h-16 border-b border-[#E7DFF5]">
           <Link href="/dashboard" className="flex items-center">
             <Image src={logo} alt="PurpleCallio" width={156} height={38} className="h-auto w-[136px] object-contain" />
           </Link>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden w-8 h-8 flex items-center justify-center text-slate-400"
+            className="lg:hidden w-8 h-8 flex items-center justify-center text-[#6B6478]"
             aria-label="Close menu"
           >
             <X size={18} />
@@ -179,7 +179,7 @@ const logout = useAuthStore((s) => s.logout);
 
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 overflow-y-auto">
-          <p className="px-3 pb-2 text-[11px] font-mono uppercase tracking-widest text-slate-600">
+          <p className="px-3 pb-2 text-[11px] font-mono uppercase tracking-widest text-[#9C93AC]">
             Workspace
           </p>
           <div className="flex flex-col gap-0.5">
@@ -197,21 +197,21 @@ const logout = useAuthStore((s) => s.logout);
                     flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all
                     ${
                       active
-                        ? 'text-white font-medium'
-                        : 'text-slate-400 hover:text-white'
+                        ? 'text-[#170B2E] font-medium'
+                        : 'text-[#6B6478] hover:text-[#170B2E]'
                     }
                   `}
                   style={
                     active
                       ? {
                           background:
-                            'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1))',
-                          border: '1px solid rgba(99,102,241,0.25)',
+                            'linear-gradient(135deg, rgba(127,64,232,0.12), rgba(65,6,134,0.06))',
+                          border: '1px solid rgba(127,64,232,0.2)',
                         }
                       : undefined
                   }
                 >
-                  <Icon size={17} style={{ color: active ? '#A5B4FC' : undefined }} />
+                  <Icon size={17} style={{ color: active ? '#7F40E8' : undefined }} />
                   {item.label}
                 </Link>
               );
@@ -220,7 +220,7 @@ const logout = useAuthStore((s) => s.logout);
         </nav>
 
         {/* User + logout */}
-        <div className="p-3 border-t border-[#1A2642]">
+        <div className="p-3 border-t border-[#E7DFF5]">
 <div className="flex items-center gap-3 px-3 py-2">
             {avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -232,21 +232,21 @@ const logout = useAuthStore((s) => s.logout);
             ) : (
               <div
                 className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0"
-                style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}
+                style={{ background: 'linear-gradient(135deg, #7F40E8, #410686)' }}
               >
                 {(displayName || 'U')[0].toUpperCase()}
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{displayName}</p>
-              <p className="text-xs text-slate-500 truncate">{user?.email ?? 'Starter Plan'}</p>
+              <p className="text-sm font-medium text-[#170B2E] truncate">{displayName}</p>
+              <p className="text-xs text-[#8A8298] truncate">{user?.email ?? 'Starter Plan'}</p>
             </div>
             <button
               onClick={() => {
                 logout();
                 router.push('/');
               }}
-              className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-400 hover:bg-white/5 transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-lg text-[#6B6478] hover:text-red-600 hover:bg-[#7F40E8]/5 transition-colors"
               aria-label="Logout"
               title="Logout"
             >

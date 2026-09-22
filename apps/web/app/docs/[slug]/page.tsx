@@ -383,9 +383,9 @@ export default async function DocPage({
          />
          <nav
             aria-label="On this page"
-            className="rounded-xl border border-[#1A2642] bg-[#0A0F1E] p-4"
+            className="rounded-xl border border-[#E7DFF5] bg-white p-4"
          >
-            <p className="font-mono text-xs uppercase tracking-widest text-indigo-300">
+            <p className="font-mono text-xs uppercase tracking-widest text-[#6425C4]">
                On this page
             </p>
             <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm">
@@ -398,7 +398,7 @@ export default async function DocPage({
                            .toLowerCase()
                            .replace(/[^a-z0-9]+/g, "-")
                            .replace(/(^-|-$)/g, "")}`}
-                        className="text-slate-400 hover:text-white"
+                        className="text-[#6B6478] hover:text-[#170B2E]"
                      >
                         {title}
                      </a>
@@ -407,7 +407,7 @@ export default async function DocPage({
                {examples[slug as DocSlug] && (
                   <a
                      href="#example"
-                     className="text-slate-400 hover:text-white"
+                     className="text-[#6B6478] hover:text-[#170B2E]"
                   >
                      Example
                   </a>
@@ -449,17 +449,17 @@ export default async function DocPage({
                   ].map(([name, location, detail]) => (
                      <article
                         key={name}
-                        className="rounded-xl border border-[#1A2642] bg-[#0A0F1E] p-4"
+                        className="rounded-xl border border-[#E7DFF5] bg-white p-4"
                      >
-                        <h3 className="font-semibold text-white">{name}</h3>
-                        <p className="mt-2 text-sm text-indigo-300">
+                        <h3 className="font-semibold text-[#170B2E]">{name}</h3>
+                        <p className="mt-2 text-sm text-[#6425C4]">
                            {location}
                         </p>
-                        <p className="mt-2 text-sm text-slate-400">{detail}</p>
+                        <p className="mt-2 text-sm text-[#6B6478]">{detail}</p>
                      </article>
                   ))}
                </div>
-               <p className="rounded-lg border border-amber-400/30 bg-amber-400/10 p-4 text-sm text-amber-100">
+               <p className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
                   <strong>Never expose your API key in browser code.</strong>{" "}
                   Create calls and authorize participants from trusted server
                   code.
@@ -497,37 +497,37 @@ export default async function DocPage({
             <div className="flex flex-wrap gap-4">
                <Link
                   href="/docs/quickstart"
-                  className="text-indigo-300 hover:text-white"
+                  className="text-[#6425C4] hover:text-[#170B2E]"
                >
                   Quickstart →
                </Link>
                <Link
                   href="/docs/authentication"
-                  className="text-indigo-300 hover:text-white"
+                  className="text-[#6425C4] hover:text-[#170B2E]"
                >
                   Authentication →
                </Link>
                <Link
                   href="/docs/react"
-                  className="text-indigo-300 hover:text-white"
+                  className="text-[#6425C4] hover:text-[#170B2E]"
                >
                   React SDK →
                </Link>
                <Link
                   href="/docs/security"
-                  className="text-indigo-300 hover:text-white"
+                  className="text-[#6425C4] hover:text-[#170B2E]"
                >
                   Security →
                </Link>
                <Link
                   href="/features/video-calling"
-                  className="text-indigo-300 hover:text-white"
+                  className="text-[#6425C4] hover:text-[#170B2E]"
                >
                   Video Calling →
                </Link>
                <Link
                   href="/pricing"
-                  className="text-indigo-300 hover:text-white"
+                  className="text-[#6425C4] hover:text-[#170B2E]"
                >
                   Pricing →
                </Link>

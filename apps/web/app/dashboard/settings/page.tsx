@@ -100,11 +100,11 @@ export default function SettingsPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-3">
-          <svg className="animate-spin h-6 w-6 text-indigo-500" viewBox="0 0 24 24" fill="none">
+          <svg className="animate-spin h-6 w-6 text-[#7F40E8]" viewBox="0 0 24 24" fill="none">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
-          <span className="text-sm text-slate-500">Loading settings…</span>
+          <span className="text-sm text-[#8A8298]">Loading settings…</span>
         </div>
       </div>
     );
@@ -115,19 +115,19 @@ const avatar = me?.avatarUrl || user?.avatarUrl || '';
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Settings</h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <h1 className="text-2xl font-bold text-[#170B2E]">Settings</h1>
+        <p className="text-sm text-[#8A8298] mt-1">
           Manage your account and preferences.
         </p>
       </div>
 
       {/* ── Profile ── */}
-      <section id="profile" className="rounded-2xl border border-[#1A2642] p-6" style={{ background: '#0D1421' }}>
+      <section id="profile" className="rounded-2xl border border-[#E7DFF5] p-6" style={{ background: '#FFFFFF' }}>
         <div className="flex items-center gap-2 mb-1">
-          <User size={16} style={{ color: '#818CF8' }} />
-          <p className="text-base font-semibold text-white">Profile</p>
+          <User size={16} style={{ color: '#7F40E8' }} />
+          <p className="text-base font-semibold text-[#170B2E]">Profile</p>
         </div>
-        <p className="text-sm text-slate-500 mb-6">Basic account information.</p>
+        <p className="text-sm text-[#8A8298] mb-6">Basic account information.</p>
 
         <div className="flex flex-wrap items-center gap-4 mb-6">
           {avatar ? (
@@ -140,14 +140,14 @@ const avatar = me?.avatarUrl || user?.avatarUrl || '';
           ) : (
             <div
               className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold text-white shrink-0"
-              style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}
+              style={{ background: 'linear-gradient(135deg, #7F40E8, #410686)' }}
             >
               {(name || 'U')[0].toUpperCase()}
             </div>
           )}
 <div>
-            <p className="text-sm font-medium text-white">{name || 'Your Account'}</p>
-            <p className="text-xs text-slate-500">{me?.email ?? user?.email ?? me?.userId}</p>
+            <p className="text-sm font-medium text-[#170B2E]">{name || 'Your Account'}</p>
+            <p className="text-xs text-[#8A8298]">{me?.email ?? user?.email ?? me?.userId}</p>
           </div>
           <Badge variant="success" className="ml-auto">
             <Mail size={12} /> Google Verified
@@ -181,11 +181,11 @@ const avatar = me?.avatarUrl || user?.avatarUrl || '';
             placeholder="Your role"
           />
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-slate-300">Country</label>
+            <label className="text-sm font-medium text-[#4B4560]">Country</label>
             <select
               value={country}
               onChange={(e) => setCountry(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-lg text-sm text-slate-100 bg-[#0D1421] border border-[#1A2642] outline-none focus:border-[#6366F1]/60"
+              className="w-full px-3 py-2.5 rounded-lg text-sm text-[#170B2E] bg-[#FFFFFF] border border-[#E7DFF5] outline-none focus:border-[#7F40E8]/60"
             >
               {COUNTRIES.map((c) => (
                 <option key={c} value={c}>{c}</option>
@@ -202,14 +202,14 @@ const avatar = me?.avatarUrl || user?.avatarUrl || '';
       </section>
 
       {/* ── Security ── */}
-      <section id="security" className="rounded-2xl border border-[#1A2642] p-6" style={{ background: '#0D1421' }}>
+      <section id="security" className="rounded-2xl border border-[#E7DFF5] p-6" style={{ background: '#FFFFFF' }}>
         <div className="flex items-center gap-2 mb-1">
           <Shield size={16} style={{ color: '#34D399' }} />
-          <p className="text-base font-semibold text-white">Security</p>
+          <p className="text-base font-semibold text-[#170B2E]">Security</p>
         </div>
-        <p className="text-sm text-slate-500 mb-6">Authentication &amp; account security.</p>
+        <p className="text-sm text-[#8A8298] mb-6">Authentication &amp; account security.</p>
 
-        <div className="divide-y divide-[#1A2642] rounded-xl border border-[#1A2642]">
+        <div className="divide-y divide-[#E7DFF5] rounded-xl border border-[#E7DFF5]">
           <SettingRow
             icon={Shield}
             title="Google Account Connected"
@@ -224,8 +224,8 @@ const avatar = me?.avatarUrl || user?.avatarUrl || '';
           />
         </div>
 
-        <p className="text-sm font-semibold text-white mt-6 mb-3">Recent Login Sessions</p>
-        <div className="divide-y divide-[#1A2642] rounded-xl border border-[#1A2642]">
+        <p className="text-sm font-semibold text-[#170B2E] mt-6 mb-3">Recent Login Sessions</p>
+        <div className="divide-y divide-[#E7DFF5] rounded-xl border border-[#E7DFF5]">
           <SessionRow
             icon={Laptop}
             device="Chrome · macOS"
@@ -267,13 +267,13 @@ function SettingRow({
       <div className="flex items-center gap-3">
         <div
           className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-          style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)' }}
+          style={{ background: 'rgba(127,64,232,0.1)', border: '1px solid rgba(127,64,232,0.2)' }}
         >
-          <Icon size={16} style={{ color: '#818CF8' }} />
+          <Icon size={16} style={{ color: '#7F40E8' }} />
         </div>
         <div>
-          <p className="text-sm font-medium text-white">{title}</p>
-          <p className="text-xs text-slate-500 mt-0.5">{desc}</p>
+          <p className="text-sm font-medium text-[#170B2E]">{title}</p>
+          <p className="text-xs text-[#8A8298] mt-0.5">{desc}</p>
         </div>
       </div>
       {right}
@@ -299,16 +299,16 @@ function SessionRow({
       <div className="flex items-center gap-3">
         <div
           className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-          style={{ background: active ? 'rgba(16,185,129,0.1)' : 'rgba(99,102,241,0.1)', border: `1px solid ${active ? 'rgba(16,185,129,0.2)' : 'rgba(99,102,241,0.2)'}` }}
+          style={{ background: active ? 'rgba(16,185,129,0.1)' : 'rgba(127,64,232,0.1)', border: `1px solid ${active ? 'rgba(16,185,129,0.2)' : 'rgba(127,64,232,0.2)'}` }}
         >
-          <Icon size={16} style={{ color: active ? '#34D399' : '#818CF8' }} />
+          <Icon size={16} style={{ color: active ? '#34D399' : '#7F40E8' }} />
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <p className="text-sm font-medium text-white">{device}</p>
+            <p className="text-sm font-medium text-[#170B2E]">{device}</p>
             {active && <Badge variant="success">Active</Badge>}
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">{location} · {time}</p>
+          <p className="text-xs text-[#8A8298] mt-0.5">{location} · {time}</p>
         </div>
       </div>
     </div>

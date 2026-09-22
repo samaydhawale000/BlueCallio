@@ -206,7 +206,7 @@ export default function PaymentMethodCard({ paymentMethods, onChanged, showToast
         modal: {
           ondismiss: () => setFlow('idle'),
         },
-        theme: { color: '#6366F1' },
+        theme: { color: '#7F40E8' },
         recurring: true,
       };
 
@@ -267,43 +267,43 @@ export default function PaymentMethodCard({ paymentMethods, onChanged, showToast
 
   if (paymentMethods.length === 0) {
     return (
-      <div className="rounded-xl border border-[#1A2642] p-6" style={{ background: '#060B18' }}>
+      <div className="rounded-xl border border-[#E7DFF5] p-6" style={{ background: '#FFFFFF' }}>
         <div className="flex items-center gap-3 mb-3">
           <div
             className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-            style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)' }}
+            style={{ background: 'rgba(127,64,232,0.1)', border: '1px solid rgba(127,64,232,0.25)' }}
           >
-            <CreditCard size={18} style={{ color: '#A5B4FC' }} />
+            <CreditCard size={18} style={{ color: '#6425C4' }} />
           </div>
           <div>
-            <p className="text-sm font-semibold text-white">Payment Method</p>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-sm font-semibold text-[#170B2E]">Payment Method</p>
+            <p className="text-xs text-[#8A8298] mt-0.5">
               Save a card to enable automatic monthly billing. You&apos;ll only be charged
               for usage beyond your free allowance.
             </p>
           </div>
         </div>
 
-        <div className="h-px my-4" style={{ background: '#1A2642' }} />
+        <div className="h-px my-4" style={{ background: '#E7DFF5' }} />
 
-        <p className="text-xs text-slate-500 text-center mb-4">No payment method added yet</p>
+        <p className="text-xs text-[#8A8298] text-center mb-4">No payment method added yet</p>
 
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-5">
           {['No charge today', 'Auto billing every month', 'Cancel anytime'].map((item) => (
-            <span key={item} className="inline-flex items-center gap-1.5 text-xs text-slate-400">
+            <span key={item} className="inline-flex items-center gap-1.5 text-xs text-[#6B6478]">
               <CheckCircle2 size={13} style={{ color: '#34D399' }} /> {item}
             </span>
           ))}
         </div>
 
         <div className="flex flex-col items-center gap-2 mb-5">
-          <p className="text-[10px] uppercase tracking-wide text-slate-600">Accepted cards</p>
+          <p className="text-[10px] uppercase tracking-wide text-[#9C93AC]">Accepted cards</p>
           <div className="flex items-center gap-2">
             {['Visa', 'Mastercard', 'Amex'].map((brand) => (
               <span
                 key={brand}
-                className="text-[11px] font-medium px-2.5 py-1 rounded-md border border-[#1A2642] text-slate-400"
-                style={{ background: '#0A0F1E' }}
+                className="text-[11px] font-medium px-2.5 py-1 rounded-md border border-[#E7DFF5] text-[#6B6478]"
+                style={{ background: '#F8F4FD' }}
               >
                 {brand}
               </span>
@@ -323,13 +323,13 @@ export default function PaymentMethodCard({ paymentMethods, onChanged, showToast
   }
 
   return (
-    <div className="rounded-xl border border-[#1A2642] p-5" style={{ background: '#060B18' }}>
+    <div className="rounded-xl border border-[#E7DFF5] p-5" style={{ background: '#FFFFFF' }}>
       <div className="flex items-center gap-2 mb-4">
-        <CreditCard size={16} style={{ color: '#A5B4FC' }} />
-        <p className="text-sm font-semibold text-white">Payment Method</p>
+        <CreditCard size={16} style={{ color: '#6425C4' }} />
+        <p className="text-sm font-semibold text-[#170B2E]">Payment Method</p>
         <span
           className="ml-auto inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-full"
-          style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)', color: '#A5B4FC' }}
+          style={{ background: 'rgba(127,64,232,0.1)', border: '1px solid rgba(127,64,232,0.25)', color: '#6425C4' }}
         >
           <Lock size={10} /> Secured by Razorpay
         </span>
@@ -339,16 +339,16 @@ export default function PaymentMethodCard({ paymentMethods, onChanged, showToast
         {paymentMethods.map((pm) => (
           <div
             key={pm.id}
-            className="flex flex-wrap items-center gap-3 rounded-xl border border-[#1A2642] px-4 py-3"
-            style={{ background: '#0A0F1E' }}
+            className="flex flex-wrap items-center gap-3 rounded-xl border border-[#E7DFF5] px-4 py-3"
+            style={{ background: '#F8F4FD' }}
           >
-            <CreditCard size={16} style={{ color: '#A5B4FC' }} />
+            <CreditCard size={16} style={{ color: '#6425C4' }} />
             <div className="min-w-0">
-              <p className="text-sm text-slate-200">
+              <p className="text-sm text-[#3D3650]">
                 {(pm.brand || 'Card').toUpperCase()} •••• {pm.last4 ?? '••••'}
               </p>
               {pm.expMonth && pm.expYear && (
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-[#8A8298]">
                   Expires {String(pm.expMonth).padStart(2, '0')}/{String(pm.expYear).slice(-2)}
                 </p>
               )}
@@ -393,7 +393,7 @@ export default function PaymentMethodCard({ paymentMethods, onChanged, showToast
 
       <button
         onClick={handleAddCard}
-        className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-violet-300 hover:text-violet-200 transition-colors"
+        className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-[#6425C4] hover:text-[#6425C4] transition-colors"
       >
         <CreditCard size={13} /> Add another card
       </button>
@@ -404,8 +404,8 @@ export default function PaymentMethodCard({ paymentMethods, onChanged, showToast
 function StatusPanel({ text, success }: { text: string; success?: boolean }) {
   return (
     <div
-      className="rounded-xl border border-[#1A2642] p-8 flex flex-col items-center justify-center gap-3"
-      style={{ background: '#060B18', minHeight: 160 }}
+      className="rounded-xl border border-[#E7DFF5] p-8 flex flex-col items-center justify-center gap-3"
+      style={{ background: '#FFFFFF', minHeight: 160 }}
     >
       <AnimatePresence mode="wait">
         <motion.div
@@ -418,11 +418,11 @@ function StatusPanel({ text, success }: { text: string; success?: boolean }) {
           {success ? (
             <CheckCircle2 size={28} style={{ color: '#34D399' }} />
           ) : (
-            <Loader2 size={28} className="animate-spin" style={{ color: '#A5B4FC' }} />
+            <Loader2 size={28} className="animate-spin" style={{ color: '#6425C4' }} />
           )}
         </motion.div>
       </AnimatePresence>
-      <p className="text-sm text-slate-300">{text}</p>
+      <p className="text-sm text-[#4B4560]">{text}</p>
     </div>
   );
 }

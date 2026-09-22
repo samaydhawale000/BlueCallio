@@ -34,16 +34,16 @@ export function ToastHost({ toast, onDismiss }: Props) {
             transition={{ duration: 0.18 }}
             className="pointer-events-auto flex items-center gap-2.5 rounded-xl border px-4 py-3 shadow-2xl"
             style={{
-              background: toast.type === 'success' ? '#0D1F1A' : '#1F0D0D',
-              borderColor: toast.type === 'success' ? 'rgba(16,185,129,0.35)' : 'rgba(239,68,68,0.35)',
+              background: toast.type === 'success' ? '#ECFDF5' : '#FEF2F2',
+              borderColor: toast.type === 'success' ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)',
             }}
           >
             {toast.type === 'success' ? (
-              <CheckCircle2 size={16} style={{ color: '#34D399' }} />
+              <CheckCircle2 size={16} style={{ color: '#059669' }} />
             ) : (
-              <XCircle size={16} style={{ color: '#F87171' }} />
+              <XCircle size={16} style={{ color: '#DC2626' }} />
             )}
-            <p className="text-sm font-medium text-white">{toast.message}</p>
+            <p className="text-sm font-medium text-[#170B2E]">{toast.message}</p>
           </motion.div>
         )}
       </AnimatePresence>

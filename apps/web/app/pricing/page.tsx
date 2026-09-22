@@ -13,7 +13,7 @@ export const metadata: Metadata = pageMetadata({
 });
 export default function PricingPage() {
    return (
-      <main className="min-h-screen bg-[#060B18] pt-20">
+      <main className="min-h-screen bg-white pt-20">
          <PublicPage
             eyebrow="Pricing"
             title="Simple, usage-based pricing for real-time communication"

@@ -10,10 +10,10 @@ export default function AcceptableUsePage() {
       intro="PurpleCallio provides communication infrastructure intended for legitimate business and software applications. You must not use PurpleCallio for activities that are illegal, abusive, fraudulent, or harmful."
     >
       <LegalSection num="1" title="Prohibited Activities">
-        <p className="font-semibold text-slate-300">Illegal Activity</p>
+        <p className="font-semibold text-[#3D3650]">Illegal Activity</p>
         <p>You may not use PurpleCallio to facilitate or promote illegal activities.</p>
 
-        <p className="font-semibold text-slate-300">Fraud</p>
+        <p className="font-semibold text-[#3D3650]">Fraud</p>
         <p>You may not use PurpleCallio for:</p>
         <LegalBullets items={[
           "Phishing",
@@ -24,7 +24,7 @@ export default function AcceptableUsePage() {
           "Deceptive schemes",
         ]} />
 
-        <p className="font-semibold text-slate-300">Malware</p>
+        <p className="font-semibold text-[#3D3650]">Malware</p>
         <p>You may not use the Service to distribute:</p>
         <LegalBullets items={[
           "Malware",
@@ -34,7 +34,7 @@ export default function AcceptableUsePage() {
           "Malicious scripts",
         ]} />
 
-        <p className="font-semibold text-slate-300">Abuse</p>
+        <p className="font-semibold text-[#3D3650]">Abuse</p>
         <p>You may not use PurpleCallio to:</p>
         <LegalBullets items={[
           "Harass",
@@ -44,7 +44,7 @@ export default function AcceptableUsePage() {
           "Abuse other individuals",
         ]} />
 
-        <p className="font-semibold text-slate-300">Unauthorized Access</p>
+        <p className="font-semibold text-[#3D3650]">Unauthorized Access</p>
         <p>You may not:</p>
         <LegalBullets items={[
           "Attack PurpleCallio infrastructure",
@@ -54,7 +54,7 @@ export default function AcceptableUsePage() {
           "Interfere with the Service",
         ]} />
 
-        <p className="font-semibold text-slate-300">Infrastructure Abuse</p>
+        <p className="font-semibold text-[#3D3650]">Infrastructure Abuse</p>
         <p>You may not intentionally:</p>
         <LegalBullets items={[
           "Create excessive connections",
@@ -64,10 +64,10 @@ export default function AcceptableUsePage() {
           "Use the Service to attack third-party infrastructure",
         ]} />
 
-        <p className="font-semibold text-slate-300">Spam</p>
+        <p className="font-semibold text-[#3D3650]">Spam</p>
         <p>You may not use PurpleCallio to facilitate unlawful or abusive spam campaigns.</p>
 
-        <p className="font-semibold text-slate-300">Misuse of Communication Features</p>
+        <p className="font-semibold text-[#3D3650]">Misuse of Communication Features</p>
         <p>Customers must ensure that their applications comply with applicable laws relating to:</p>
         <LegalBullets items={[
           "User consent",

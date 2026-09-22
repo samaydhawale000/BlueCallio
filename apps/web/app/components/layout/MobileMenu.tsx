@@ -42,16 +42,16 @@ export default function MobileMenu({
               duration: 0.35,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="fixed right-0 top-0 z-50 flex h-screen w-[320px] max-w-[85vw] flex-col border-l border-[#1A2642] bg-[#050816]/95 backdrop-blur-xl"
+            className="fixed right-0 top-0 z-50 flex h-screen w-[320px] max-w-[85vw] flex-col border-l border-[#E7DFF5] bg-white/98 backdrop-blur-xl"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-[#1A2642] px-6 py-5">
+            <div className="flex items-center justify-between border-b border-[#E7DFF5] px-6 py-5">
               <Image src={logo} alt="PurpleCallio" width={156} height={38} className="h-auto w-[136px] object-contain" />
 
               <button
                 onClick={onClose}
                 aria-label="Close menu"
-                className="rounded-lg p-2 text-slate-400 transition hover:bg-white/5 hover:text-white"
+                className="rounded-lg p-2 text-[#6B6478] transition hover:bg-[#7F40E8]/5 hover:text-[#170B2E]"
               >
                 <X size={22} />
               </button>
@@ -65,7 +65,7 @@ export default function MobileMenu({
             </div>
 
             {/* Footer Actions */}
-            <div className="border-t border-[#1A2642] p-6">
+            <div className="border-t border-[#E7DFF5] p-6">
               <div className="flex flex-col gap-3">
                 {isLoggedIn ? (
                   <Link
@@ -84,7 +84,7 @@ export default function MobileMenu({
                       logout?.();
                       window.location.href = "/";
                     }}
-                    className="rounded-lg border border-[#1A2642] py-3 text-center text-sm text-slate-300 transition hover:border-slate-500 hover:text-white"
+                    className="rounded-lg border border-[#E7DFF5] py-3 text-center text-sm text-[#4B4560] transition hover:border-[#D6C4EE] hover:text-[#170B2E]"
                   >
                     Logout
                   </button>

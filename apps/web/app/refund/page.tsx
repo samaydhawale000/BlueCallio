@@ -30,7 +30,7 @@ export default function RefundPage() {
 
       <LegalSection num="3" title="Incorrect Charges">
         <p>If you believe your account was incorrectly charged, contact:</p>
-        <LegalBullets items={["hello@purplecallio.com"]} />
+        <LegalBullets items={["purplecallio@gmail.com"]} />
         <p>within 30 days of the charge.</p>
         <p>Please provide:</p>
         <LegalBullets items={[

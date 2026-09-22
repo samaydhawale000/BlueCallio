@@ -84,7 +84,7 @@ export default function CallsPage() {
          <div className="flex items-center justify-center min-h-[60vh]">
             <div className="flex flex-col items-center gap-3">
                <svg
-                  className="animate-spin h-6 w-6 text-indigo-500"
+                  className="animate-spin h-6 w-6 text-[#7F40E8]"
                   viewBox="0 0 24 24"
                   fill="none"
                >
@@ -102,7 +102,7 @@ export default function CallsPage() {
                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                   />
                </svg>
-               <span className="text-sm text-slate-500">Loading calls…</span>
+               <span className="text-sm text-[#8A8298]">Loading calls…</span>
             </div>
          </div>
       );
@@ -111,8 +111,8 @@ export default function CallsPage() {
    return (
       <div className="flex flex-col gap-6">
          <div>
-            <h1 className="text-2xl font-bold text-white">Calls</h1>
-            <p className="text-sm text-slate-500 mt-1">
+            <h1 className="text-2xl font-bold text-[#170B2E]">Calls</h1>
+            <p className="text-sm text-[#8A8298] mt-1">
                Full call history across all your projects.
             </p>
          </div>
@@ -122,7 +122,7 @@ export default function CallsPage() {
             <div className="relative flex-1">
                <Search
                   size={15}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9C93AC]"
                />
                <Input
                   placeholder="Search by call ID, caller, receiver, or project…"
@@ -135,7 +135,7 @@ export default function CallsPage() {
                />
             </div>
             <div className="flex items-center gap-2 overflow-x-auto">
-               <Filter size={15} className="text-slate-600 shrink-0" />
+               <Filter size={15} className="text-[#9C93AC] shrink-0" />
                {(
                   [
                      "ALL",
@@ -155,13 +155,13 @@ export default function CallsPage() {
                      }}
                      className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors border ${
                         status === s
-                           ? "text-white border-[#6366F1]/50"
-                           : "text-slate-400 border-[#1A2642] hover:border-[#2A3D64] hover:text-white"
+                           ? "text-[#170B2E] border-[#7F40E8]/50"
+                           : "text-[#6B6478] border-[#E7DFF5] hover:border-[#D6C4EE] hover:text-[#170B2E]"
                      }`}
                      style={
                         status === s
-                           ? { background: "rgba(99,102,241,0.15)" }
-                           : { background: "#0D1421" }
+                           ? { background: "rgba(127,64,232,0.15)" }
+                           : { background: "#FFFFFF" }
                      }
                   >
                      {s === "ALL" ? "All" : statusLabel(s)}
@@ -172,22 +172,22 @@ export default function CallsPage() {
 
          {calls.length === 0 ? (
             <div
-               className="rounded-2xl border border-[#1A2642] py-16 px-6 text-center"
-               style={{ background: "#0D1421" }}
+               className="rounded-2xl border border-[#E7DFF5] py-16 px-6 text-center"
+               style={{ background: "#FFFFFF" }}
             >
                <div
                   className="inline-flex items-center justify-center w-14 h-14 rounded-xl mb-4"
                   style={{
-                     background: "rgba(99,102,241,0.1)",
-                     border: "1px solid rgba(99,102,241,0.2)",
+                     background: "rgba(127,64,232,0.1)",
+                     border: "1px solid rgba(127,64,232,0.2)",
                   }}
                >
-                  <PhoneCall size={24} style={{ color: "#818CF8" }} />
+                  <PhoneCall size={24} style={{ color: "#7F40E8" }} />
                </div>
-               <p className="text-base font-semibold text-white mb-1">
+               <p className="text-base font-semibold text-[#170B2E] mb-1">
                   {totalCalls === 0 ? "No calls yet" : "No matching calls"}
                </p>
-               <p className="text-sm text-slate-500">
+               <p className="text-sm text-[#8A8298]">
                   {totalCalls === 0
                      ? "Your call history will appear here once you make your first call."
                      : "Try adjusting your search or filters."}
@@ -195,35 +195,35 @@ export default function CallsPage() {
             </div>
          ) : (
             <div
-               className="rounded-2xl border border-[#1A2642] overflow-hidden"
-               style={{ background: "#0D1421" }}
+               className="rounded-2xl border border-[#E7DFF5] overflow-hidden"
+               style={{ background: "#FFFFFF" }}
             >
-               <div className="divide-y divide-[#1A2642]">
+               <div className="divide-y divide-[#E7DFF5]">
                   {calls.map((call) => (
                      <button
                         key={call.id}
                         onClick={() => setSelected(call)}
-                        className="w-full flex flex-wrap items-center gap-3 px-5 py-4 text-left hover:bg-white/[0.02] transition-colors"
+                        className="w-full flex flex-wrap items-center gap-3 px-5 py-4 text-left hover:bg-[#7F40E8]/[0.03] transition-colors"
                      >
                         <div
                            className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
                            style={{
                               background:
                                  call.type === "VIDEO"
-                                    ? "rgba(139,92,246,0.12)"
-                                    : "rgba(99,102,241,0.12)",
-                              border: `1px solid ${call.type === "VIDEO" ? "rgba(139,92,246,0.25)" : "rgba(99,102,241,0.25)"}`,
+                                    ? "rgba(65,6,134,0.12)"
+                                    : "rgba(127,64,232,0.12)",
+                              border: `1px solid ${call.type === "VIDEO" ? "rgba(65,6,134,0.25)" : "rgba(127,64,232,0.25)"}`,
                            }}
                         >
                            {call.type === "VIDEO" ? (
-                              <Video size={17} style={{ color: "#C084FC" }} />
+                              <Video size={17} style={{ color: "#A05DF9" }} />
                            ) : (
-                              <Phone size={17} style={{ color: "#818CF8" }} />
+                              <Phone size={17} style={{ color: "#7F40E8" }} />
                            )}
                         </div>
                         <div className="min-w-0 flex-1">
                            <div className="flex items-center gap-2 flex-wrap">
-                              <p className="text-sm font-semibold text-white">
+                              <p className="text-sm font-semibold text-[#170B2E]">
                                  {call.type === "VIDEO"
                                     ? "Video Call"
                                     : "Voice Call"}
@@ -232,7 +232,7 @@ export default function CallsPage() {
                                  {statusLabel(call.status)}
                               </Badge>
                            </div>
-                           <p className="text-xs text-slate-500 mt-0.5">
+                           <p className="text-xs text-[#8A8298] mt-0.5">
                               {new Date(call.createdAt).toLocaleString("en-US")}
                               {call.project?.name
                                  ? ` · ${call.project.name}`
@@ -240,10 +240,10 @@ export default function CallsPage() {
                            </p>
                         </div>
                         <div className="text-right shrink-0">
-                           <p className="text-sm font-mono text-slate-400">
+                           <p className="text-sm font-mono text-[#6B6478]">
                               {callDuration(call)}
                            </p>
-                           <p className="text-[10px] font-mono text-slate-600 mt-0.5">
+                           <p className="text-[10px] font-mono text-[#9C93AC] mt-0.5">
                               {call.id.slice(0, 8)}
                            </p>
                         </div>
@@ -271,14 +271,14 @@ export default function CallsPage() {
             >
                <div
                   className="w-full max-w-lg rounded-xl p-6 max-h-[85vh] overflow-y-auto"
-                  style={{ background: "#0D1421", border: "1px solid #2A3D64" }}
+                  style={{ background: "#FFFFFF", border: "1px solid #D6C4EE" }}
                   onClick={(e) => e.stopPropagation()}
                >
                   <div className="flex items-center justify-between mb-5">
-                     <p className="font-bold text-white">Call Details</p>
+                     <p className="font-bold text-[#170B2E]">Call Details</p>
                      <button
                         onClick={() => setSelected(null)}
-                        className="text-slate-500 hover:text-white transition-colors text-sm"
+                        className="text-[#8A8298] hover:text-[#170B2E] transition-colors text-sm"
                         aria-label="Close"
                      >
                         ✕
@@ -324,7 +324,7 @@ export default function CallsPage() {
                   </div>
                   {selected.events && selected.events.length > 0 && (
                      <div>
-                        <p className="text-sm font-semibold text-white mb-3">
+                        <p className="text-sm font-semibold text-[#170B2E] mb-3">
                            Timeline
                         </p>
                         <div className="flex flex-col gap-2">
@@ -335,13 +335,13 @@ export default function CallsPage() {
                               >
                                  <span
                                     className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0"
-                                    style={{ background: "#6366F1" }}
+                                    style={{ background: "#7F40E8" }}
                                  />
                                  <div>
-                                    <p className="text-xs text-slate-300">
+                                    <p className="text-xs text-[#4B4560]">
                                        {ev.event}
                                     </p>
-                                    <p className="text-[10px] text-slate-600">
+                                    <p className="text-[10px] text-[#9C93AC]">
                                        {new Date(ev.createdAt).toLocaleString(
                                           "en-US",
                                        )}
@@ -370,9 +370,9 @@ function Row({
 }) {
    return (
       <div className="flex items-start justify-between gap-4">
-         <span className="text-slate-500 shrink-0">{label}</span>
+         <span className="text-[#8A8298] shrink-0">{label}</span>
          <span
-            className={`text-slate-300 text-right break-all ${mono ? "font-mono text-xs" : ""}`}
+            className={`text-[#4B4560] text-right break-all ${mono ? "font-mono text-xs" : ""}`}
          >
             {value}
          </span>

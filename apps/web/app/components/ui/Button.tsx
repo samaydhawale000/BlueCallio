@@ -15,10 +15,10 @@ const base =
 const variants = {
   primary: 'text-white',
   secondary:
-    'bg-[#121A2E] border border-[#2A3D64] text-slate-200 hover:bg-[#1A2642] hover:border-[#3D5585]',
-  ghost: 'text-slate-400 hover:text-white hover:bg-white/5',
+    'bg-[#F8F4FD] border border-[#D6C4EE] text-[#3D3650] hover:bg-[#F0E9FA] hover:border-[#C4AEE8]',
+  ghost: 'text-[#6B6478] hover:text-[#170B2E] hover:bg-[#7F40E8]/5',
   danger:
-    'bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 hover:border-red-500/50',
+    'bg-red-500/10 border border-red-500/30 text-red-600 hover:bg-red-500/20 hover:border-red-500/50',
 };
 
 const sizes = {
@@ -43,7 +43,7 @@ export function Button({
       className={`${base} ${variants[variant]} ${sizes[size]} ${className}`}
       style={
         variant === 'primary'
-          ? { background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)', ...style }
+          ? { background: 'linear-gradient(135deg, #7F40E8 0%, #410686 100%)', ...style }
           : style
       }
     >

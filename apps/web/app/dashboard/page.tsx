@@ -88,8 +88,8 @@ estimatedMonthEndPaise: number;
 const paiseToINR = (paise: number) => `₹${(paise / 100).toFixed(2)}`;
 
 const QUICK_ACTIONS = [
-  { label: 'Create Project', icon: Plus, href: '#', color: '#6366F1' },
-  { label: 'Generate API Key', icon: KeyRound, href: '#', color: '#8B5CF6' },
+  { label: 'Create Project', icon: Plus, href: '#', color: '#7F40E8' },
+  { label: 'Generate API Key', icon: KeyRound, href: '#', color: '#410686' },
   { label: 'Open Playground', icon: Play, href: '/dashboard/playground', color: '#10B981' },
   { label: 'Documentation', icon: BookOpen, href: '/docs', color: '#F59E0B' },
 ];
@@ -267,11 +267,11 @@ const minutesUsed = usage?.minutesUsed ?? 0;
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-3">
-          <svg className="animate-spin h-6 w-6 text-indigo-500" viewBox="0 0 24 24" fill="none">
+          <svg className="animate-spin h-6 w-6 text-[#7F40E8]" viewBox="0 0 24 24" fill="none">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
-          <span className="text-sm text-slate-500">Loading dashboard…</span>
+          <span className="text-sm text-[#8A8298]">Loading dashboard…</span>
         </div>
       </div>
     );
@@ -282,10 +282,10 @@ const minutesUsed = usage?.minutesUsed ?? 0;
       {/* ── Header row ── */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-<h1 className="text-2xl font-bold text-white">
-            Welcome back, <span className="gradient-text-hero capitalize">{userName}</span> <Hand size={20} className="inline-block align-text-bottom text-indigo-300" />
+<h1 className="text-2xl font-bold text-[#170B2E]">
+            Welcome back, <span className="gradient-text-hero capitalize">{userName}</span> <Hand size={20} className="inline-block align-text-bottom text-[#6425C4]" />
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-[#8A8298] mt-1">
             Your communication platform at a glance.
           </p>
         </div>
@@ -298,21 +298,21 @@ const minutesUsed = usage?.minutesUsed ?? 0;
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 {/* Plan / usage */}
         <div
-          className="lg:col-span-2 rounded-2xl border border-[#1A2642] p-6"
-          style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.04))', borderColor: '#2A3D64' }}
+          className="lg:col-span-2 rounded-2xl border border-[#E7DFF5] p-6"
+          style={{ background: 'linear-gradient(135deg, rgba(127,64,232,0.08), rgba(65,6,134,0.04))', borderColor: '#D6C4EE' }}
         >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-sm font-semibold text-white">
+              <p className="text-sm font-semibold text-[#170B2E]">
                 {currentUsage?.isFreeTier ? 'Free Tier' : 'Pay as you go'}
               </p>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-[#8A8298] mt-0.5">
                 Pay only for what you use · {currentUsage?.freeAllowance?.audioMinutes ?? 500} audio + {currentUsage?.freeAllowance?.videoMinutes ?? 200} video participant-min free/month · screen share always paid
               </p>
             </div>
             <Link
               href="/dashboard/billing"
-              className="inline-flex items-center gap-1 text-xs font-medium text-violet-300 hover:text-violet-200 transition-colors"
+              className="inline-flex items-center gap-1 text-xs font-medium text-[#6425C4] hover:text-[#6425C4] transition-colors"
             >
               Billing &amp; Usage <ArrowUpRight size={14} />
             </Link>
@@ -324,29 +324,29 @@ const minutesUsed = usage?.minutesUsed ?? 0;
             <MiniType label="Video" mins={videoMins} costPaise={currentUsage?.cost?.videoPaise ?? 0} showCost={!currentUsage?.isFreeTier} />
             <MiniType label="Screen Share" mins={screenMins} costPaise={currentUsage?.cost?.screenSharePaise ?? 0} showCost={!currentUsage?.isFreeTier} />
           </div>
-          <p className="text-[11px] text-slate-600 -mt-2 mb-4">
+          <p className="text-[11px] text-[#9C93AC] -mt-2 mb-4">
             Shown in participant-minutes (call duration × participants using that media) — not raw call length.
           </p>
 
           <div className="flex flex-wrap items-center justify-between mt-2 gap-3">
             <div className="flex items-center gap-6">
               <div>
-                <p className="text-xs text-slate-500">Total usage</p>
-                <p className="text-lg font-bold text-white">
+                <p className="text-xs text-[#8A8298]">Total usage</p>
+                <p className="text-lg font-bold text-[#170B2E]">
                   {totalBillable.toFixed(2)}
-                  <span className="text-xs font-normal text-slate-500"> participant-min</span>
+                  <span className="text-xs font-normal text-[#8A8298]"> participant-min</span>
                 </p>
               </div>
               {!currentUsage?.isFreeTier && (
                 <>
                   <div>
-                    <p className="text-xs text-slate-500">Current cost</p>
+                    <p className="text-xs text-[#8A8298]">Current cost</p>
                     <p className="text-lg font-bold" style={{ color: '#34D399' }}>{paiseToINR(currentCost)}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500">Est. month-end</p>
-                    <p className="text-lg font-bold text-white">{paiseToINR(monthEndCost)}</p>
-                    <p className="text-[10px] text-slate-600">projected from usage so far this cycle</p>
+                    <p className="text-xs text-[#8A8298]">Est. month-end</p>
+                    <p className="text-lg font-bold text-[#170B2E]">{paiseToINR(monthEndCost)}</p>
+                    <p className="text-[10px] text-[#9C93AC]">projected from usage so far this cycle</p>
                   </div>
                 </>
               )}
@@ -362,16 +362,16 @@ const minutesUsed = usage?.minutesUsed ?? 0;
 
         {/* Usage chart */}
         <div
-          className="rounded-2xl border border-[#1A2642] p-6"
-          style={{ background: '#0D1421' }}
+          className="rounded-2xl border border-[#E7DFF5] p-6"
+          style={{ background: '#FFFFFF' }}
         >
           <div className="flex items-center justify-between mb-4">
-            <p className="text-sm font-semibold text-white">Minutes this week</p>
-            <span className="text-xs text-slate-500">{minutesUsed.toFixed(2)} total</span>
+            <p className="text-sm font-semibold text-[#170B2E]">Minutes this week</p>
+            <span className="text-xs text-[#8A8298]">{minutesUsed.toFixed(2)} total</span>
           </div>
           <div className="flex h-32 items-end justify-between gap-2">
             {weekData.length === 0 ? (
-              <div className="flex h-full w-full items-center justify-center text-xs text-slate-600">
+              <div className="flex h-full w-full items-center justify-center text-xs text-[#9C93AC]">
                 No usage this week yet
               </div>
             ) : (
@@ -382,11 +382,11 @@ const minutesUsed = usage?.minutesUsed ?? 0;
                       className="min-h-[4px] w-full rounded-t-md transition-all"
                       style={{
                         height: `${Math.max(8, (d.minutes / maxWeek) * 100)}%`,
-                        background: 'linear-gradient(180deg, #6366F1, rgba(99,102,241,0.3))',
+                        background: 'linear-gradient(180deg, #7F40E8, rgba(127,64,232,0.3))',
                       }}
                     />
                   </div>
-                  <span className="text-[10px] text-slate-600">{d.label}</span>
+                  <span className="text-[10px] text-[#9C93AC]">{d.label}</span>
                 </div>
               ))
             )}
@@ -396,10 +396,10 @@ const minutesUsed = usage?.minutesUsed ?? 0;
 
       {/* ── Stats row ── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
-        <StatCard label="Projects" value={projects.length} color="#6366F1" />
+        <StatCard label="Projects" value={projects.length} color="#7F40E8" />
         <StatCard label="Active Calls" value={usage?.activeCalls ?? 0} color="#10B981" />
         <StatCard label="Calls" value={usage?.totalCalls ?? 0} color="#F59E0B" />
-        <StatCard label="Minutes" value={usage?.minutesUsed ?? 0} color="#8B5CF6" />
+        <StatCard label="Minutes" value={usage?.minutesUsed ?? 0} color="#410686" />
         <StatCard label="API Keys" value={totalKeys} color="#EC4899" />
       </div>
 
@@ -407,14 +407,14 @@ const minutesUsed = usage?.minutesUsed ?? 0;
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Recent calls */}
         <div
-          className="lg:col-span-2 rounded-2xl border border-[#1A2642]"
-          style={{ background: '#0D1421' }}
+          className="lg:col-span-2 rounded-2xl border border-[#E7DFF5]"
+          style={{ background: '#FFFFFF' }}
         >
-          <div className="flex items-center justify-between px-6 py-4 border-b border-[#1A2642]">
-            <p className="font-semibold text-white">Recent Calls</p>
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#E7DFF5]">
+            <p className="font-semibold text-[#170B2E]">Recent Calls</p>
             <Link
               href="/dashboard/calls"
-              className="inline-flex items-center gap-1 text-xs text-violet-300 hover:text-violet-200 transition-colors"
+              className="inline-flex items-center gap-1 text-xs text-[#6425C4] hover:text-[#6425C4] transition-colors"
             >
               View all <ArrowUpRight size={13} />
             </Link>
@@ -422,60 +422,60 @@ const minutesUsed = usage?.minutesUsed ?? 0;
 
           {calls.length === 0 ? (
             <div className="px-6 py-10 text-center">
-              <p className="text-sm font-medium text-white mb-1">No calls yet</p>
-              <p className="text-sm text-slate-500 mb-5">
+              <p className="text-sm font-medium text-[#170B2E] mb-1">No calls yet</p>
+              <p className="text-sm text-[#8A8298] mb-5">
                 Create your first communication session.
               </p>
               <div className="flex flex-col items-center gap-3">
                 <Link
                   href="/dashboard/playground"
                   className="inline-flex items-center gap-2 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition hover:opacity-90"
-                  style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}
+                  style={{ background: 'linear-gradient(135deg, #7F40E8, #410686)' }}
                 >
                   <Play size={15} /> Open Playground
                 </Link>
-                <span className="text-xs text-slate-600">or</span>
-                <Link href="/docs" className="text-xs text-violet-400 hover:text-violet-300 transition-colors">
+                <span className="text-xs text-[#9C93AC]">or</span>
+                <Link href="/docs" className="text-xs text-[#7F40E8] hover:text-[#6425C4] transition-colors">
                   Read Quick Start documentation
                 </Link>
               </div>
             </div>
           ) : (
-            <div className="divide-y divide-[#1A2642]">
+            <div className="divide-y divide-[#E7DFF5]">
               {calls.slice(0, 5).map((call) => (
                 <button
                   key={call.id}
                   onClick={() => setSelectedCall(call)}
-                  className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-white/[0.02] transition-colors"
+                  className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-[#7F40E8]/[0.03] transition-colors"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div
                       className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
                       style={{
                         background: call.type === 'VIDEO'
-                          ? 'rgba(139,92,246,0.12)'
-                          : 'rgba(99,102,241,0.12)',
-                        border: `1px solid ${call.type === 'VIDEO' ? 'rgba(139,92,246,0.25)' : 'rgba(99,102,241,0.25)'}`,
+                          ? 'rgba(65,6,134,0.12)'
+                          : 'rgba(127,64,232,0.12)',
+                        border: `1px solid ${call.type === 'VIDEO' ? 'rgba(65,6,134,0.25)' : 'rgba(127,64,232,0.25)'}`,
                       }}
                     >
                       {call.type === 'VIDEO'
-                        ? <Video size={16} style={{ color: '#C084FC' }} />
-                        : <Phone size={16} style={{ color: '#818CF8' }} />}
+                        ? <Video size={16} style={{ color: '#A05DF9' }} />
+                        : <Phone size={16} style={{ color: '#7F40E8' }} />}
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold text-white truncate">
+                        <p className="text-sm font-semibold text-[#170B2E] truncate">
                           {call.type === 'VIDEO' ? 'Video Call' : 'Voice Call'}
                         </p>
                         <Badge variant={statusBadge(call.status)}>{statusLabel(call.status)}</Badge>
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">
+                      <p className="text-xs text-[#8A8298] mt-0.5">
                         {relativeTime(call.createdAt)}
                         {call.project?.name ? ` · ${call.project.name}` : ''}
                       </p>
                     </div>
                   </div>
-                  <span className="text-xs font-mono text-slate-500 shrink-0">
+                  <span className="text-xs font-mono text-[#8A8298] shrink-0">
                     {callDuration(call)}
                   </span>
                 </button>
@@ -486,10 +486,10 @@ const minutesUsed = usage?.minutesUsed ?? 0;
 
         {/* Quick actions */}
         <div
-          className="rounded-2xl border border-[#1A2642] p-6"
-          style={{ background: '#0D1421' }}
+          className="rounded-2xl border border-[#E7DFF5] p-6"
+          style={{ background: '#FFFFFF' }}
         >
-          <p className="font-semibold text-white mb-4">Quick Actions</p>
+          <p className="font-semibold text-[#170B2E] mb-4">Quick Actions</p>
           <div className="flex flex-col gap-2.5">
             {QUICK_ACTIONS.map((action) => (
               <Link
@@ -501,7 +501,7 @@ const minutesUsed = usage?.minutesUsed ?? 0;
                     setShowNewProject(true);
                   }
                 }}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#1A2642] hover:border-[#2A3D64] transition-colors"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#E7DFF5] hover:border-[#D6C4EE] transition-colors"
                 style={{ background: 'rgba(255,255,255,0.02)' }}
               >
                 <div
@@ -510,7 +510,7 @@ const minutesUsed = usage?.minutesUsed ?? 0;
                 >
                   <action.icon size={16} style={{ color: action.color }} />
                 </div>
-                <span className="text-sm text-slate-300">{action.label}</span>
+                <span className="text-sm text-[#4B4560]">{action.label}</span>
               </Link>
             ))}
           </div>
@@ -521,18 +521,18 @@ const minutesUsed = usage?.minutesUsed ?? 0;
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Projects */}
         <div
-          className="lg:col-span-2 rounded-2xl border border-[#1A2642]"
-          style={{ background: '#0D1421' }}
+          className="lg:col-span-2 rounded-2xl border border-[#E7DFF5]"
+          style={{ background: '#FFFFFF' }}
         >
-          <div className="flex items-center justify-between px-6 py-4 border-b border-[#1A2642]">
-            <p className="font-semibold text-white">Projects</p>
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#E7DFF5]">
+            <p className="font-semibold text-[#170B2E]">Projects</p>
             <Button variant="secondary" size="sm" onClick={() => { setShowNewProject(true); setNewProjectName(''); }}>
               <Plus size={14} className="mr-1" /> New Project
             </Button>
           </div>
 
           {showNewProject && (
-            <div className="px-6 py-4 border-b border-[#1A2642] flex gap-3">
+            <div className="px-6 py-4 border-b border-[#E7DFF5] flex gap-3">
               <Input
                 placeholder="Project name"
                 value={newProjectName}
@@ -550,12 +550,12 @@ const minutesUsed = usage?.minutesUsed ?? 0;
             <div className="px-6 py-10 text-center">
               <div
                 className="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4"
-                style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)' }}
+                style={{ background: 'rgba(127,64,232,0.1)', border: '1px solid rgba(127,64,232,0.2)' }}
               >
-                <FolderKanban size={20} style={{ color: '#818CF8' }} />
+                <FolderKanban size={20} style={{ color: '#7F40E8' }} />
               </div>
-              <p className="text-sm font-medium text-white mb-1">No projects yet</p>
-              <p className="text-sm text-slate-500 mb-5">
+              <p className="text-sm font-medium text-[#170B2E] mb-1">No projects yet</p>
+              <p className="text-sm text-[#8A8298] mb-5">
                 Create a project to get your first API key.
               </p>
               <Button onClick={() => { setShowNewProject(true); setNewProjectName(''); }}>
@@ -567,26 +567,26 @@ const minutesUsed = usage?.minutesUsed ?? 0;
               {projects.map((project) => (
                 <div
                   key={project.id}
-                  className="rounded-xl border border-[#1A2642] p-5 hover:border-[#2A3D64] transition-colors"
+                  className="rounded-xl border border-[#E7DFF5] p-5 hover:border-[#D6C4EE] transition-colors"
                   style={{ background: 'rgba(255,255,255,0.02)' }}
                 >
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div
                       className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold text-white shrink-0"
-                      style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)' }}
+                      style={{ background: 'linear-gradient(135deg, #7F40E8, #410686)' }}
                     >
                       {project.name[0].toUpperCase()}
                     </div>
                     <Badge variant="purple">Production</Badge>
                   </div>
-                  <p className="text-sm font-semibold text-white mb-0.5">{project.name}</p>
-                  <p className="text-xs text-slate-500 mb-4">
+                  <p className="text-sm font-semibold text-[#170B2E] mb-0.5">{project.name}</p>
+                  <p className="text-xs text-[#8A8298] mb-4">
                     {projectKeys[project.id]?.length ?? 0} API Keys · Created{' '}
                     {new Date(project.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </p>
                   <button
                     onClick={() => toggleProject(project.id)}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-violet-300 hover:text-violet-200 transition-colors"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-[#6425C4] hover:text-[#6425C4] transition-colors"
                   >
                     {expandedId === project.id ? 'Hide details' : 'View'} <ArrowUpRight size={13} />
                   </button>
@@ -598,30 +598,30 @@ const minutesUsed = usage?.minutesUsed ?? 0;
 
         {/* Developer resources */}
         <div
-          className="rounded-2xl border border-[#1A2642] p-6"
-          style={{ background: '#0D1421' }}
+          className="rounded-2xl border border-[#E7DFF5] p-6"
+          style={{ background: '#FFFFFF' }}
         >
-          <p className="font-semibold text-white mb-1">Developer Resources</p>
-          <p className="text-xs text-slate-500 mb-4">Everything you need, one click away.</p>
+          <p className="font-semibold text-[#170B2E] mb-1">Developer Resources</p>
+          <p className="text-xs text-[#8A8298] mb-4">Everything you need, one click away.</p>
           <div className="flex flex-col gap-2.5">
             {RESOURCES.map((r) => (
               <Link
                 key={r.label}
                 href={r.href}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#1A2642] hover:border-[#2A3D64] transition-colors"
+                className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[#E7DFF5] hover:border-[#D6C4EE] transition-colors"
                 style={{ background: 'rgba(255,255,255,0.02)' }}
               >
                 <div
                   className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
                   style={{
-                    background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.12))',
-                    border: '1px solid rgba(99,102,241,0.2)',
+                    background: 'linear-gradient(135deg, rgba(127,64,232,0.12), rgba(65,6,134,0.12))',
+                    border: '1px solid rgba(127,64,232,0.2)',
                   }}
                 >
-                  <r.icon size={15} style={{ color: '#A5B4FC' }} />
+                  <r.icon size={15} style={{ color: '#6425C4' }} />
                 </div>
-                <span className="text-sm text-slate-300">{r.label}</span>
-                <ArrowUpRight size={14} className="ml-auto text-slate-600" />
+                <span className="text-sm text-[#4B4560]">{r.label}</span>
+                <ArrowUpRight size={14} className="ml-auto text-[#9C93AC]" />
               </Link>
             ))}
           </div>
@@ -630,15 +630,15 @@ const minutesUsed = usage?.minutesUsed ?? 0;
 
 {/* ── Recent Activity ── */}
       <div
-        className="rounded-2xl border border-[#1A2642]"
-        style={{ background: '#0D1421' }}
+        className="rounded-2xl border border-[#E7DFF5]"
+        style={{ background: '#FFFFFF' }}
       >
-        <div className="px-6 py-4 border-b border-[#1A2642]">
-          <p className="font-semibold text-white">Recent Activity</p>
+        <div className="px-6 py-4 border-b border-[#E7DFF5]">
+          <p className="font-semibold text-[#170B2E]">Recent Activity</p>
         </div>
-        <div className="divide-y divide-[#1A2642]">
+        <div className="divide-y divide-[#E7DFF5]">
           {recentActivity.length === 0 ? (
-            <div className="px-6 py-8 text-center text-sm text-slate-500">
+            <div className="px-6 py-8 text-center text-sm text-[#8A8298]">
               No activity yet. Create a project or place your first call.
             </div>
           ) : (
@@ -650,8 +650,8 @@ const minutesUsed = usage?.minutesUsed ?? 0;
                 >
                   <PhoneCall size={15} style={{ color: item.color }} />
                 </div>
-                <p className="text-sm text-slate-300">{item.text}</p>
-                <span className="ml-auto text-xs text-slate-600">{item.time}</span>
+                <p className="text-sm text-[#4B4560]">{item.text}</p>
+                <span className="ml-auto text-xs text-[#9C93AC]">{item.time}</span>
               </div>
             ))
           )}
@@ -667,14 +667,14 @@ const minutesUsed = usage?.minutesUsed ?? 0;
         >
           <div
             className="w-full max-w-md rounded-xl p-6"
-            style={{ background: '#0D1421', border: '1px solid #2A3D64' }}
+            style={{ background: '#FFFFFF', border: '1px solid #D6C4EE' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-5">
-              <p className="font-bold text-white">Call Details</p>
+              <p className="font-bold text-[#170B2E]">Call Details</p>
               <button
                 onClick={() => setSelectedCall(null)}
-                className="text-slate-500 hover:text-white transition-colors text-sm"
+                className="text-[#8A8298] hover:text-[#170B2E] transition-colors text-sm"
                 aria-label="Close"
               >
                 ✕
@@ -715,13 +715,13 @@ function MiniType({
   showCost?: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-[#1A2642] px-4 py-3 text-center" style={{ background: '#0A0F1E' }}>
-      <p className="text-[11px] text-slate-500">{label}</p>
-      <p className="text-lg font-bold text-white mt-0.5">
+    <div className="rounded-xl border border-[#E7DFF5] px-4 py-3 text-center" style={{ background: '#F8F4FD' }}>
+      <p className="text-[11px] text-[#8A8298]">{label}</p>
+      <p className="text-lg font-bold text-[#170B2E] mt-0.5">
         {mins.toFixed(2)}
-        <span className="text-xs font-normal text-slate-500"> min</span>
+        <span className="text-xs font-normal text-[#8A8298]"> min</span>
       </p>
-      {showCost && <p className="text-[11px] font-semibold text-violet-300">{paiseToINR(costPaise)}</p>}
+      {showCost && <p className="text-[11px] font-semibold text-[#6425C4]">{paiseToINR(costPaise)}</p>}
     </div>
   );
 }
@@ -729,10 +729,10 @@ function MiniType({
 function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div
-      className="rounded-2xl border border-[#1A2642] p-5"
-      style={{ background: '#0D1421' }}
+      className="rounded-2xl border border-[#E7DFF5] p-5"
+      style={{ background: '#FFFFFF' }}
     >
-      <p className="text-xs text-slate-500 mb-2">{label}</p>
+      <p className="text-xs text-[#8A8298] mb-2">{label}</p>
       <p className="text-2xl font-bold" style={{ color }}>{value.toLocaleString()}</p>
     </div>
   );
@@ -741,8 +741,8 @@ function StatCard({ label, value, color }: { label: string; value: number; color
 function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div className="flex items-start justify-between gap-4">
-      <span className="text-slate-500 shrink-0">{label}</span>
-      <span className={`text-slate-300 text-right break-all ${mono ? 'font-mono text-xs' : ''}`}>
+      <span className="text-[#8A8298] shrink-0">{label}</span>
+      <span className={`text-[#4B4560] text-right break-all ${mono ? 'font-mono text-xs' : ''}`}>
         {value}
       </span>
     </div>

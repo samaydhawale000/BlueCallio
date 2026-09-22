@@ -1,24 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  --bg:        #060B18;
-  --surface:   #0D1421;
-  --surface-2: #121A2E;
-  --border:    #1A2642;
-  --border-2:  #2A3D64;
-  --text:      #F1F5F9;
-  --muted:     #94A3B8;
-  --dim:       #475569;
+  --bg:        #FFFFFF;
+  --bg-tint:   #F6F1FC;
+  --surface:   #FFFFFF;
+  --surface-2: #F8F4FD;
+  --border:    #E7DFF5;
+  --border-2:  #D6C4EE;
+  --text:      #170B2E;
+  --muted:     #6B6478;
+  --dim:       #9C93AC;
 
-  --indigo: #6366F1;
-  --violet: #8B5CF6;
+  --brand:      #7F40E8;
+  --brand-dark: #410686;
+  --indigo: #7F40E8;
+  --violet: #A05DF9;
   --blue:   #3B82F6;
   --green:  #10B981;
   --red:    #EF4444;
   --amber:  #F59E0B;
 
-  --gradient:        linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
-  --gradient-subtle: linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(139,92,246,0.12) 100%);
+  --gradient:        linear-gradient(135deg, #410686 0%, #7F40E8 100%);
+  --gradient-subtle: linear-gradient(135deg, rgba(65,6,134,0.08) 0%, rgba(127,64,232,0.08) 100%);
 }
 
 @theme inline {
@@ -38,7 +41,7 @@ body {
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-track { background: var(--surface-2); }
 ::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 3px; }
 
 /* ── Shared utilities ─────────────────────────────────────── */
@@ -50,7 +53,7 @@ body {
 }
 
 .gradient-text-hero {
-  background: linear-gradient(135deg, #72affa, #a05df9);
+  background: linear-gradient(135deg, #7F40E8, #5B21B6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -63,23 +66,24 @@ body {
 }
 
 .lp-nav {
-  background: rgba(6, 11, 24, 0.85);
+  background: rgba(255, 255, 255, 0.85);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(12px);
 }
 
 .lp-footer {
-  background: #040810;
-  border-top: 1px solid var(--border);
+  background: linear-gradient(180deg, #2B0F52 0%, #1A0B33 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: #F1F5F9;
 }
 
 /* ── Section backgrounds ──────────────────────────────────── */
 .section-base { background: var(--bg); }
-.section-alt  { background: #080E1C; }
+.section-alt  { background: var(--bg-tint); }
 
 /* ── Typography ───────────────────────────────────────────── */
 .section-label {
-  color: #818CF8;
+  color: var(--brand);
 }
 
 .lp-h1 {
@@ -115,9 +119,9 @@ body {
 
 /* ── Hero ─────────────────────────────────────────────────── */
 .hero-badge {
-  background: rgba(99, 102, 241, 0.1);
-  border-color: rgba(99, 102, 241, 0.3);
-  color: #A5B4FC;
+  background: rgba(127, 64, 232, 0.08);
+  border-color: rgba(127, 64, 232, 0.25);
+  color: var(--brand-dark);
 }
 
 /* Stripe WebGL gradient canvas */
@@ -127,17 +131,17 @@ body {
   width: 100%;
   height: 100%;
   z-index: 0;
-  background: #060B18;
+  background: #FFFFFF;
   /* Base color (color-1) + 2 wave layers (color-2, color-3) = 3 brand colors */
---gradient-color-1: #060B18;
-  --gradient-color-2: #8B5CF6;
-  --gradient-color-3: #6366F1;
-  opacity: 0.18;
+--gradient-color-1: #FFFFFF;
+  --gradient-color-2: #F2E9FB;
+  --gradient-color-3: #E0CCF5;
+  opacity: 0.15;
   transition: opacity 1.2s ease;
 }
 
 .stripe-gradient-canvas.isLoaded {
-  opacity: 0.18;
+  opacity: 0.15;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -149,31 +153,32 @@ body {
 }
 
 /* ── Code block ───────────────────────────────────────────── */
-.lp-code-block { background: #0A1020; }
+.lp-code-block { background: var(--surface-2); }
 .lp-pre        { line-height: 1.8; }
 
-.tok-comment  { color: #64748B; }
-.tok-keyword  { color: #7DD3FC; }
-.tok-base     { color: #F1F5F9; }
-.tok-async    { color: #C4B5FD; }
-.tok-fn       { color: #86EFAC; }
+.tok-comment  { color: #9C93AC; }
+.tok-keyword  { color: #0891B2; }
+.tok-base     { color: #170B2E; }
+.tok-async    { color: #7F40E8; }
+.tok-fn       { color: #15803D; }
 
 /* ── Cards ────────────────────────────────────────────────── */
 .card-surface {
   background: var(--surface);
+  border-color: var(--border);
 }
 
 .card-gradient {
-  background: linear-gradient(135deg, var(--surface) 0%, #111827 100%);
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
 }
 
 .card-problem {
-  background: linear-gradient(135deg, #1a0a0a 0%, var(--surface) 100%);
+  background: linear-gradient(135deg, #FDF2FA 0%, var(--surface) 100%);
 }
 
 .card-featured {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.05));
-  box-shadow: 0 0 40px rgba(99, 102, 241, 0.08);
+  background: linear-gradient(135deg, rgba(127, 64, 232, 0.07), rgba(65, 6, 134, 0.04));
+  box-shadow: 0 0 40px rgba(127, 64, 232, 0.1);
 }
 
 /* ── Features grid ────────────────────────────────────────── */
@@ -181,7 +186,7 @@ body {
 .feature-cell  { background: var(--bg); }
 
 .feature-bar {
-  background: linear-gradient(180deg, var(--indigo), var(--violet));
+  background: linear-gradient(180deg, var(--brand), var(--brand-dark));
 }
 
 /* ── Step number ──────────────────────────────────────────── */
@@ -196,18 +201,19 @@ body {
 /* ── Pricing badge ────────────────────────────────────────── */
 .badge-gradient { background: var(--gradient); }
 
-.check-indigo { color: var(--indigo); }
-.check-violet { color: #818CF8; }
+.check-indigo { color: var(--brand); }
+.check-violet { color: var(--violet); }
 
 /* ── CTA section ──────────────────────────────────────────── */
 .cta-bg {
-  background: linear-gradient(135deg, #1e1b4b 0%, #2e1065 50%, #1e1b4b 100%);
+  background: linear-gradient(135deg, #2B0F52 0%, #410686 50%, #2B0F52 100%);
+  color: #F1F5F9;
 }
 
 .cta-grid {
   background-image:
-    linear-gradient(rgba(139, 92, 246, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(139, 92, 246, 0.08) 1px, transparent 1px);
+    linear-gradient(rgba(127, 64, 232, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(127, 64, 232, 0.1) 1px, transparent 1px);
   background-size: 60px 60px;
 }
 

@@ -28,7 +28,7 @@ const footerLinks = {
 
    Resources: [
       { name: "FAQ", href: "/faq" },
-      { name: "Support", href: "mailto:hello@purplecallio.com" },
+      { name: "Support", href: "mailto:purplecallio@gmail.com" },
       { name: "Docs", href: "/docs" },
    ],
 
@@ -53,10 +53,10 @@ export default function Footer() {
    }
 
    return (
-      <footer className="relative overflow-hidden border-t border-white/10 bg-[#050816]">
+      <footer className="relative overflow-hidden border-t border-[#E7DFF5] bg-[#F8F4FD]">
          {/* Glow */}
 
-         <div className="absolute left-1/2 top-0 h-64 w-64 -translate-x-1/2 rounded-full bg-sky-500/10 blur-[120px]" />
+         <div className="absolute left-1/2 top-0 h-64 w-64 -translate-x-1/2 rounded-full bg-[#7F40E8]/8 blur-[120px]" />
 
          <div className="relative mx-auto max-w-7xl px-6 py-20">
             <div className="grid gap-16 lg:grid-cols-[1.6fr_1fr_1fr_1fr_1fr]">
@@ -73,14 +73,14 @@ export default function Footer() {
                      />
                   </Link>
 
-                  <p className="mt-6 max-w-sm leading-8 text-slate-400">
+                  <p className="mt-6 max-w-sm leading-8 text-[#6B6478]">
                      Communication infrastructure for modern software. Build
                      secure video meetings with APIs, WebSocket signaling and
                      hosted UI.
                   </p>
 
                   <div className="mt-8 flex gap-3">
-                     <Social href="mailto:hello@purplecallio.com">
+                     <Social href="mailto:purplecallio@gmail.com">
                         <Mail size={18} />
                      </Social>
                   </div>
@@ -88,14 +88,14 @@ export default function Footer() {
 
                {Object.entries(footerLinks).map(([title, items]) => (
                   <div key={title}>
-                     <h3 className="mb-5 font-semibold text-white">{title}</h3>
+                     <h3 className="mb-5 font-semibold text-[#170B2E]">{title}</h3>
 
                      <div className="space-y-4">
                         {items.map((item) => (
                            <Link
                               key={item.name}
                               href={item.href}
-                              className="group flex items-center gap-1 text-sm text-slate-400 transition hover:text-white"
+                              className="group flex items-center gap-1 text-sm text-[#6B6478] transition hover:text-[#170B2E]"
                            >
                               {item.name}
 
@@ -110,29 +110,29 @@ export default function Footer() {
                ))}
             </div>
 
-            <div className="my-12 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            <div className="my-12 h-px bg-gradient-to-r from-transparent via-[#E7DFF5] to-transparent" />
 
-            <div className="flex flex-col items-center justify-between gap-4 text-sm text-slate-500 md:flex-row">
+            <div className="flex flex-col items-center justify-between gap-4 text-sm text-[#8A8298] md:flex-row">
                <span>
                   © {new Date().getFullYear()} PurpleCallio. All rights reserved.
                </span>
 
                <div className="flex items-center gap-6">
-                  <Link href="/privacy" className="transition hover:text-white">
+                  <Link href="/privacy" className="transition hover:text-[#170B2E]">
                      Privacy
                   </Link>
 
-                  <Link href="/terms" className="transition hover:text-white">
+                  <Link href="/terms" className="transition hover:text-[#170B2E]">
                      Terms
                   </Link>
 
-                  <Link href="/refund" className="transition hover:text-white">
+                  <Link href="/refund" className="transition hover:text-[#170B2E]">
                      Refund Policy
                   </Link>
 
                   <Link
                      href="/billing-terms"
-                     className="transition hover:text-white"
+                     className="transition hover:text-[#170B2E]"
                   >
                      Billing &amp; Usage
                   </Link>
@@ -147,7 +147,7 @@ function Social({ href, children }) {
    return (
       <Link
          href={href}
-         className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.02] text-slate-400 transition-all duration-300 hover:-translate-y-1 hover:border-sky-500 hover:text-white"
+         className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#E7DFF5] bg-white text-[#6B6478] transition-all duration-300 hover:-translate-y-1 hover:border-[#7F40E8] hover:text-[#170B2E]"
       >
          {children}
       </Link>

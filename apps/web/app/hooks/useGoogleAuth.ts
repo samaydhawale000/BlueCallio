@@ -114,7 +114,7 @@ setTokens(res.data.accessToken, res.data.refreshToken);
         },
       });
       window.google.accounts.id.renderButton(el, {
-        theme: 'filled_black',
+        theme: 'outline',
         size: 'large',
         width: 280,
         text: 'continue_with',

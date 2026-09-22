@@ -275,7 +275,7 @@ export default async function FeaturePage({
          <ContentSection title="Frequently asked questions">
             {item.faq.map(([question, answer]) => (
                <article key={question}>
-                  <h3 className="font-semibold text-slate-200">{question}</h3>
+                  <h3 className="font-semibold text-[#3D3650]">{question}</h3>
                   <p>{answer}</p>
                </article>
             ))}
@@ -284,25 +284,25 @@ export default async function FeaturePage({
             <div className="flex flex-wrap gap-4">
                <Link
                   href="/docs/quickstart"
-                  className="text-indigo-300 hover:text-white"
+                  className="text-[#6425C4] hover:text-[#170B2E]"
                >
                   Quickstart →
                </Link>
                <Link
                   href="/docs/react"
-                  className="text-indigo-300 hover:text-white"
+                  className="text-[#6425C4] hover:text-[#170B2E]"
                >
                   React SDK →
                </Link>
                <Link
                   href="/docs/javascript"
-                  className="text-indigo-300 hover:text-white"
+                  className="text-[#6425C4] hover:text-[#170B2E]"
                >
                   JavaScript SDK →
                </Link>
                <Link
                   href="/pricing"
-                  className="text-indigo-300 hover:text-white"
+                  className="text-[#6425C4] hover:text-[#170B2E]"
                >
                   Pricing →
                </Link>
