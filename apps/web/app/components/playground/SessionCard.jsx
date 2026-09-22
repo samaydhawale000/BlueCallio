@@ -19,8 +19,8 @@ export default function SessionCard({
     <div
       className="mt-10 rounded-3xl border overflow-hidden"
       style={{
-        background: "#0C1322",
-        borderColor: "#223250",
+        background: "#FFFFFF",
+        borderColor: "#E7DFF5",
       }}
     >
       {/* Header */}
@@ -28,14 +28,14 @@ export default function SessionCard({
       <div
         className="px-8 py-6 border-b"
         style={{
-          borderColor: "#223250",
+          borderColor: "#E7DFF5",
         }}
       >
-        <h2 className="text-2xl font-semibold text-white">
+        <h2 className="text-2xl font-semibold text-[#170B2E]">
           Demo Session Ready
         </h2>
 
-        <p className="text-slate-400 mt-2">
+        <p className="text-[#6B6478] mt-2">
           Scan the QR code using your phone or open the receiver in another
           browser.
         </p>
@@ -48,7 +48,7 @@ export default function SessionCard({
         <div
           className="p-8 flex flex-col items-center"
           style={{
-            borderRight: "1px solid #223250",
+            borderRight: "1px solid #E7DFF5",
           }}
         >
           <div className="bg-white rounded-xl p-4">
@@ -60,7 +60,7 @@ export default function SessionCard({
 
           </div>
 
-          <p className="text-slate-400 text-sm mt-6 text-center">
+          <p className="text-[#6B6478] text-sm mt-6 text-center">
             Scan to join as Receiver
           </p>
 
@@ -69,7 +69,7 @@ export default function SessionCard({
             className="mt-6 w-full rounded-xl py-3 text-white"
             style={{
               background:
-                "linear-gradient(135deg,#5B5DDB,#895DF6)",
+                "linear-gradient(135deg,#7F40E8,#410686)",
             }}
           >
             Open Receiver
@@ -90,9 +90,9 @@ export default function SessionCard({
 
                 <div className="flex items-center gap-2">
 
-                  <Monitor size={18} color="#8B5CF6" />
+                  <Monitor size={18} color="#7F40E8" />
 
-                  <h3 className="text-white font-medium">
+                  <h3 className="text-[#170B2E] font-medium">
                     Caller
                   </h3>
 
@@ -100,7 +100,7 @@ export default function SessionCard({
 
                 <button
                   onClick={onOpenCaller}
-                  className="text-indigo-400 flex items-center gap-2"
+                  className="text-[#6425C4] flex items-center gap-2"
                 >
                   Open
 
@@ -113,10 +113,10 @@ export default function SessionCard({
               <div
                 className="rounded-xl p-4 flex items-center justify-between"
                 style={{
-                  background: "#111827",
+                  background: "#F8F4FD",
                 }}
               >
-                <span className="text-slate-400 truncate mr-4">
+                <span className="text-[#6B6478] truncate mr-4">
                   {session.callerUrl}
                 </span>
 
@@ -125,7 +125,7 @@ export default function SessionCard({
                 >
                   <Copy
                     size={18}
-                    color="#94A3B8"
+                    color="#8A8298"
                   />
                 </button>
 
@@ -141,10 +141,10 @@ export default function SessionCard({
 
                 <Smartphone
                   size={18}
-                  color="#8B5CF6"
+                  color="#7F40E8"
                 />
 
-                <h3 className="text-white font-medium">
+                <h3 className="text-[#170B2E] font-medium">
                   Receiver
                 </h3>
 
@@ -153,10 +153,10 @@ export default function SessionCard({
               <div
                 className="rounded-xl p-4 flex items-center justify-between"
                 style={{
-                  background: "#111827",
+                  background: "#F8F4FD",
                 }}
               >
-                <span className="text-slate-400 truncate mr-4">
+                <span className="text-[#6B6478] truncate mr-4">
                   {session.receiverUrl}
                 </span>
 
@@ -165,7 +165,7 @@ export default function SessionCard({
                 >
                   <Copy
                     size={18}
-                    color="#94A3B8"
+                    color="#8A8298"
                   />
                 </button>
 
@@ -178,7 +178,7 @@ export default function SessionCard({
             <div
               className="rounded-xl p-5"
               style={{
-                background: "#111827",
+                background: "#F8F4FD",
               }}
             >
               <div className="flex items-center gap-3">
@@ -190,11 +190,11 @@ export default function SessionCard({
 
                 <div>
 
-                  <p className="text-white">
+                  <p className="text-[#170B2E]">
                     Session Created Successfully
                   </p>
 
-                  <p className="text-slate-400 text-sm">
+                  <p className="text-[#6B6478] text-sm">
                     Waiting for participants to join...
                   </p>
 

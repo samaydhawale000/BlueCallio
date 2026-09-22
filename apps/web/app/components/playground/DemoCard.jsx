@@ -8,18 +8,18 @@ export default function DemoCard({
 }) {
   return (
     <div
-      className="rounded-2xl border border-[#233252] bg-[#0C1322] p-7 flex flex-col"
+      className="rounded-2xl border border-[#E7DFF5] bg-white p-7 flex flex-col"
     >
 
-      <div className="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center mb-6">
+      <div className="w-12 h-12 rounded-xl bg-[#7F40E8]/10 flex items-center justify-center mb-6 text-[#7F40E8]">
         {icon}
       </div>
 
-      <h2 className="text-white text-xl font-semibold">
+      <h2 className="text-[#170B2E] text-xl font-semibold">
         {title}
       </h2>
 
-      <p className="text-slate-400 mt-3 flex-1">
+      <p className="text-[#6B6478] mt-3 flex-1">
         {description}
       </p>
 
@@ -29,7 +29,7 @@ export default function DemoCard({
         className="mt-8 rounded-xl py-3 text-white font-medium transition hover:opacity-90 disabled:opacity-50"
         style={{
           background:
-            "linear-gradient(135deg,#5B5DDB,#895DF6)",
+            "linear-gradient(135deg,#7F40E8,#410686)",
         }}
       >
         {buttonText}

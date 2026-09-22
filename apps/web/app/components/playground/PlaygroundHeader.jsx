@@ -1,8 +1,8 @@
 export default function PlaygroundHeader() {
   return (
     <div className="mb-10">
-      <h1 className="text-2xl font-bold text-white">PurpleCallio Playground</h1>
-      <p className="mt-2 text-slate-400 text-sm max-w-2xl">
+      <h1 className="text-2xl font-bold text-[#170B2E]">PurpleCallio Playground</h1>
+      <p className="mt-2 text-[#6B6478] text-sm max-w-2xl">
         Instantly test Video Calls, Audio Calls, Screen Sharing, and every PurpleCallio feature before integrating the SDK.
       </p>
     </div>
