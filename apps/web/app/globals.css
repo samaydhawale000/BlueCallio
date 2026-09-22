@@ -132,16 +132,15 @@ body {
   height: 100%;
   z-index: 0;
   background: #FFFFFF;
-  /* Base color (color-1) + 2 wave layers (color-2, color-3) = 3 brand colors */
---gradient-color-1: #FFFFFF;
-  --gradient-color-2: #F2E9FB;
-  --gradient-color-3: #E0CCF5;
-  opacity: 0.15;
+  /* White base (color-1) + a single faint brand-colored wave layer (color-2) */
+  --gradient-color-1: #FFFFFF;
+  --gradient-color-2: #d9d7ff;;
+  opacity: 0;
   transition: opacity 1.2s ease;
 }
 
 .stripe-gradient-canvas.isLoaded {
-  opacity: 0.15;
+  opacity: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {

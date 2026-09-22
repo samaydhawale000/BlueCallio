@@ -1,11 +1,5 @@
 "use client";
 
-/*
- *   Stripe WebGL Gradient Animation
- *   All Credits to Stripe.com
- *   ScrollObserver functionality to disable animation when not scrolled into view has been disabled.
- *   https://kevinhufnagl.com
- */
 import { useEffect, useRef } from "react";
 
 // Converting colors to proper format
@@ -616,7 +610,6 @@ export default function StripeGradient() {
   return (
     <canvas
       ref={canvasRef}
-      data-js-darken-top=""
       className="stripe-gradient-canvas"
       aria-hidden="true"
     />

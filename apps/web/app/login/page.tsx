@@ -67,14 +67,6 @@ export default function LoginPage() {
             }}
           />
 
-          {/* Top: brand */}
-          <div className="relative flex items-center gap-3">
-            <Image src={logo} alt="PurpleCallio" width={176} height={42} className="h-auto w-44 object-contain" />
-            <div>
-              <p className="text-xs text-white/50">Communication Infrastructure</p>
-            </div>
-          </div>
-
           {/* Middle: headline + architecture */}
           <div className="relative">
             <h1 className="text-4xl font-bold text-white leading-tight mb-3">
