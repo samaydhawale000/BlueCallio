@@ -91,12 +91,20 @@ const docs = {
       lead: "The PurpleCallio Angular SDK wraps the same call engine as the JavaScript SDK in an Angular-idiomatic service, exposing connection state, participants, and media as RxJS observables.",
       sections: [
          [
+            "Install the package",
+            "npm install @purplecallio/angular @purplecallio/sdk. Requires Angular 16 or later — @angular/core, @angular/common, and rxjs 7.4+ are peer dependencies already present in any modern Angular app.",
+         ],
+         [
             "Configure and join with a service",
-            "Inject PurpleCallioService, call configure() with a participant token from your backend, then join() to connect signaling and WebRTC.",
+            "Inject PurpleCallioService, call configure() with a participant token from your backend, then join() to connect signaling and WebRTC. The service is provided in root, so a single instance is shared across your app.",
          ],
          [
             "Render with observables",
-            "Bind connectionState$, participants$, remoteStream$, and localStream$ with the async pipe, and render streams with the purplecallioVideo directive.",
+            "Bind connectionState$, participants$, remoteStream$, and localStream$ with the async pipe, and render streams with the purplecallioVideo directive on a plain <video> element.",
+         ],
+         [
+            "What's supported",
+            "Join/leave, camera and microphone enable/disable/toggle, screen sharing start/stop, live participant and connection-state tracking. The raw engine instance is intentionally not exposed, keeping the public surface small.",
          ],
       ],
    },
@@ -108,12 +116,24 @@ const docs = {
       lead: "The PurpleCallio React Native SDK reuses the same call engine as the web SDKs on top of react-native-webrtc, adding the mobile-specific pieces: permissions, camera switching, and background/foreground lifecycle handling.",
       sections: [
          [
-            "Set up native WebRTC",
-            "Install react-native-webrtc and call registerGlobals() once at app startup, then wrap your call screen in a PurpleCallioProvider with a participant token from your backend.",
+            "Install the package",
+            "npm install @purplecallio/react-native @purplecallio/sdk react-native-webrtc, then call registerGlobals() from react-native-webrtc once at app startup, before joining a call.",
+         ],
+         [
+            "Configure native permissions",
+            "Add NSCameraUsageDescription and NSMicrophoneUsageDescription to Info.plist on iOS. On Android, camera and microphone runtime permissions are requested automatically before join() — no extra setup required.",
+         ],
+         [
+            "Wrap your call screen",
+            "Wrap your call screen in a PurpleCallioProvider with a participant token from your backend, then use useMeeting(), useParticipants(), and PurpleCallioVideoView to build the call UI.",
          ],
          [
             "Handle mobile specifics",
-            "Camera and microphone permissions are requested automatically before joining, the camera pauses while the app is backgrounded, and switchCamera() toggles between front and back cameras.",
+            "Camera and microphone permissions are requested automatically before joining, the camera pauses while the app is backgrounded and restores on foreground, and switchCamera() toggles between front and back cameras. Speaker/earpiece routing is available via the optional react-native-incall-manager package.",
+         ],
+         [
+            "Known limitation: screen sharing",
+            "Screen sharing is not yet supported on React Native — it requires native platform integration (an iOS Broadcast Upload Extension and Android MediaProjection) not yet implemented in this package.",
          ],
       ],
    },
@@ -125,12 +145,20 @@ const docs = {
       lead: "The PurpleCallio Vue SDK wraps the same call engine as the JavaScript SDK in a Composition API composable, exposing connection state, participants, and media as reactive refs.",
       sections: [
          [
+            "Install the package",
+            "npm install @purplecallio/vue @purplecallio/sdk. Requires Vue 3.2 or later.",
+         ],
+         [
             "Join a call with a composable",
-            "Call usePurpleCallio() with a participant token from your backend, then join() to connect signaling and WebRTC.",
+            "Call usePurpleCallio() with a participant token from your backend, then join() to connect signaling and WebRTC. Each call to the composable creates its own engine instance.",
          ],
          [
             "Render reactive state",
             "Bind connectionState, participants, remoteStream, and localStream directly in your template, and render streams with the PurpleCallioVideo component.",
+         ],
+         [
+            "What's supported",
+            "Join/leave, camera and microphone enable/disable/toggle, screen sharing start/stop, live participant and connection-state tracking, and automatic cleanup when the component using the composable unmounts.",
          ],
       ],
    },
@@ -142,12 +170,20 @@ const docs = {
       lead: "The PurpleCallio Svelte SDK wraps the same call engine as the JavaScript SDK behind createPurpleCallio(), exposing connection state, participants, and media as Svelte stores.",
       sections: [
          [
+            "Install the package",
+            "npm install @purplecallio/svelte @purplecallio/sdk. Works with Svelte 4 or Svelte 5 — it uses the classic store contract (writable/readable) rather than runes, since runes only work inside .svelte files, not a plain library module.",
+         ],
+         [
             "Create a call",
             "Call createPurpleCallio() with a participant token from your backend, then join() to connect signaling and WebRTC.",
          ],
          [
             "Subscribe with $ syntax",
-            "Read $call.connectionState, $call.participants, and $call.remoteStream directly in a .svelte file, and call call.destroy() from onDestroy().",
+            "Read $call.connectionState, $call.participants, and $call.remoteStream directly in a .svelte file, and render streams with the PurpleCallioVideo component.",
+         ],
+         [
+            "Clean up explicitly",
+            "createPurpleCallio() isn't tied to any component lifecycle automatically — call call.destroy() from onDestroy() to unsubscribe from engine events and leave the call if it's still connected.",
          ],
       ],
    },

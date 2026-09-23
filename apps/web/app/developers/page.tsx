@@ -7,6 +7,7 @@ import {
 import { ContentSection, PublicPage } from "../components/marketing/PublicPage";
 import { JsonLd } from "../components/seo/JsonLd";
 import { pageMetadata, siteUrl } from "../lib/seo";
+import { sdks } from "../lib/sdks";
 
 export const metadata: Metadata = pageMetadata({
    title: "PurpleCallio Developer Platform | Audio, Video & WebRTC",
@@ -16,11 +17,6 @@ export const metadata: Metadata = pageMetadata({
 });
 
 const tools = [
-   [
-      "SDKs",
-      "JavaScript, React, Angular, and React Native — official client libraries for every platform.",
-      "/sdks",
-   ],
    [
       "REST API",
       "Create and manage calls from trusted backend code.",
@@ -116,6 +112,43 @@ export default function DevelopersPage() {
                </article>
             ))}
          </section>
+         <ContentSection title="Official SDKs for every platform">
+            <p>
+               The React path above is one of several client SDKs. Every
+               platform wraps the same call engine — a participant token, a
+               connection-state lifecycle, participants, and camera/
+               microphone/screen-share controls — with an API that feels
+               native to where you&apos;re building.
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+               {sdks
+                  .filter((sdk) => sdk.status === "available")
+                  .map((sdk) => (
+                     <Link
+                        key={sdk.platform}
+                        href={sdk.href!}
+                        className="rounded-xl border border-[#E7DFF5] p-5 transition hover:border-[#A05DF9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#A05DF9]"
+                     >
+                        <p className="font-mono text-xs uppercase tracking-widest text-[#6425C4]">
+                           {sdk.package}
+                        </p>
+                        <h3 className="mt-2 font-semibold text-[#170B2E]">
+                           {sdk.platform} <span className="text-[#6425C4]">→</span>
+                        </h3>
+                        <p className="mt-2 text-sm leading-6 text-[#6B6478]">
+                           {sdk.description}
+                        </p>
+                     </Link>
+                  ))}
+            </div>
+            <p className="text-sm text-[#8A8298]">
+               Flutter, iOS, and Android SDKs are in development — see{" "}
+               <Link href="/sdks" className="text-[#6425C4] hover:text-[#170B2E]">
+                  the full SDK list
+               </Link>{" "}
+               for current status.
+            </p>
+         </ContentSection>
          <ContentSection title="Choose the integration that fits your product">
             <p>
                Start with the amount of frontend control you need. Every path
