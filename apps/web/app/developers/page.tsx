@@ -17,6 +17,11 @@ export const metadata: Metadata = pageMetadata({
 
 const tools = [
    [
+      "SDKs",
+      "JavaScript, React, Angular, and React Native — official client libraries for every platform.",
+      "/sdks",
+   ],
+   [
       "REST API",
       "Create and manage calls from trusted backend code.",
       "/docs/rest-api",

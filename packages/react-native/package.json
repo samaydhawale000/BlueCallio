@@ -1,0 +1,65 @@
+{
+  "name": "@purplecallio/react-native",
+  "version": "0.1.0",
+  "description": "Official React Native components and hooks for PurpleCallio, a developer-first real-time communication platform for integrating voice, video and WebRTC communication into applications.",
+  "homepage": "https://purplecallio.com",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "react-native": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run"
+  },
+  "keywords": [
+    "purplecallio",
+    "react-native",
+    "mobile",
+    "video",
+    "webrtc",
+    "voice",
+    "real-time",
+    "sdk",
+    "typescript"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-native": ">=0.70.0",
+    "react-native-webrtc": ">=1.100.0",
+    "react-native-incall-manager": ">=4.0.0",
+    "@react-native-community/netinfo": ">=9.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react-native-incall-manager": {
+      "optional": true
+    },
+    "@react-native-community/netinfo": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@purplecallio/sdk": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.2.17",
+    "@types/react-test-renderer": "^19.2.0",
+    "react": "^19.2.0",
+    "react-native": "^0.87.1",
+    "react-native-webrtc": "^124.0.8",
+    "react-test-renderer": "^19.2.0",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.9"
+  }
+}

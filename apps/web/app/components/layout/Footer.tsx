@@ -19,8 +19,13 @@ const footerLinks = {
 
    Developers: [
       { name: "Developers", href: "/developers" },
+      { name: "SDKs", href: "/sdks" },
       { name: "Quickstart", href: "/docs/quickstart" },
       { name: "React SDK", href: "/docs/react" },
+      { name: "Angular SDK", href: "/docs/angular" },
+      { name: "React Native SDK", href: "/docs/react-native" },
+      { name: "Vue SDK", href: "/docs/vue" },
+      { name: "Svelte SDK", href: "/docs/svelte" },
       { name: "JavaScript SDK", href: "/docs/javascript" },
       { name: "REST API", href: "/docs/rest-api" },
       { name: "Webhooks", href: "/docs/webhooks" },

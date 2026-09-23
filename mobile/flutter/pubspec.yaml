@@ -1,0 +1,26 @@
+name: purplecallio_flutter
+description: >
+  PurpleCallio Flutter SDK — real-time voice and video communication.
+  FOUNDATION ONLY: see STATUS.md. Not functional, not published, not for use.
+version: 0.0.1-foundation
+homepage: https://purplecallio.com
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: '>=3.10.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Real implementation needs a native WebRTC binding. `flutter_webrtc` is
+  # the standard choice (wraps GoogleWebRTC via platform channels on both
+  # iOS and Android) — added here as the intended dependency, matching the
+  # architecture doc in ../README.md. Not resolved/verified in this
+  # environment (no Flutter SDK installed to run `flutter pub get`).
+  flutter_webrtc: ^0.11.0
+  socket_io_client: ^2.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  lints: ^3.0.0

@@ -171,10 +171,10 @@ engineRef.current = new PurpleCallioMeeting({
   }, [engine]);
 
   const toggleCamera = useCallback(() => {
-    engine?.camera.enable();
+    engine?.camera.toggle();
   }, [engine]);
   const toggleMicrophone = useCallback(() => {
-    engine?.microphone.disable();
+    engine?.microphone.toggle();
   }, [engine]);
   const toggleScreenShare = useCallback(() => {
     engine?.screenShare.start();

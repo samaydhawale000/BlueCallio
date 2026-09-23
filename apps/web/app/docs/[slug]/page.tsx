@@ -83,6 +83,74 @@ const docs = {
          ],
       ],
    },
+   angular: {
+      title: "Add Video Calling to Angular",
+      meta: "Angular Video Calling SDK",
+      description:
+         "Use the PurpleCallio Angular SDK — an injectable service and video directive — to add video, audio, and screen sharing to an Angular application.",
+      lead: "The PurpleCallio Angular SDK wraps the same call engine as the JavaScript SDK in an Angular-idiomatic service, exposing connection state, participants, and media as RxJS observables.",
+      sections: [
+         [
+            "Configure and join with a service",
+            "Inject PurpleCallioService, call configure() with a participant token from your backend, then join() to connect signaling and WebRTC.",
+         ],
+         [
+            "Render with observables",
+            "Bind connectionState$, participants$, remoteStream$, and localStream$ with the async pipe, and render streams with the purplecallioVideo directive.",
+         ],
+      ],
+   },
+   "react-native": {
+      title: "Add Video Calling to React Native",
+      meta: "React Native Video Calling SDK",
+      description:
+         "Use the PurpleCallio React Native SDK to add video, audio, and screen sharing to iOS and Android apps, built on react-native-webrtc.",
+      lead: "The PurpleCallio React Native SDK reuses the same call engine as the web SDKs on top of react-native-webrtc, adding the mobile-specific pieces: permissions, camera switching, and background/foreground lifecycle handling.",
+      sections: [
+         [
+            "Set up native WebRTC",
+            "Install react-native-webrtc and call registerGlobals() once at app startup, then wrap your call screen in a PurpleCallioProvider with a participant token from your backend.",
+         ],
+         [
+            "Handle mobile specifics",
+            "Camera and microphone permissions are requested automatically before joining, the camera pauses while the app is backgrounded, and switchCamera() toggles between front and back cameras.",
+         ],
+      ],
+   },
+   vue: {
+      title: "Add Video Calling to Vue",
+      meta: "Vue Video Calling SDK",
+      description:
+         "Use the PurpleCallio Vue SDK — a usePurpleCallio() composable — to add video, audio, and screen sharing to a Vue 3 application.",
+      lead: "The PurpleCallio Vue SDK wraps the same call engine as the JavaScript SDK in a Composition API composable, exposing connection state, participants, and media as reactive refs.",
+      sections: [
+         [
+            "Join a call with a composable",
+            "Call usePurpleCallio() with a participant token from your backend, then join() to connect signaling and WebRTC.",
+         ],
+         [
+            "Render reactive state",
+            "Bind connectionState, participants, remoteStream, and localStream directly in your template, and render streams with the PurpleCallioVideo component.",
+         ],
+      ],
+   },
+   svelte: {
+      title: "Add Video Calling to Svelte",
+      meta: "Svelte Video Calling SDK",
+      description:
+         "Use the PurpleCallio Svelte SDK — createPurpleCallio() and Svelte stores — to add video, audio, and screen sharing to a Svelte application.",
+      lead: "The PurpleCallio Svelte SDK wraps the same call engine as the JavaScript SDK behind createPurpleCallio(), exposing connection state, participants, and media as Svelte stores.",
+      sections: [
+         [
+            "Create a call",
+            "Call createPurpleCallio() with a participant token from your backend, then join() to connect signaling and WebRTC.",
+         ],
+         [
+            "Subscribe with $ syntax",
+            "Read $call.connectionState, $call.participants, and $call.remoteStream directly in a .svelte file, and call call.destroy() from onDestroy().",
+         ],
+      ],
+   },
    "rest-api": {
       title: "REST API for Calls",
       meta: "Video Calling REST API",
@@ -290,6 +358,89 @@ const meeting = new PurpleCallioMeeting({ token, callId, signalUrl });
 await meeting.join();
 // Build your own controls around the meeting instance.`,
    },
+   angular: {
+      title: "Join a call from an Angular component",
+      code: `import { Component, OnDestroy, OnInit } from "@angular/core";
+import { PurpleCallioService } from "@purplecallio/angular";
+
+@Component({
+  selector: "app-call",
+  standalone: true,
+  template: \`
+    <video purplecallioVideo [stream]="call.localStream$ | async" [muted]="true"></video>
+    <video purplecallioVideo [stream]="call.remoteStream$ | async"></video>
+  \`,
+})
+export class CallComponent implements OnInit, OnDestroy {
+  constructor(public call: PurpleCallioService) {}
+
+  ngOnInit() {
+    this.call.configure({ token: this.participantToken, callId: this.callId, signalUrl: this.signalUrl });
+    this.call.join();
+  }
+
+  ngOnDestroy() {
+    this.call.leave();
+  }
+}`,
+   },
+   "react-native": {
+      title: "Join a call from a React Native screen",
+      code: `import { PurpleCallioProvider, useMeeting, PurpleCallioVideoView } from "@purplecallio/react-native";
+
+function CallScreen() {
+  const { join, leave, remoteStream, localStream, toggleCamera } = useMeeting();
+
+  return (
+    <PurpleCallioVideoView stream={remoteStream} objectFit="cover" />
+  );
+}
+
+export default function App() {
+  return (
+    <PurpleCallioProvider token={participantToken} callId={callId} signalUrl={signalUrl}>
+      <CallScreen />
+    </PurpleCallioProvider>
+  );
+}`,
+   },
+   vue: {
+      title: "Join a call from a Vue component",
+      code: `<script setup lang="ts">
+import { usePurpleCallio } from "@purplecallio/vue";
+import PurpleCallioVideo from "@purplecallio/vue/components/PurpleCallioVideo.vue";
+
+const { join, leave, localStream, remoteStream, camera } = usePurpleCallio({
+  token: participantToken,
+  callId,
+  signalUrl,
+});
+
+join();
+</script>
+
+<template>
+  <PurpleCallioVideo :stream="localStream" muted />
+  <PurpleCallioVideo :stream="remoteStream" />
+  <button @click="camera.toggle()">Toggle camera</button>
+</template>`,
+   },
+   svelte: {
+      title: "Join a call from a Svelte component",
+      code: `<script lang="ts">
+  import { onDestroy } from "svelte";
+  import { createPurpleCallio, PurpleCallioVideo } from "@purplecallio/svelte";
+
+  const call = createPurpleCallio({ token: participantToken, callId, signalUrl });
+  call.join();
+
+  onDestroy(() => call.destroy());
+</script>
+
+<PurpleCallioVideo stream={$call.localStream} muted={true} />
+<PurpleCallioVideo stream={$call.remoteStream} />
+<button on:click={() => call.camera.toggle()}>Toggle camera</button>`,
+   },
    "rest-api": {
       title: "Create a call with the REST API",
       code: `curl -X POST https://api.purplecallio.com/calls \\
@@ -487,7 +638,15 @@ export default async function DocPage({
                   <CodeBlock
                      code={examples[slug as DocSlug]!.code}
                      filename={
-                        slug === "rest-api" ? "request.sh" : "example.ts"
+                        slug === "rest-api"
+                           ? "request.sh"
+                           : slug === "react-native"
+                             ? "CallScreen.tsx"
+                             : slug === "vue"
+                               ? "CallView.vue"
+                               : slug === "svelte"
+                                 ? "CallView.svelte"
+                                 : "example.ts"
                      }
                   />
                </ContentSection>
@@ -512,6 +671,36 @@ export default async function DocPage({
                   className="text-[#6425C4] hover:text-[#170B2E]"
                >
                   React SDK →
+               </Link>
+               <Link
+                  href="/docs/angular"
+                  className="text-[#6425C4] hover:text-[#170B2E]"
+               >
+                  Angular SDK →
+               </Link>
+               <Link
+                  href="/docs/react-native"
+                  className="text-[#6425C4] hover:text-[#170B2E]"
+               >
+                  React Native SDK →
+               </Link>
+               <Link
+                  href="/docs/vue"
+                  className="text-[#6425C4] hover:text-[#170B2E]"
+               >
+                  Vue SDK →
+               </Link>
+               <Link
+                  href="/docs/svelte"
+                  className="text-[#6425C4] hover:text-[#170B2E]"
+               >
+                  Svelte SDK →
+               </Link>
+               <Link
+                  href="/sdks"
+                  className="text-[#6425C4] hover:text-[#170B2E]"
+               >
+                  All SDKs →
                </Link>
                <Link
                   href="/docs/security"
