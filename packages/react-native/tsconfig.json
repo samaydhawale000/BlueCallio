@@ -1,0 +1,59 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    /**
+     * Intentionally no "DOM" lib here at runtime — there is no `window`/
+     * `document` in React Native's JS engine. However, @purplecallio/sdk's
+     * public types (EngineConfig, MeetingSnapshot, etc.) reference a handful
+     * of raw ambient DOM lib types it re-exports as-is (MediaStream,
+     * RTCIceServer, RTCPeerConnection, ...) rather than SDK-defined ones.
+     * Without "DOM" in `lib`, those names simply wouldn't resolve during
+     * type-checking. Adding "DOM" here only feeds the TypeScript compiler —
+     * it has zero effect on what's actually available at runtime in RN
+     * (`react-native-webrtc`'s `registerGlobals()` is what provides real
+     * `MediaStream`/`RTCPeerConnection` implementations on-device). This is
+     * the same pragmatic fix used in practice around react-native-webrtc's
+     * own TypeScript types. We do NOT modify @purplecallio/sdk's types to
+     * work around this.
+     */
+    "lib": ["ES2020", "DOM"],
+    /**
+     * "react" (not "react-native") deliberately: this compiles JSX down to
+     * plain `React.createElement(...)` calls in the published dist/*.js, the
+     * same as @purplecallio/react's tsconfig. Metro (RN's bundler) does not
+     * apply its Babel/JSX transform to node_modules by default, so shipping
+     * un-transformed JSX in dist would break consuming apps. "react-native"
+     * mode (JSX preserved, .js extension) is meant for source Metro compiles
+     * directly from an app's own source tree, not for a pre-built library.
+     */
+    "jsx": "react",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    /**
+     * react-native's package.json only advertises its type declarations
+     * (types_generated/index.d.ts) through a conditional "exports" map,
+     * which classic Node module resolution (moduleResolution: "node")
+     * ignores — it would otherwise fall back to `any` for the whole
+     * package. Rather than switching to "bundler"/"node16" resolution
+     * (which forces module: "es2020"+ and changes how this CommonJS
+     * package's relative imports emit), we point the type checker at the
+     * real declaration file directly. This has no effect on the actual
+     * runtime module (Metro/Node resolve "react-native" normally); it only
+     * tells `tsc` where to find its types.
+     */
+    "baseUrl": ".",
+    "paths": {
+      "react-native": ["../../node_modules/react-native/types_generated/index.d.ts"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "tests", "examples"]
+}

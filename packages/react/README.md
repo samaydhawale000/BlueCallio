@@ -74,26 +74,94 @@ Your React Application
 
 ---
 
+# Authentication & Session Setup
+
+`MeetingProvider` needs three pieces of information before it can connect a call: a **participant token**, a **call ID**, and a **signaling URL**. This section documents exactly where each one comes from, verified against the current `@purplecallio/sdk` (0.1.0) implementation — nothing here is guessed.
+
+## 1. Create the call on your server
+
+Never use your PurpleCallio API key in browser code. Create the call from your backend with `@purplecallio/sdk`'s `PurpleCallioClient`:
+
+```ts
+// Server-side only.
+import { PurpleCallioClient } from "@purplecallio/sdk";
+
+const client = new PurpleCallioClient({ apiKey: process.env.PURPLECALLIO_API_KEY! });
+const call = await client.createCall({ callerId, receiverId, type: "VIDEO" });
+```
+
+`createCall()` resolves to a `CreateCallResult`, which (per `packages/sdk/src/types/index.ts`) includes:
+
+```ts
+interface CreateCallResult {
+  callId: string;
+  participants: Array<{
+    participantId: string;
+    token: string;      // pass this participant's own token, never another's
+    hostedUrl: string;
+    expiresAt: string;
+  }>;
+  // ...other fields not needed by MeetingProvider
+}
+```
+
+Send each participant **their own** `token` and the shared `callId` to their browser over your own authenticated API — never send one participant's token to a different participant.
+
+## 2. `signalUrl` — currently undocumented by the SDK itself
+
+`MeetingProvider` (and the `PurpleCallioMeeting` engine it wraps) also require a `signalUrl`. As of 0.1.0, **this is not part of `CreateCallResult`, and the SDK's `EngineConfig` type defines no default for it** — this was verified directly against `packages/sdk/src/types/index.ts` and `apps/server`'s call-creation code, neither of which returns or documents this value.
+
+What we *can* confirm by reading the current backend: the call-signaling gateway (`apps/server/src/socket/gateways/call.gateway.ts`) runs on the same host as the REST API, with no separate signaling service. So in practice, `signalUrl` is typically your project's API base URL (default `https://api.purplecallio.com`). Treat this as an **observed implementation detail, not a guaranteed public contract** — until it's returned explicitly, have your own backend send it to the browser alongside `token`/`callId`.
+
+---
+
 # Meeting Provider
 
-`MeetingProvider` provides meeting state, participant information, media streams, connection state, and meeting controls to your React components.
+`MeetingProvider` constructs the underlying `PurpleCallioMeeting` engine (from `@purplecallio/sdk`) and provides its meeting state, participant information, media streams, connection state, and controls to your React components via context.
 
-Basic usage:
+## Props (`MeetingProviderProps`, verified against `packages/react/src/context.tsx`)
+
+| Prop | Type | Required | Notes |
+|---|---|---|---|
+| `token` | `string` | **yes** | Participant token — see "Authentication & Session Setup" above. Never an API key. |
+| `callId` | `string` | **yes** | From `CreateCallResult.callId`. |
+| `signalUrl` | `string` | **yes** | See "Authentication & Session Setup" above. |
+| `video` | `boolean` | no | Default `true`. |
+| `audio` | `boolean` | no | Default `true`. |
+| `iceServers` | `RTCIceServer[]` | no | Passed straight through to the engine. |
+| `onStateChange` | `(state: MeetingContextValue) => void` | no | Called whenever the meeting context value changes. |
+| `children` | `React.ReactNode` | **yes** | |
+
+## Two things the source confirms that are easy to miss
+
+1. **`MeetingProvider` does not join the call automatically.** It only constructs the engine on mount. You must call `join()` yourself — see the example below.
+2. **The engine is created once, from the first render's props**, and is not recreated if `token`/`callId`/`signalUrl` change on a later render. To join a different call, remount the provider (for example with a React `key`).
+
+## Usage
 
 ```tsx
-import {
-  MeetingProvider,
-  MeetingRoom
-} from "@purplecallio/react";
+import { useEffect } from "react";
+import { MeetingProvider, useMeeting } from "@purplecallio/react";
 
-export default function Meeting() {
+function Call({ token, callId, signalUrl }: { token: string; callId: string; signalUrl: string }) {
   return (
-    <MeetingProvider>
-      <MeetingRoom>
-        {/* Your meeting UI */}
-      </MeetingRoom>
+    <MeetingProvider token={token} callId={callId} signalUrl={signalUrl}>
+      <Room />
     </MeetingProvider>
   );
+}
+
+function Room() {
+  const { join, leave, connectionState } = useMeeting();
+
+  useEffect(() => {
+    join();
+    return () => {
+      leave();
+    };
+  }, [join, leave]);
+
+  return <p>Connection: {connectionState}</p>;
 }
 ```
 
@@ -121,8 +189,7 @@ function MeetingControls() {
     join,
     leave,
     toggleCamera,
-    toggleMicrophone,
-    toggleScreenShare
+    toggleMicrophone
   } = useMeeting();
 
   return (
@@ -158,6 +225,8 @@ disableMicrophone
 startScreenShare
 stopScreenShare
 ```
+
+> **Known issue — `toggleScreenShare()`**: verified against `packages/react/src/context.tsx`, this currently always calls the engine's `screenShare.start()`, regardless of whether sharing is already active — it does not actually toggle. Use `startScreenShare()`/`stopScreenShare()` directly (checking `media.screenShare` for current state) until this is fixed. See "Screen Sharing" below.
 
 ---
 
@@ -335,9 +404,9 @@ import {
   MeetingRoom
 } from "@purplecallio/react";
 
-function App() {
+function App({ token, callId, signalUrl }: { token: string; callId: string; signalUrl: string }) {
   return (
-    <MeetingProvider>
+    <MeetingProvider token={token} callId={callId} signalUrl={signalUrl}>
       <MeetingRoom>
         {/* Meeting content */}
       </MeetingRoom>
@@ -615,14 +684,14 @@ import { ScreenShareButton } from "@purplecallio/react";
 <ScreenShareButton />
 ```
 
-The component toggles screen sharing.
-
 Default labels:
 
 ```text
 Share screen
 Stop share
 ```
+
+> **Verified limitation**: this component calls `toggleScreenShare()` internally, which — as documented above under `useMeeting()` — always starts a new share rather than stopping an active one. In practice this means clicking the button a second time (to stop sharing) does not work correctly. Screen sharing itself works; build your own control with `startScreenShare()`/`stopScreenShare()` and `media.screenShare` (see "Screen Sharing" below) until this component is fixed.
 
 ---
 
@@ -812,47 +881,59 @@ ScreenShareIcon
 
 # Complete UI Example
 
-A basic meeting interface can be assembled using the provided components:
+This is a full, verified, end-to-end example — every prop and hook value here is confirmed against the current source (`packages/react/src/context.tsx`, `hooks.ts`, `components/*.tsx`). It deliberately does not use `ScreenShareButton` (see the known issue above) or `ParticipantGrid` (its `streams` prop expects a per-participant map; the current engine only exposes a single `remoteStream` for the other side of a 1:1 call — build that map yourself if you need it, e.g. `{ [otherParticipantId]: remoteStream }`). `ParticipantTile` renders a single stream directly and matches the current 1:1 call model without extra wiring.
+
+`token`, `callId`, and `signalUrl` here come from your own backend — see "Authentication & Session Setup" above.
 
 ```tsx
+import { useEffect } from "react";
 import {
   MeetingProvider,
-  MeetingRoom,
-  ParticipantGrid,
+  useMeeting,
+  ParticipantTile,
   CameraButton,
   MicrophoneButton,
-  ScreenShareButton,
   LeaveButton,
-  ConnectionStatus,
-  DeviceSelector
+  ConnectionStatus
 } from "@purplecallio/react";
 
-export default function Meeting() {
+export default function Meeting({ token, callId, signalUrl }: { token: string; callId: string; signalUrl: string }) {
   return (
-    <MeetingProvider>
-      <MeetingRoom>
-        <ConnectionStatus />
-
-        <DeviceSelector />
-
-        <ParticipantGrid
-          streams={{}}
-          localStream={null}
-        />
-
-        <div>
-          <CameraButton />
-          <MicrophoneButton />
-          <ScreenShareButton />
-          <LeaveButton />
-        </div>
-      </MeetingRoom>
+    <MeetingProvider token={token} callId={callId} signalUrl={signalUrl}>
+      <Room />
     </MeetingProvider>
   );
 }
-```
 
-The exact meeting configuration and session information depend on how your application creates and joins PurpleCallio calls.
+function Room() {
+  const { join, leave, participantId, localStream, remoteStream } = useMeeting();
+
+  // MeetingProvider constructs the engine but does not join automatically.
+  useEffect(() => {
+    join();
+    return () => {
+      leave();
+    };
+  }, [join, leave]);
+
+  return (
+    <div>
+      <ConnectionStatus />
+
+      <div style={{ display: "flex", gap: 12 }}>
+        <ParticipantTile participantId={participantId ?? "me"} stream={localStream} muted mirror />
+        <ParticipantTile participantId="remote" stream={remoteStream} />
+      </div>
+
+      <div>
+        <CameraButton />
+        <MicrophoneButton />
+        <LeaveButton />
+      </div>
+    </div>
+  );
+}
+```
 
 ---
 
@@ -863,6 +944,7 @@ You are not required to use all the built-in components.
 You can use the hooks to create your own interface:
 
 ```tsx
+import { useEffect } from "react";
 import {
   useMeeting,
   useParticipants,
@@ -873,6 +955,13 @@ function CustomMeetingUI() {
   const meeting = useMeeting();
   const participants = useParticipants();
   const connection = useConnection();
+
+  useEffect(() => {
+    meeting.join();
+    return () => {
+      meeting.leave();
+    };
+  }, [meeting.join, meeting.leave]);
 
   return (
     <div>
@@ -890,8 +979,10 @@ function CustomMeetingUI() {
         Toggle camera
       </button>
 
-      <button onClick={meeting.toggleScreenShare}>
-        Toggle screen share
+      {/* toggleScreenShare() is currently a known issue — see above.
+          Use startScreenShare()/stopScreenShare() with meeting.media.screenShare instead. */}
+      <button onClick={meeting.media.screenShare ? meeting.stopScreenShare : meeting.startScreenShare}>
+        {meeting.media.screenShare ? "Stop sharing" : "Share screen"}
       </button>
 
       <button onClick={meeting.leave}>
@@ -928,13 +1019,14 @@ startScreenShare()
 stopScreenShare()
 ```
 
+> `toggleScreenShare()` is listed for completeness but has a known issue — see "Screen Sharing" further up. Prefer `startScreenShare()`/`stopScreenShare()` together with `media.screenShare`.
+
 Example:
 
 ```tsx
 const {
   toggleCamera,
   toggleMicrophone,
-  toggleScreenShare,
   enableCamera,
   disableCamera,
   enableMicrophone,
@@ -1082,7 +1174,7 @@ The SDK provides:
 Current package version:
 
 ```text
-0.1.0
+0.1.1
 ```
 
 ---

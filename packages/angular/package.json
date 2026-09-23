@@ -1,0 +1,57 @@
+{
+  "name": "@purplecallio/angular",
+  "version": "0.1.0",
+  "description": "Official Angular service, directive and components for PurpleCallio, a developer-first real-time communication platform for voice, video and WebRTC.",
+  "homepage": "https://purplecallio.com",
+  "main": "./dist/fesm2022/purplecallio-angular.mjs",
+  "module": "./dist/fesm2022/purplecallio-angular.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/fesm2022/purplecallio-angular.mjs"
+    },
+    "./package.json": {
+      "default": "./package.json"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "ng-packagr -p ng-package.json",
+    "dev": "ng-packagr -p ng-package.json --watch",
+    "test": "vitest run"
+  },
+  "keywords": [
+    "purplecallio",
+    "angular",
+    "video",
+    "webrtc",
+    "voice",
+    "real-time",
+    "sdk",
+    "typescript"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@angular/core": ">=16.0.0",
+    "@angular/common": ">=16.0.0",
+    "rxjs": ">=7.4.0"
+  },
+  "dependencies": {
+    "@purplecallio/sdk": "^0.1.0"
+  },
+  "devDependencies": {
+    "@angular/compiler": "^19.2.0",
+    "@angular/compiler-cli": "^19.2.0",
+    "@angular/core": "^19.2.0",
+    "@angular/common": "^19.2.0",
+    "ng-packagr": "^19.2.0",
+    "rxjs": "^7.8.1",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.9",
+    "zone.js": "~0.15.0"
+  }
+}
