@@ -26,7 +26,7 @@ const paths = [
       handles:
          "Participant state, media streams, controls, signaling, and connection lifecycle.",
       install: "npm install @purplecallio/react",
-      code: `import { MeetingProvider, ParticipantGrid } from "@purplecallio/react";\n\n<MeetingProvider token={token} callId={callId} signalUrl={signalUrl}>\n  <ParticipantGrid />\n</MeetingProvider>`,
+      code: `import { MeetingProvider, ParticipantGrid } from "@purplecallio/react";\n\n<MeetingProvider token={token} callId={callId} signalUrl={signalUrl}>\n  <ParticipantGrid streams={{}} />\n</MeetingProvider>`,
       href: "/docs/react",
    },
    {

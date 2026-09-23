@@ -1,6 +1,6 @@
 {
   "name": "@purplecallio/react",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Official React components and hooks for PurpleCallio, a developer-focused real-time communication infrastructure platform.",
   "homepage": "https://purplecallio.com",
   "main": "./dist/index.js",

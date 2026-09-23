@@ -341,14 +341,32 @@ const call = await client.createCall({
    },
    react: {
       title: "Compose a React meeting UI",
-      code: `import { MeetingProvider, ParticipantGrid, CameraButton, MicrophoneButton, ScreenShareButton } from "@purplecallio/react";
+      code: `import { useEffect } from "react";
+import { MeetingProvider, useMeeting, ParticipantTile, CameraButton, MicrophoneButton } from "@purplecallio/react";
 
-<MeetingProvider token={participantToken} callId={callId} signalUrl={signalUrl}>
-  <ParticipantGrid />
-  <CameraButton />
-  <MicrophoneButton />
-  <ScreenShareButton />
-</MeetingProvider>`,
+function Call({ participantToken, callId, signalUrl }) {
+  return (
+    <MeetingProvider token={participantToken} callId={callId} signalUrl={signalUrl}>
+      <Room />
+    </MeetingProvider>
+  );
+}
+
+function Room() {
+  // MeetingProvider builds the engine but does not join automatically —
+  // call join() yourself once the component mounts.
+  const { join, localStream, remoteStream, participantId } = useMeeting();
+  useEffect(() => { join(); }, [join]);
+
+  return (
+    <>
+      <ParticipantTile participantId={participantId ?? "me"} stream={localStream} muted mirror />
+      <ParticipantTile participantId="remote" stream={remoteStream} />
+      <CameraButton />
+      <MicrophoneButton />
+    </>
+  );
+}`,
    },
    javascript: {
       title: "Initialize the headless meeting engine",
