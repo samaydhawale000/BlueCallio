@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Atom, Blocks, BookOpen, Cable, CreditCard, Gauge, KeyRound, Lightbulb, Monitor, RotateCw, Server, UserRound, Webhook, Zap } from 'lucide-react';
+import { Atom, Blocks, BookOpen, Cable, CreditCard, Gauge, KeyRound, Lightbulb, Monitor, RotateCw, Server, Smartphone, UserRound, Webhook, Zap } from 'lucide-react';
 import { api } from '../lib/api';
 
 // ── Sidebar nav ───────────────────────────────────────────────────────────────
 const NAV = [
   { group: 'Start here', items: [{ id: 'quickstart', label: 'Quick Start', icon: Zap }, { id: 'how-it-works', label: 'How it works', icon: RotateCw }, { id: 'authentication', label: 'Authentication', icon: KeyRound }] },
-  { group: 'Products', items: [{ id: 'hosted-ui', label: 'Hosted UI', icon: Monitor }, { id: 'react-components', label: 'React Components', icon: Atom }, { id: 'headless-sdk', label: 'Headless SDK', icon: Blocks }] },
+  { group: 'Products', items: [{ id: 'hosted-ui', label: 'Hosted UI', icon: Monitor }, { id: 'react-components', label: 'React Components', icon: Atom }, { id: 'headless-sdk', label: 'Headless SDK', icon: Blocks }, { id: 'angular-sdk', label: 'Angular SDK', icon: Blocks }, { id: 'react-native-sdk', label: 'React Native SDK', icon: Smartphone }, { id: 'vue-sdk', label: 'Vue SDK', icon: Blocks }, { id: 'svelte-sdk', label: 'Svelte SDK', icon: Blocks }] },
   { group: 'REST API', items: [{ id: 'api-create', label: 'POST /calls' }, { id: 'api-join', label: 'POST /calls/:id/join' }, { id: 'api-leave', label: 'POST /calls/:id/leave' }, { id: 'api-accept', label: 'POST /calls/:id/accept' }, { id: 'api-reject', label: 'POST /calls/:id/reject' }, { id: 'api-end', label: 'POST /calls/:id/end' }, { id: 'api-get', label: 'GET /calls/:id' }] },
 { group: 'Real-time', items: [{ id: 'websocket', label: 'WebSocket Events', icon: Cable }, { id: 'webhooks', label: 'Webhooks', icon: Webhook }] },
   { group: 'Billing', items: [{ id: 'usage-billing', label: 'Usage & Billing', icon: CreditCard }] },
@@ -495,6 +495,216 @@ meeting.on('microphone.enabled' | 'microphone.disabled', () => {});
 meeting.on('screenShare.started' | 'screenShare.stopped', () => {});
 meeting.on('remote.stream', (stream) => {});
 meeting.on('remote.stream.ended', () => {});`} />
+          </Section>
+
+          {/* ── Angular SDK ──────────────────────────── */}
+          <Section id="angular-sdk">
+            <Heading>Angular SDK</Heading>
+            <p className="text-[#6B6478] text-sm mb-5">
+              An injectable service and video directive for Angular apps, built on the
+              same engine as the JavaScript SDK. Requires Angular 16+.
+            </p>
+
+            <Code code="npm install @purplecallio/angular @purplecallio/sdk" label="install" />
+
+            <p className="text-sm font-semibold text-[#170B2E] mb-3">Quick example</p>
+            <Code code={`import { Component, OnDestroy, OnInit } from '@angular/core';
+import { PurpleCallioService } from '@purplecallio/angular';
+
+@Component({
+  selector: 'app-call',
+  standalone: true,
+  template: \`
+    <video purplecallioVideo [stream]="call.localStream$ | async" [muted]="true"></video>
+    <video purplecallioVideo [stream]="call.remoteStream$ | async"></video>
+  \`,
+})
+export class CallComponent implements OnInit, OnDestroy {
+  constructor(public call: PurpleCallioService) {}
+
+  ngOnInit() {
+    this.call.configure({ token, callId, signalUrl });
+    this.call.join();
+  }
+
+  ngOnDestroy() {
+    this.call.leave();
+  }
+}`} />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 my-5">
+              {[
+                { c: 'PurpleCallioService', d: 'Injectable, providedIn root — configure(), join(), leave()' },
+                { c: 'connectionState$ / participants$', d: 'RxJS observables for live meeting state' },
+                { c: 'remoteStream$ / localStream$', d: 'Observables carrying MediaStream | null' },
+                { c: 'camera / microphone', d: 'enable() / disable() / toggle() / isEnabled()' },
+                { c: 'screenShare', d: 'start() / stop() / isActive()' },
+                { c: 'purplecallioVideo directive', d: 'Binds a stream to a <video> element' },
+              ].map((x) => (
+                <div key={x.c} className="rounded-xl border border-[#E7DFF5] p-4" style={{ background: '#FFFFFF' }}>
+                  <code className="font-mono text-xs block mb-1" style={{ color: '#6425C4' }}>{x.c}</code>
+                  <p className="text-xs text-[#8A8298]">{x.d}</p>
+                </div>
+              ))}
+            </div>
+
+            <Tip type="info">
+              The service does not expose the raw engine instance — state is only available through
+              observables and the control methods above, keeping the public surface small.
+            </Tip>
+          </Section>
+
+          {/* ── React Native SDK ─────────────────────── */}
+          <Section id="react-native-sdk">
+            <Heading>React Native SDK</Heading>
+            <p className="text-[#6B6478] text-sm mb-5">
+              Reuses the same call engine as the web SDKs on top of react-native-webrtc, with
+              permission handling, camera switching, and background/foreground lifecycle built in.
+            </p>
+
+            <Code code="npm install @purplecallio/react-native @purplecallio/sdk react-native-webrtc" label="install" />
+
+            <p className="text-sm font-semibold text-[#170B2E] mb-3">Quick example</p>
+            <Code code={`import { registerGlobals } from 'react-native-webrtc';
+registerGlobals(); // once, at app startup
+
+import { PurpleCallioProvider, useMeeting, PurpleCallioVideoView } from '@purplecallio/react-native';
+
+function CallScreen() {
+  const { join, remoteStream, localStream, toggleCamera, switchCamera } = useMeeting();
+
+  useEffect(() => { join(); }, [join]);
+
+  return <PurpleCallioVideoView stream={remoteStream} objectFit="cover" />;
+}
+
+export default function App() {
+  return (
+    <PurpleCallioProvider token={token} callId={callId} signalUrl={signalUrl}>
+      <CallScreen />
+    </PurpleCallioProvider>
+  );
+}`} />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 my-5">
+              {[
+                { c: 'PurpleCallioProvider', d: 'Requests camera/mic permissions before join(), manages lifecycle' },
+                { c: 'useMeeting / useParticipants', d: 'Same hook names as @purplecallio/react' },
+                { c: 'PurpleCallioVideoView', d: 'Wraps react-native-webrtc\'s RTCView' },
+                { c: 'switchCamera()', d: 'Toggle between front and back camera' },
+                { c: 'setSpeakerphoneOn()', d: 'Requires the optional react-native-incall-manager package' },
+                { c: 'pauseVideoInBackground', d: 'Camera auto-pauses while the app is backgrounded (default on)' },
+              ].map((x) => (
+                <div key={x.c} className="rounded-xl border border-[#E7DFF5] p-4" style={{ background: '#FFFFFF' }}>
+                  <code className="font-mono text-xs block mb-1" style={{ color: '#6425C4' }}>{x.c}</code>
+                  <p className="text-xs text-[#8A8298]">{x.d}</p>
+                </div>
+              ))}
+            </div>
+
+            <Tip type="warn">
+              Screen sharing is not yet supported on React Native — it requires native platform
+              integration (an iOS Broadcast Upload Extension and Android MediaProjection) not yet
+              implemented in this package. Calling <code className="font-mono text-xs bg-black/30 px-1 rounded">screenShare.start()</code> rejects with a clear error.
+            </Tip>
+          </Section>
+
+          {/* ── Vue SDK ──────────────────────────────── */}
+          <Section id="vue-sdk">
+            <Heading>Vue SDK</Heading>
+            <p className="text-[#6B6478] text-sm mb-5">
+              A Composition API composable for Vue 3 apps, exposing connection state, participants,
+              and media as reactive refs.
+            </p>
+
+            <Code code="npm install @purplecallio/vue @purplecallio/sdk" label="install" />
+
+            <p className="text-sm font-semibold text-[#170B2E] mb-3">Quick example</p>
+            <Code code={`<script setup lang="ts">
+import { usePurpleCallio } from '@purplecallio/vue';
+import PurpleCallioVideo from '@purplecallio/vue/components/PurpleCallioVideo.vue';
+
+const { join, leave, localStream, remoteStream, camera } = usePurpleCallio({
+  token, callId, signalUrl,
+});
+
+join();
+</script>
+
+<template>
+  <PurpleCallioVideo :stream="localStream" muted />
+  <PurpleCallioVideo :stream="remoteStream" />
+  <button @click="camera.toggle()">Toggle camera</button>
+</template>`} />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 my-5">
+              {[
+                { c: 'usePurpleCallio(config)', d: 'Composable — creates the engine and wires reactive state' },
+                { c: 'connectionState / participants', d: 'Reactive refs, usable directly in templates' },
+                { c: 'remoteStream / localStream', d: 'shallowRef<MediaStream | null>' },
+                { c: 'camera / microphone', d: 'enable() / disable() / toggle() / isEnabled()' },
+                { c: 'screenShare', d: 'start() / stop() / isActive()' },
+                { c: 'PurpleCallioVideo', d: 'Binds a stream to a <video> element' },
+              ].map((x) => (
+                <div key={x.c} className="rounded-xl border border-[#E7DFF5] p-4" style={{ background: '#FFFFFF' }}>
+                  <code className="font-mono text-xs block mb-1" style={{ color: '#6425C4' }}>{x.c}</code>
+                  <p className="text-xs text-[#8A8298]">{x.d}</p>
+                </div>
+              ))}
+            </div>
+
+            <Tip type="info">
+              If the component using <code className="font-mono text-xs bg-black/30 px-1 rounded">usePurpleCallio()</code> unmounts while still
+              connected, it automatically leaves the call as a safety net — but call <code className="font-mono text-xs bg-black/30 px-1 rounded">leave()</code> explicitly when you're done.
+            </Tip>
+          </Section>
+
+          {/* ── Svelte SDK ───────────────────────────── */}
+          <Section id="svelte-sdk">
+            <Heading>Svelte SDK</Heading>
+            <p className="text-[#6B6478] text-sm mb-5">
+              A factory function returning Svelte stores for connection state, participants, and
+              media. Works with Svelte 4 and Svelte 5 (uses classic stores, not runes, so it works
+              as a plain library module).
+            </p>
+
+            <Code code="npm install @purplecallio/svelte @purplecallio/sdk" label="install" />
+
+            <p className="text-sm font-semibold text-[#170B2E] mb-3">Quick example</p>
+            <Code code={`<script lang="ts">
+  import { onDestroy } from 'svelte';
+  import { createPurpleCallio, PurpleCallioVideo } from '@purplecallio/svelte';
+
+  const call = createPurpleCallio({ token, callId, signalUrl });
+  call.join();
+
+  onDestroy(() => call.destroy());
+</script>
+
+<PurpleCallioVideo stream={$call.localStream} muted={true} />
+<PurpleCallioVideo stream={$call.remoteStream} />
+<button on:click={() => call.camera.toggle()}>Toggle camera</button>`} />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 my-5">
+              {[
+                { c: 'createPurpleCallio(config)', d: 'Factory — creates the engine and returns stores + controls' },
+                { c: 'connectionState / participants', d: 'Readable stores — use $ auto-subscription in .svelte files' },
+                { c: 'remoteStream / localStream', d: 'Readable<MediaStream | null>' },
+                { c: 'camera / microphone', d: 'enable() / disable() / toggle() / isEnabled()' },
+                { c: 'screenShare', d: 'start() / stop() / isActive()' },
+                { c: 'call.destroy()', d: 'Unsubscribes and leaves — call from onDestroy()' },
+              ].map((x) => (
+                <div key={x.c} className="rounded-xl border border-[#E7DFF5] p-4" style={{ background: '#FFFFFF' }}>
+                  <code className="font-mono text-xs block mb-1" style={{ color: '#6425C4' }}>{x.c}</code>
+                  <p className="text-xs text-[#8A8298]">{x.d}</p>
+                </div>
+              ))}
+            </div>
+
+            <Tip type="warn">
+              Unlike the React/Vue/Angular adapters, <code className="font-mono text-xs bg-black/30 px-1 rounded">createPurpleCallio()</code> is not tied to any
+              component lifecycle automatically — you must call <code className="font-mono text-xs bg-black/30 px-1 rounded">call.destroy()</code> yourself from <code className="font-mono text-xs bg-black/30 px-1 rounded">onDestroy()</code>.
+            </Tip>
           </Section>
 
           {/* ── REST API ─────────────────────────────── */}
